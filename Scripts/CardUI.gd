@@ -192,7 +192,16 @@ func _refresh_visual_state():
 			border.border_width = 3.5
 
 func _get_card_faction_style(c_name: String) -> Dictionary:
-	if "Wildlife" in c_name:
+	if "Nightmare" in c_name or "Halloween" in c_name:
+		return {
+			"tag": "NIGHTMARE",
+			"bg": Color(0.12, 0.05, 0.16, 1.0),
+			"art": Color(0.24, 0.08, 0.32, 1.0),
+			"border": Color(1.0, 0.48, 0.06, 1.0),
+			"glyph": "* HALLOW *",
+			"text": Color(1.0, 0.84, 0.45, 1.0)
+		}
+	elif "Wildlife" in c_name:
 		return {
 			"tag": "WILDLIFE",
 			"bg": Color(0.06, 0.22, 0.11, 1.0),

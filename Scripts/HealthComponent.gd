@@ -542,6 +542,16 @@ func die():
 				var hp = e.get_node_or_null("HealthComponent")
 				if hp: hp.take_damage(50.0, p_pos)
 
+	# JACK-O'-LANTERN NOXIOUS HALLOWEEN GAS BURST
+	if ("JackOLantern" in get_parent().name or "Jack" in get_parent().name) and is_inside_tree() and get_tree():
+		var gas_script = load("res://Scripts/HalloweenGasCloud.gd")
+		if gas_script:
+			var cloud = gas_script.new()
+			var am_scene = get_tree().current_scene if get_tree().current_scene else get_parent()
+			if am_scene:
+				am_scene.add_child(cloud)
+				cloud.global_position = get_parent().global_position
+
 	# SCRAP HEAL TRIGGER
 	var my_t = ""
 	for g in get_parent().get_groups():
@@ -662,7 +672,7 @@ func _apply_destroyed_building(parent: Node3D):
 	
 	var p_name = parent.name
 	var is_plague = "Plague" in p_name or parent.is_in_group("SideHarmony") or parent.is_in_group("Harmony")
-	var is_gilded = "Gilded" in p_name or parent.is_in_group("GildedHarmony") or bool(parent.get_meta("is_gilded_harmony", false))
+	var is_gilded = "Gilded" in p_name or parent.is_in_group("GildedHarmony") or (parent.has_meta("is_gilded_harmony") and bool(parent.get_meta("is_gilded_harmony")))
 	var is_reach = "Reach" in p_name
 	var is_scrap = "Scrap" in p_name
 	var is_void = "Void" in p_name or parent.is_in_group("Beast")
@@ -670,7 +680,7 @@ func _apply_destroyed_building(parent: Node3D):
 	
 	var sampled_color = Color(0.24, 0.22, 0.20)
 	var sampled_accent = Color(0.14, 0.13, 0.12)
-	var faction_mesh = parent.get_meta("faction_mesh", null)
+	var faction_mesh = parent.get_meta("faction_mesh") if parent.has_meta("faction_mesh") else null
 	if faction_mesh and is_instance_valid(faction_mesh):
 		var fm_name = faction_mesh.name
 		if "Reach" in fm_name: is_reach = true

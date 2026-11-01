@@ -33,7 +33,7 @@ func _get_game_state():
 
 func _ready():
 	var gs = _get_game_state()
-	var ai_pool = ["Dominion", "The Reach", "Pirates", "Rimworlders", "Void", "Plague of Harmony", "Gilded Harmony", "Planetary Primitives", "Galactic Wildlife", "Chaos"]
+	var ai_pool = ["Dominion", "The Reach", "Pirates", "Rimworlders", "Void", "Plague of Harmony", "Gilded Harmony", "Planetary Primitives", "Galactic Wildlife", "The Nightmare Court", "Chaos"]
 	if archetype != "":
 		deck = generate_themed_deck(archetype)
 		print(my_team + " BotAI generated deck for archetype: " + archetype + " -> " + str(deck))
@@ -113,7 +113,9 @@ func _get_card_faction(card: CardData) -> String:
 	if card == null:
 		return "Dominion"
 	var cname: String = card.card_name
-	if "Wildlife" in cname:
+	if "Nightmare" in cname or "Halloween" in cname:
+		return "The Nightmare Court"
+	elif "Wildlife" in cname:
 		return "Galactic Wildlife"
 	elif "Primitive" in cname:
 		return "Planetary Primitives"
@@ -512,6 +514,35 @@ func evaluate_moves():
 					b_prio += 15
 				else:
 					b_prio += 12
+
+				if a_prio != b_prio:
+					return a_prio > b_prio
+				return a.cost < b.cost
+			)
+		elif archetype == "The Nightmare Court" or archetype == "Nightmare":
+			# Nightmare Court: Undead swarms, Vampiric lifestealers, Hellfire Demon Knights, and Jack-o'-Lantern gas-bombers
+			var night_bank = 3.6 * bank_scale
+			if threat_info.threat_score < 8.0 and current_requisition < night_bank:
+				return
+			valid_hand.sort_custom(func(a, b):
+				var a_prio = 0
+				var b_prio = 0
+				# 1. Frontline meat sponges / bone giants
+				if "Zombie" in a.card_name or "BoneGiant" in a.card_name or "DemonKnight" in a.card_name: a_prio += 25
+				elif a.card_type == "Commander": a_prio += 22
+				elif "Werewolf" in a.card_name or "HornedDemon" in a.card_name: a_prio += 20
+				elif "JackOLantern" in a.card_name: a_prio += 18 # Gas bomber into the fray
+				elif "Vampire" in a.card_name or "BatSwarm" in a.card_name: a_prio += 16
+				elif "SkeletonArcher" in a.card_name or "FireImp" in a.card_name: a_prio += (17 if friendly_screens >= 1 else 10)
+				else: a_prio += 12
+
+				if "Zombie" in b.card_name or "BoneGiant" in b.card_name or "DemonKnight" in b.card_name: b_prio += 25
+				elif b.card_type == "Commander": b_prio += 22
+				elif "Werewolf" in b.card_name or "HornedDemon" in b.card_name: b_prio += 20
+				elif "JackOLantern" in b.card_name: b_prio += 18
+				elif "Vampire" in b.card_name or "BatSwarm" in b.card_name: b_prio += 16
+				elif "SkeletonArcher" in b.card_name or "FireImp" in b.card_name: b_prio += (17 if friendly_screens >= 1 else 10)
+				else: b_prio += 12
 
 				if a_prio != b_prio:
 					return a_prio > b_prio
@@ -1015,9 +1046,10 @@ func play_card(card: CardData, target_position: Vector3):
 
 
 func _detect_faction_from_deck(deck_list: Array) -> String:
-	var v = 0; var r = 0; var d = 0; var pi = 0; var reach = 0; var plague = 0; var gilded = 0; var prim = 0; var wild = 0
+	var v = 0; var r = 0; var d = 0; var pi = 0; var reach = 0; var plague = 0; var gilded = 0; var prim = 0; var wild = 0; var night = 0
 	for c in deck_list:
-		if "Wildlife" in c: wild += 1
+		if "Nightmare" in c or "Halloween" in c: night += 1
+		elif "Wildlife" in c: wild += 1
 		elif "Primitive" in c: prim += 1
 		elif "Plague" in c: plague += 1
 		elif "Gilded" in c: gilded += 1
@@ -1026,8 +1058,9 @@ func _detect_faction_from_deck(deck_list: Array) -> String:
 		elif "Scrap" in c: pi += 1
 		elif "Reach" in c: reach += 1
 		else: d += 1
-	var mx = max(d, max(v, max(r, max(pi, max(reach, max(plague, max(gilded, max(prim, wild))))))))
+	var mx = max(d, max(v, max(r, max(pi, max(reach, max(plague, max(gilded, max(prim, max(wild, night)))))))))
 	if mx < 3 and deck_list.size() >= 5: return "Chaos"
+	if mx == night and night > 0: return "The Nightmare Court"
 	if mx == wild and wild > 0: return "Galactic Wildlife"
 	if mx == prim and prim > 0: return "Planetary Primitives"
 	if mx == plague and plague > 0: return "Plague of Harmony"
@@ -1088,15 +1121,16 @@ func generate_themed_deck(theme: String) -> Array:
 		while file_name != "":
 			if not dir.current_is_dir() and (file_name.ends_with(".tres") or file_name.ends_with(".tres.remap")):
 				var clean_name = file_name.trim_suffix(".remap")
-				var is_wildlife = "Wildlife" in clean_name
-				var is_void = not is_wildlife and ("Void" in clean_name)
-				var is_rimworlder = not is_wildlife and ("Rimworlder" in clean_name or "Sky" in clean_name or "Stone" in clean_name or "Giant" in clean_name or "Great" in clean_name or "Monstrous" in clean_name)
-				var is_pirate = not is_wildlife and ("Scrap" in clean_name)
-				var is_reach = not is_wildlife and ("Reach" in clean_name)
-				var is_plague = not is_wildlife and ("Plague" in clean_name)
-				var is_gilded = not is_wildlife and ("Gilded" in clean_name)
-				var is_primitive = not is_wildlife and ("Primitive" in clean_name)
-				var is_dominion = not is_void and not is_rimworlder and not is_pirate and not is_reach and not is_plague and not is_gilded and not is_primitive and not is_wildlife
+				var is_nightmare = "Nightmare" in clean_name or "Halloween" in clean_name
+				var is_wildlife = not is_nightmare and ("Wildlife" in clean_name)
+				var is_void = not is_nightmare and not is_wildlife and ("Void" in clean_name)
+				var is_rimworlder = not is_nightmare and not is_wildlife and ("Rimworlder" in clean_name or "Sky" in clean_name or "Stone" in clean_name or "Giant" in clean_name or "Great" in clean_name or "Monstrous" in clean_name)
+				var is_pirate = not is_nightmare and not is_wildlife and ("Scrap" in clean_name)
+				var is_reach = not is_nightmare and not is_wildlife and ("Reach" in clean_name)
+				var is_plague = not is_nightmare and not is_wildlife and ("Plague" in clean_name)
+				var is_gilded = not is_nightmare and not is_wildlife and ("Gilded" in clean_name)
+				var is_primitive = not is_nightmare and not is_wildlife and ("Primitive" in clean_name)
+				var is_dominion = not is_nightmare and not is_void and not is_rimworlder and not is_pirate and not is_reach and not is_plague and not is_gilded and not is_primitive and not is_wildlife
 				
 				var valid = false
 				if theme == "Void" and is_void: valid = true
@@ -1108,6 +1142,7 @@ func generate_themed_deck(theme: String) -> Array:
 				elif (theme == "Gilded Harmony" or theme == "Gilded") and is_gilded: valid = true
 				elif (theme == "Planetary Primitives" or theme == "Primitives") and is_primitive: valid = true
 				elif (theme == "Galactic Wildlife" or theme == "Wildlife") and is_wildlife: valid = true
+				elif (theme == "The Nightmare Court" or theme == "Nightmare" or theme == "Halloween") and is_nightmare: valid = true
 				
 				if valid:
 					var res = load("res://Data/Cards/" + clean_name)

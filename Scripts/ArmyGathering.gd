@@ -98,6 +98,7 @@ func build_ui():
 	tab_bar.add_tab("Gilded Harmony")
 	tab_bar.add_tab("Planetary Primitives")
 	tab_bar.add_tab("Galactic Wildlife")
+	tab_bar.add_tab("The Nightmare Court")
 	tab_bar.add_tab("Chaos (All Factions)")
 	tab_bar.connect("tab_changed", Callable(self, "_on_tab_changed"))
 	left_vbox.add_child(tab_bar)
@@ -252,6 +253,7 @@ func _on_tab_changed(tab_idx: int):
 		"Gilded Harmony",
 		"Planetary Primitives",
 		"Galactic Wildlife",
+		"The Nightmare Court",
 		"Chaos (Cross-Faction)"
 	]
 	var faction_doctrines = [
@@ -264,6 +266,7 @@ func _on_tab_changed(tab_idx: int):
 		"Doctrine: Mitosis & The Saved Horde (Genetic Monsters regenerate, divide at full HP, and split twice on death).",
 		"Doctrine: Ages of Humanity (Stone Age swarm & crafters building forward watchtowers; Feudal knights, crossbowmen & siege ballistas; low cost, high numbers).",
 		"Doctrine: Untamed Biosphere (108 Earth & Galactic fauna species! Venomous snakes, rock-dropping corvids, pecking birds, bug swarms, sharks, apes & megafauna).",
+		"Doctrine: The Nightmare Court (Supreme Necromancer raises skeleton swarms, Grand Vampire leads leaping werewolves with blood lifesteal, Demon Knights unleash hellfire, and carved Jack-o'-Lanterns burst into noxious poison gas!).",
 		"Doctrine: Chaos Unleashed (Mix and match commanders and units freely across all factions in the galaxy)."
 	]
 	if tab_idx >= 0 and tab_idx < faction_names.size():
@@ -307,7 +310,11 @@ func _on_tab_changed(tab_idx: int):
 			bg.color = Color(0.06, 0.26, 0.12)
 			trim_top.color = Color(0.35, 0.95, 0.42)
 			trim_bot.color = Color(0.85, 0.68, 0.22)
-		elif tab_idx == 9: # Chaos (All)
+		elif tab_idx == 9: # The Nightmare Court
+			bg.color = Color(0.14, 0.05, 0.18)
+			trim_top.color = Color(1.0, 0.48, 0.08)
+			trim_bot.color = Color(0.35, 0.95, 0.32)
+		elif tab_idx == 10: # Chaos (All)
 			bg.color = Color(0.16, 0.04, 0.22)
 			trim_top.color = Color(0.92, 0.78, 0.22)
 			trim_bot.color = Color(0.25, 0.88, 0.95)
@@ -322,17 +329,18 @@ func _on_tab_changed(tab_idx: int):
 		restricted_card_names = GameState.player_decks["Player1"]
 
 	for card_data in all_cards:
-		var is_wildlife = "Wildlife" in card_data.card_name
-		var is_void = not is_wildlife and ("Void" in card_data.card_name)
-		var is_rimworlder = not is_wildlife and ("Rimworlder" in card_data.card_name or "Sky" in card_data.card_name or "Stone" in card_data.card_name or "Giant" in card_data.card_name or "Great" in card_data.card_name or "Monstrous" in card_data.card_name)
-		var is_pirate = not is_wildlife and ("Scrap" in card_data.card_name)
-		var is_reach = not is_wildlife and ("Reach" in card_data.card_name)
-		var is_plague = not is_wildlife and ("Plague" in card_data.card_name)
-		var is_gilded = not is_wildlife and ("Gilded" in card_data.card_name)
-		var is_primitive = not is_wildlife and ("Primitive" in card_data.card_name)
-		var is_dominion = not is_void and not is_rimworlder and not is_pirate and not is_reach and not is_plague and not is_gilded and not is_primitive and not is_wildlife
+		var is_nightmare = ("Nightmare" in card_data.card_name) or ("Halloween" in card_data.card_name)
+		var is_wildlife = not is_nightmare and ("Wildlife" in card_data.card_name)
+		var is_void = not is_nightmare and not is_wildlife and ("Void" in card_data.card_name)
+		var is_rimworlder = not is_nightmare and not is_wildlife and ("Rimworlder" in card_data.card_name or "Sky" in card_data.card_name or "Stone" in card_data.card_name or "Giant" in card_data.card_name or "Great" in card_data.card_name or "Monstrous" in card_data.card_name)
+		var is_pirate = not is_nightmare and not is_wildlife and ("Scrap" in card_data.card_name)
+		var is_reach = not is_nightmare and not is_wildlife and ("Reach" in card_data.card_name)
+		var is_plague = not is_nightmare and not is_wildlife and ("Plague" in card_data.card_name)
+		var is_gilded = not is_nightmare and not is_wildlife and ("Gilded" in card_data.card_name)
+		var is_primitive = not is_nightmare and not is_wildlife and ("Primitive" in card_data.card_name)
+		var is_dominion = not is_nightmare and not is_void and not is_rimworlder and not is_pirate and not is_reach and not is_plague and not is_gilded and not is_primitive and not is_wildlife
 		
-		var is_valid = (tab_idx == 9) or (tab_idx == 0 and is_dominion) or (tab_idx == 1 and is_void) or (tab_idx == 2 and is_rimworlder) or (tab_idx == 3 and is_pirate) or (tab_idx == 4 and is_reach) or (tab_idx == 5 and is_plague) or (tab_idx == 6 and is_gilded) or (tab_idx == 7 and is_primitive) or (tab_idx == 8 and is_wildlife)
+		var is_valid = (tab_idx == 10) or (tab_idx == 0 and is_dominion) or (tab_idx == 1 and is_void) or (tab_idx == 2 and is_rimworlder) or (tab_idx == 3 and is_pirate) or (tab_idx == 4 and is_reach) or (tab_idx == 5 and is_plague) or (tab_idx == 6 and is_gilded) or (tab_idx == 7 and is_primitive) or (tab_idx == 8 and is_wildlife) or (tab_idx == 9 and is_nightmare)
 		if is_valid:
 
 			# If this is a Guest profile, block cards that Player1 is using

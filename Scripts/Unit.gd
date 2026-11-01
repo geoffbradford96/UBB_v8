@@ -113,7 +113,11 @@ func _ready():
 			health._refresh_hp_visuals()
 
 
-	if is_humanoid():
+	if "Nightmare" in name or "Halloween" in name:
+		var n_builder = load("res://Scripts/NightmareModelBuilder.gd")
+		if n_builder:
+			n_builder.build_model(self, name)
+	elif is_humanoid():
 		var rig_script = load("res://Scripts/HumanoidRig.gd")
 		if rig_script:
 			humanoid_rig = rig_script.new()
@@ -129,6 +133,29 @@ func _physics_process(delta):
 	# Apply gravity
 	if not is_on_floor():
 		velocity.y -= 9.8 * delta
+
+	# Supreme Necromancer: Passive Soul Harvest / Raise Dead
+	if "SupremeNecromancer" in name:
+		if not has_meta("necro_summon_timer"):
+			set_meta("necro_summon_timer", 6.5)
+		var n_timer = get_meta("necro_summon_timer", 6.5) - delta
+		if n_timer <= 0.0:
+			set_meta("necro_summon_timer", 8.5)
+			var sk_scene = load("res://Scenes/Units/NightmareSkeletonSwordsman.tscn")
+			if sk_scene and is_inside_tree() and get_tree():
+				var sk = sk_scene.instantiate()
+				var my_team = ""
+				for g in get_groups():
+					if g.begins_with("Side"):
+						my_team = g
+						break
+				sk.team = my_team
+				var am_scene = get_tree().current_scene if get_tree().current_scene else get_parent()
+				if am_scene:
+					am_scene.add_child(sk)
+				sk.global_position = global_position + Vector3(randf_range(-1.8, 1.8), 0.2, randf_range(-1.8, 1.8))
+		else:
+			set_meta("necro_summon_timer", n_timer)
 		
 	if has_meta("stealth_revealed_timer"):
 		var __s_timer = get_meta("stealth_revealed_timer", 0.0)
@@ -312,7 +339,7 @@ func _physics_process(delta):
 					set_meta("stealth_revealed_timer", 2.0)
 					var target_health = current_target.get_node_or_null("HealthComponent")
 					if target_health:
-						if "SkyJellyfish" in self.name or "StoneOctopus" in self.name:
+						if "SkyJellyfish" in self.name or "StoneOctopus" in self.name or "DemonKnight" in self.name or "BoneGiant" in self.name:
 							var m_team = ""
 							for g in get_groups():
 								if g.begins_with("Side"): m_team = g
@@ -324,6 +351,13 @@ func _physics_process(delta):
 											if hp: hp.take_damage(attack_damage, global_position)
 						else:
 							target_health.take_damage(attack_damage, global_position)
+
+						# Vampiric Lifesteal for Grand Vampire and Vampire Duelist
+						if "GrandVampire" in self.name or "VampireDuelist" in self.name:
+							var my_hc = get_node_or_null("HealthComponent")
+							if my_hc and not my_hc.is_dead:
+								var lifesteal_pct = 0.30 if "GrandVampire" in self.name else 0.20
+								my_hc.heal(attack_damage * lifesteal_pct)
 							
 						if attack_range > 3.5 and is_instance_valid(current_target):
 							_spawn_ranged_attack_fx(current_target)

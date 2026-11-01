@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/CardData.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://Scenes/Units/NightmareBatSwarm.tscn" id="2_scene"]
+
+[resource]
+script = ExtResource("1_script")
+card_name = "NightmareBatSwarm"
+card_type = "Flyer"
+cost = 2.5
+is_spell = false
+spawn_count = 3
+max_hp = 45.0
+is_melee = true
+description = "Screeching cloud of 3 vampire bats fluttering above ground obstacles to harass backline units."
+unit_scene = ExtResource("2_scene")

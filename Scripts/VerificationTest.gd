@@ -262,7 +262,7 @@ func test_maps_and_biomes() -> bool:
 
 	dummy_arena.queue_free()
 
-	var biomes = ["SUNNY_PLAINS", "SCORCHING_DUNES", "REALM_OF_HARMONY", "FROZEN_TUNDRA", "VOLCANIC_BRIMSTONE", "SPACE_VACUUM", "DEEP_JUNGLE"]
+	var biomes = ["SUNNY_PLAINS", "SCORCHING_DUNES", "REALM_OF_HARMONY", "FROZEN_TUNDRA", "VOLCANIC_BRIMSTONE", "SPACE_VACUUM", "DEEP_JUNGLE", "HAUNTED_HALLOW"]
 
 	# --- Test Deep Space Vacuum Biome Decompression Mechanics ---
 	var vac_arena = ArenaManager.new()
@@ -578,6 +578,53 @@ func test_maps_and_biomes() -> bool:
 	t_monkey.queue_free()
 	sinkhole.queue_free()
 	j_arena.queue_free()
+
+	# --- Test Haunted Hallow (Halloween) Biome: Hanged Man Tree, Breakable Gravestones & Gas Clouds ---
+	var h_tree_script = load("res://Scripts/HangedManTree.gd")
+	var h_tree = h_tree_script.new()
+	add_child(h_tree)
+	if not h_tree.is_in_group("HangedManTree") or not h_tree.is_in_group("Targetable"):
+		printerr("HangedManTree failed to join HangedManTree / Targetable groups!")
+		return false
+
+	var h_grave_script = load("res://Scripts/BreakableGravestone.gd")
+	var h_grave = h_grave_script.new()
+	add_child(h_grave)
+	if not h_grave.is_in_group("Gravestone") or not h_grave.is_in_group("Targetable"):
+		printerr("BreakableGravestone failed to join Gravestone / Targetable groups!")
+		return false
+
+	var h_gas_script = load("res://Scripts/HalloweenGasCloud.gd")
+	var h_gas = h_gas_script.new()
+	add_child(h_gas)
+	if not h_gas.is_in_group("Hazard"):
+		printerr("HalloweenGasCloud failed to join Hazard group!")
+		return false
+
+	var h_arena = ArenaManager.new()
+	h_arena.active_biome = "HAUNTED_HALLOW"
+	add_child(h_arena)
+	var h_env = Node3D.new()
+	h_env.name = "EnvironmentFeatures"
+	h_arena.add_child(h_env)
+	h_arena._generate_haunted_hallow(h_env)
+
+	var found_hanged_tree = false
+	var found_gravestones = 0
+	for child in h_env.get_children():
+		if child.is_in_group("HangedManTree") or "HangedManTree" in child.name:
+			found_hanged_tree = true
+		elif child.is_in_group("Gravestone") or "BreakableGravestone" in child.name:
+			found_gravestones += 1
+
+	if not found_hanged_tree or found_gravestones < 5:
+		printerr("Haunted Hallow biome failed to spawn HangedManTree or BreakableGravestones! Found tree=%s graves=%d" % [str(found_hanged_tree), found_gravestones])
+		return false
+
+	h_tree.queue_free()
+	h_grave.queue_free()
+	h_gas.queue_free()
+	h_arena.queue_free()
 
 	print("  Verified %d map catalog layouts across %d total team comps and %d biomes." % [tested_count, tested_comps, biomes.size()])
 	print("  [PASS] Breakable ice patches, Sea Lion organic predation, Volcanic hazards, Space vacuum, Deep Jungle & v8 GPU Pre-Rendering verified.")
@@ -1143,5 +1190,35 @@ func test_ai_systems() -> bool:
 			success = false
 		ch_inst.queue_free()
 
-	print("  Verified HeroHunter closest commander targeting, Medic structure exclusion, Territorial Creature nest radius, Nightmare BotAI, Chaos dice roll, Planetary Primitives Empire Ages, and Namesake Models.")
+	# 9. Test The Nightmare Court (Halloween): Decks & 3D Procedural Models
+	var night_bot = BotAI.new()
+	var night_deck = night_bot.generate_themed_deck("The Nightmare Court")
+	if night_deck.size() != 6:
+		printerr("Nightmare Court deck size is not 6! Got: ", night_deck.size())
+		success = false
+	for cname in night_deck:
+		if not ("Nightmare" in cname or "Halloween" in cname):
+			printerr("Nightmare Court deck contains invalid card: ", cname)
+			success = false
+	night_bot.free()
+
+	var test_night_units = [
+		"NightmareSupremeNecromancer",
+		"NightmareGrandVampire",
+		"NightmareDemonKnight",
+		"NightmareWerewolf",
+		"NightmareJackOLantern"
+	]
+	for nu_name in test_night_units:
+		var nu_scene = load("res://Scenes/Units/" + nu_name + ".tscn")
+		if nu_scene:
+			var nu_inst = nu_scene.instantiate()
+			add_child(nu_inst)
+			var n_rig = nu_inst.find_child("NightmareRigRoot", true, false)
+			if not n_rig:
+				printerr(nu_name + " missing NightmareRigRoot procedural model!")
+				success = false
+			nu_inst.queue_free()
+
+	print("  Verified HeroHunter closest commander targeting, Medic structure exclusion, Territorial Creature nest radius, Nightmare BotAI, Chaos dice roll, Planetary Primitives Empire Ages, and The Nightmare Court Halloween models & decks.")
 	return success

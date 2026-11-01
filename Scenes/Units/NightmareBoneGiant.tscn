@@ -1,0 +1,32 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Unit.gd" id="1_script"]
+[ext_resource type="Script" path="res://Scripts/HealthComponent.gd" id="2_health"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1"]
+radius = 0.62
+height = 2.4
+
+[node name="NightmareBoneGiant" type="CharacterBody3D"]
+script = ExtResource("1_script")
+unit_attribute = "Organic"
+max_health = 560.0
+speed = 3.2
+attack_damage = 60.0
+attack_range = 3.2
+attack_speed = 0.8
+max_armor = 0.0
+armor_style = "NONE"
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("2_health")
+max_health = 560.0
+current_health = 560.0
+max_armor = 0.0
+armor_style = "NONE"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("CapsuleShape3D_1")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0)
+
+[node name="VisualPivot" type="Node3D" parent="."]

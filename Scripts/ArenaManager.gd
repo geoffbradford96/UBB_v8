@@ -294,7 +294,7 @@ func setup_match():
         
     var chosen_biome = GameState.map_biome if ("map_biome" in GameState and GameState.map_biome != "") else "SUNNY_PLAINS"
     if chosen_biome == "RANDOM":
-        var biome_pool = ["SUNNY_PLAINS", "SCORCHING_DUNES", "REALM_OF_HARMONY", "FROZEN_TUNDRA", "VOLCANIC_BRIMSTONE", "SPACE_VACUUM", "DEEP_JUNGLE"]
+        var biome_pool = ["SUNNY_PLAINS", "SCORCHING_DUNES", "REALM_OF_HARMONY", "FROZEN_TUNDRA", "VOLCANIC_BRIMSTONE", "SPACE_VACUUM", "DEEP_JUNGLE", "HAUNTED_HALLOW"]
         chosen_biome = biome_pool[randi() % biome_pool.size()]
     var map_seed = randi()
     if multiplayer.has_multiplayer_peer() and multiplayer.multiplayer_peer.get_connection_status() == MultiplayerPeer.CONNECTION_CONNECTED:
@@ -2034,6 +2034,8 @@ func _apply_map_environment(biome_name: String, seed_val: int):
         _generate_space_vacuum(env_root)
     elif active_biome == "DEEP_JUNGLE" or active_biome == "JUNGLE":
         _generate_jungle(env_root)
+    elif active_biome == "HAUNTED_HALLOW" or active_biome == "HALLOWEEN":
+        _generate_haunted_hallow(env_root)
 
     # Pre-render and bake static environment (GPU MultiMesh LODs, UPDATE_ONCE ReflectionProbe, static prop freeze)
     var bake_stats: Dictionary = EnvironmentPreRendererScript.pre_render_and_bake_environment(self, env_root, active_biome)
@@ -2261,6 +2263,38 @@ func _apply_biome_visuals(biome_name: String):
                 sky_mat.sky_horizon_color = Color(0.70, 0.85, 0.74)
                 sky_mat.ground_bottom_color = Color(0.08, 0.20, 0.06)
                 sky_mat.ground_horizon_color = Color(0.45, 0.65, 0.38)
+
+    elif biome_name == "HAUNTED_HALLOW" or biome_name == "HALLOWEEN":
+        if ground:
+            var g_mesh = ground.get_node_or_null("MeshInstance3D")
+            if g_mesh:
+                var g_mat = StandardMaterial3D.new()
+                g_mat.albedo_color = Color(0.12, 0.10, 0.13) # Dark graveyard loam & decayed soil
+                g_mat.roughness = 0.95
+                g_mesh.material_override = g_mat
+
+            # Cached GPU Decrepit Cracked Stone Path Texture
+            var stone_tex = EnvironmentPreRendererScript.get_cached_biome_texture("HAUNTED_HALLOW")
+
+            for child in ground.get_children():
+                if child is MeshInstance3D and child.name.begins_with("Path"):
+                    var p_mat = StandardMaterial3D.new()
+                    p_mat.albedo_texture = stone_tex
+                    p_mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
+                    p_mat.roughness = 0.85
+                    p_mat.uv1_scale = Vector3(14.0, 14.0, 14.0)
+                    child.material_override = p_mat
+        if dir_light:
+            dir_light.light_color = Color(0.85, 0.72, 0.96) # Eerie harvest moonlight
+            dir_light.light_energy = 1.15
+            dir_light.shadow_enabled = true
+        if world_env and world_env.environment and world_env.environment.sky:
+            var sky_mat = world_env.environment.sky.sky_material
+            if sky_mat is ProceduralSkyMaterial:
+                sky_mat.sky_top_color = Color(0.06, 0.03, 0.12) # Deep night purple
+                sky_mat.sky_horizon_color = Color(0.72, 0.30, 0.06) # Pumpkin orange horizon
+                sky_mat.ground_bottom_color = Color(0.08, 0.06, 0.09)
+                sky_mat.ground_horizon_color = Color(0.35, 0.15, 0.04)
 
 func _get_clear_hazard_pos(map_size: float) -> Vector3:
     var attempts = 0
@@ -4043,3 +4077,86 @@ func _flush_jungle_tree_multimeshes(parent: Node3D) -> void:
         mmi.multimesh = mm
         mmi.material_override = bark_mat
         parent.add_child(mmi)
+
+# =========================================================================
+# HAUNTED HALLOW / HALLOWEEN BIOME GENERATION
+# Decrepit cracked stone paths, dead twisted forests, The Hanged Man Tree & Breakable Gravestones
+# =========================================================================
+func _generate_haunted_hallow(parent: Node3D) -> void:
+    placed_feature_records.clear()
+    var map_size: float = maxf(42.0, GameState.current_map_radius * 0.62)
+
+    var tree_script = load("res://Scripts/HangedManTree.gd")
+    var grave_script = load("res://Scripts/BreakableGravestone.gd")
+
+    # 1. Spawn The Hanged Man Tree(s)
+    var num_hanged_trees: int = 2 if map_size >= 65.0 else 1
+    for i in range(num_hanged_trees):
+        var h_pos = _get_clear_hazard_pos(map_size * 0.75)
+        if tree_script:
+            var h_tree = tree_script.new()
+            parent.add_child(h_tree)
+            h_tree.global_position = h_pos
+            placed_feature_records.append({
+                "type": "tree",
+                "pos": h_pos,
+                "radius": 5.0
+            })
+
+    # 2. Spawn Breakable Gravestones in Graveyard Clusters
+    var num_graves: int = int(clampf(map_size * 0.28, 10.0, 24.0))
+    for i in range(num_graves):
+        var g_pos = _get_clear_hazard_pos(map_size * 0.85)
+        if grave_script:
+            var grave = grave_script.new()
+            parent.add_child(grave)
+            grave.global_position = g_pos
+            placed_feature_records.append({
+                "type": "obstacle",
+                "pos": g_pos,
+                "radius": 1.6
+            })
+
+    # 3. Spawn Twisted Dead Forest Trees
+    var dead_tree_count: int = int(clampf(map_size * 0.45, 18.0, 40.0))
+    var bark_mat = StandardMaterial3D.new()
+    bark_mat.albedo_color = Color(0.12, 0.10, 0.10) # Charcoal black dead bark
+    bark_mat.roughness = 0.95
+
+    for i in range(dead_tree_count):
+        var t_pos = _get_clear_hazard_pos(map_size * 0.90)
+        var tree_node = Node3D.new()
+        tree_node.position = t_pos
+        parent.add_child(tree_node)
+
+        # Trunk
+        var trunk = MeshInstance3D.new()
+        var t_cyl = CylinderMesh.new()
+        t_cyl.top_radius = randf_range(0.25, 0.40)
+        t_cyl.bottom_radius = randf_range(0.60, 0.95)
+        t_cyl.height = randf_range(3.2, 5.0)
+        trunk.mesh = t_cyl
+        trunk.material_override = bark_mat
+        trunk.position.y = t_cyl.height * 0.5
+        trunk.rotation.z = randf_range(-0.15, 0.15)
+        tree_node.add_child(trunk)
+
+        # 2-3 Crooked Bare Branches
+        for b_idx in range(randi_range(2, 4)):
+            var branch = MeshInstance3D.new()
+            var b_cyl = CylinderMesh.new()
+            b_cyl.top_radius = 0.08
+            b_cyl.bottom_radius = 0.22
+            b_cyl.height = randf_range(1.8, 3.2)
+            branch.mesh = b_cyl
+            branch.material_override = bark_mat
+            branch.position = Vector3(randf_range(-0.3, 0.3), t_cyl.height * randf_range(0.6, 0.9), randf_range(-0.3, 0.3))
+            branch.rotation = Vector3(randf_range(-0.8, 0.8), randf_range(0, TAU), randf_range(-0.8, 0.8))
+            tree_node.add_child(branch)
+
+        placed_feature_records.append({
+            "type": "tree",
+            "pos": t_pos,
+            "radius": 2.2
+        })
+

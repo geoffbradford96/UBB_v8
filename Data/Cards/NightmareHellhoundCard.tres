@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/CardData.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://Scenes/Units/NightmareHellhound.tscn" id="2_scene"]
+
+[resource]
+script = ExtResource("1_script")
+card_name = "NightmareHellhound"
+card_type = "Beast"
+cost = 3.0
+is_spell = false
+spawn_count = 2
+max_hp = 130.0
+is_melee = true
+description = "Pair of volcanic obsidian hounds with burning lava veins and searing hellfire jaws."
+unit_scene = ExtResource("2_scene")

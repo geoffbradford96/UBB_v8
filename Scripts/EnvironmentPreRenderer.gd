@@ -65,6 +65,34 @@ static func get_cached_biome_texture(biome_name: String) -> ImageTexture:
 		_texture_cache[key] = wood_tex
 		return wood_tex
 
+	elif key == "HAUNTED_HALLOW" or key == "HALLOWEEN":
+		var stone_img := Image.create(32, 32, false, Image.FORMAT_RGBA8)
+		for py in range(32):
+			for px in range(32):
+				# Cobblestone tile grid with irregular broken edges
+				var tile_x := px % 8
+				var tile_y := py % 8
+				var is_crack := (tile_x == 0 or tile_y == 0 or (tile_x + tile_y == 7 and (px + py) % 4 == 0))
+				if is_crack:
+					# Eerie glowing pumpkin / necrotic fissure in cracks
+					var is_glow := ((px * 3 + py * 7) % 11 == 0)
+					if is_glow:
+						stone_img.set_pixel(px, py, Color(0.95, 0.45, 0.08)) # Orange soul ember
+					else:
+						stone_img.set_pixel(px, py, Color(0.12, 0.10, 0.14)) # Deep shadow crevice
+				else:
+					# Weathered decrepit stone with moss patches
+					var is_moss := ((px * 5 + py * 9) % 7 == 0)
+					if is_moss:
+						stone_img.set_pixel(px, py, Color(0.24, 0.36, 0.18)) # Graveyard moss
+					else:
+						var noise_val := sin(float(px) * 0.8 + float(py) * 1.2) * 0.04
+						var stone_col := Color(0.32 + noise_val, 0.30 + noise_val, 0.34 + noise_val)
+						stone_img.set_pixel(px, py, stone_col)
+		var stone_tex := ImageTexture.create_from_image(stone_img)
+		_texture_cache[key] = stone_tex
+		return stone_tex
+
 	return null
 
 static func pre_render_and_bake_environment(arena: Node3D, env_root: Node3D, biome_name: String) -> Dictionary:
@@ -83,6 +111,7 @@ static func pre_render_and_bake_environment(arena: Node3D, env_root: Node3D, bio
 	# 1. Warm up and cache all GPU shaders & procedural biome textures in VRAM
 	get_cached_biome_texture("VOLCANIC_BRIMSTONE")
 	get_cached_biome_texture("DEEP_JUNGLE")
+	get_cached_biome_texture("HAUNTED_HALLOW")
 	stats["compiled_gpu_shaders"] = GpuAcceleratorScript.get_cached_shader_count()
 
 	# 2. Apply Hardware 3D LOD & GPU distance culling to Ground and EnvironmentFeatures

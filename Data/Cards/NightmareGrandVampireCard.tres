@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/CardData.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://Scenes/Units/NightmareGrandVampire.tscn" id="2_scene"]
+
+[resource]
+script = ExtResource("1_script")
+card_name = "NightmareGrandVampire"
+card_type = "Commander"
+cost = 6.0
+is_spell = false
+spawn_count = 1
+max_hp = 480.0
+is_melee = true
+description = "Aristocratic Gothic Vampire Lord. Fast dual rapier flurry with 30% Vampiric Lifesteal on hit."
+unit_scene = ExtResource("2_scene")
