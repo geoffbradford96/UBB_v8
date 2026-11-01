@@ -21,5 +21,6 @@ card_name = "ReachTank"
 is_melee = false
 max_hp = 650.0
 cost = 6.5
+description = "Advanced hover battle tank equipped with twin cyan plasma cannons. Heavy frontal shields reinforced by Reach network links."
 unit_scene = ExtResource("2_smh05")
 card_art = SubResource("ImageTexture_pvky5")

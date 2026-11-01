@@ -22,5 +22,6 @@ is_melee = false
 max_hp = 120.0
 cost = 3.5
 spawn_count = 5
+description = "Reach plasma carbine fireteam. Connected to the synchronized hivemind, gaining stacking combat boosts near Reach units."
 unit_scene = ExtResource("2_vi8n8")
 card_art = SubResource("ImageTexture_m7qvu")

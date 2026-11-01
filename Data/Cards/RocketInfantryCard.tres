@@ -9,5 +9,5 @@ card_name = "RocketInfantry"
 is_melee = false
 cost = 4.0
 max_hp = 150.0
-description = "Anti-vehicle rocket soldier."
+description = "Heavy infantry squad wielding shoulder-mounted anti-armor rocket launchers. Deals devastating burst damage to vehicles and structures."
 unit_scene = ExtResource("2_2yhrf")

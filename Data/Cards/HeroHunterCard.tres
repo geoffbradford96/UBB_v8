@@ -8,4 +8,5 @@ script = ExtResource("1_script")
 card_name = "HeroHunter"
 is_melee = false
 cost = 4.0
+description = "Deadly veteran bounty hunter armed with high-caliber disruptor rifle. Prioritizes and deals heavy bonus damage to enemy Commanders."
 unit_scene = ExtResource("2_scene")

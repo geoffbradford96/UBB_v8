@@ -8,4 +8,5 @@ script = ExtResource("1_script")
 card_name = "CheapGrunt"
 cost = 2.0
 spawn_count = 3
+description = "Disciplined Sol infantry fireteam deployed in numbers. Versatile kinetic riflemen providing steady frontline attrition."
 unit_scene = ExtResource("2_scene")

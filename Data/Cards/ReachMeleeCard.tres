@@ -21,5 +21,6 @@ card_name = "ReachMelee"
 max_hp = 140.0
 cost = 2.5
 spawn_count = 5
+description = "5-man squad of Reach shock-troopers. Network Synergy grants +15% speed, damage, and stature per nearby ally from The Reach."
 unit_scene = ExtResource("2_sgm1p")
 card_art = SubResource("ImageTexture_rmqgt")

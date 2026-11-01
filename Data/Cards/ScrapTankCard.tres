@@ -21,5 +21,6 @@ card_name = "ScrapTank"
 is_melee = false
 max_hp = 550.0
 cost = 6.0
+description = "Volatile armored scrap tank fitted with ramming spikes. Charges enemy lines and detonates in an explosive blast upon destruction!"
 unit_scene = ExtResource("2_3kvop")
 card_art = SubResource("ImageTexture_yth77")

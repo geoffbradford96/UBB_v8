@@ -21,5 +21,6 @@ card_name = "ReachPlane"
 is_melee = false
 max_hp = 220.0
 cost = 5.5
+description = "High-speed cybernetic strike interceptor with twin ionic pulse blasters. Glides over impassable terrain to strike bases."
 unit_scene = ExtResource("2_d5ncl")
 card_art = SubResource("ImageTexture_xtrpn")

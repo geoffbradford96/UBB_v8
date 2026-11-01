@@ -21,5 +21,6 @@ card_name = "ReachHunter"
 is_melee = false
 max_hp = 110.0
 cost = 4.5
+description = "Cybernetic assassin tuned to hunt enemy Commanders. Synergizes with nearby Reach network nodes to gain bonus movement speed."
 unit_scene = ExtResource("2_c4p31")
 card_art = SubResource("ImageTexture_4btdq")

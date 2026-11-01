@@ -21,5 +21,6 @@ card_name = "ScrapPlane"
 is_melee = false
 max_hp = 200.0
 cost = 5.0
+description = "Welded patchwork pirate biplane bomber. Strafes ground columns from high altitude with twin rusty rotary cannons."
 unit_scene = ExtResource("2_bv466")
 card_art = SubResource("ImageTexture_fkmth")

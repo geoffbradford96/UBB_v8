@@ -21,5 +21,6 @@ card_name = "ScrapHunter"
 is_melee = false
 max_hp = 100.0
 cost = 4.0
+description = "Jury-rigged pirate bounty hunter with spiked harpoon gun. Specializes in stalking, hooking, and slaying enemy Commanders."
 unit_scene = ExtResource("2_uhf3t")
 card_art = SubResource("ImageTexture_an45j")

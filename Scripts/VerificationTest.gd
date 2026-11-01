@@ -123,6 +123,9 @@ func _ready():
 	var wild_script = load("res://Scripts/WildlifeModelBuilder.gd")
 	if wild_script and wild_script.has_method("clear_caches"):
 		wild_script.clear_caches()
+	var card_ui_script = load("res://Scripts/CardUI.gd")
+	if card_ui_script and card_ui_script.has_method("clear_caches"):
+		card_ui_script.clear_caches()
 
 	if total_failed == 0:
 		print("ALL SYSTEMS GREEN! Exiting cleanly with code 0.")
@@ -158,6 +161,26 @@ func test_cards() -> bool:
 		file_name = dir.get_next()
 	dir.list_dir_end()
 	print("  Verified %d card .tres resources." % card_count)
+
+	# Test CardUI rendering with unit thumbnails and stats
+	var card_ui_ps = ResourceLoader.load("res://Scenes/CardUI.tscn") as PackedScene
+	if card_ui_ps:
+		var test_sample_cards = ["CommanderCard.tres", "WildlifeAfricanLionCard.tres", "NightmareGrandVampireCard.tres", "WinterYuletideKingCard.tres", "ReachTankCard.tres", "ScrapTankCard.tres"]
+		for sample_name in test_sample_cards:
+			var sample_card = ResourceLoader.load("res://Data/Cards/" + sample_name)
+			if sample_card:
+				var ui_inst = card_ui_ps.instantiate()
+				add_child(ui_inst)
+				ui_inst.set_card_data(sample_card)
+				if ui_inst.art_rect and ui_inst.art_rect.texture == null:
+					printerr("CardUI art texture failed to load for: ", sample_name)
+					success = false
+				ui_inst.queue_free()
+		print("  Verified CardUI thumbnail image loading and border stat generation.")
+	else:
+		printerr("Failed to load res://Scenes/CardUI.tscn")
+		success = false
+
 	return success and (card_count > 0)
 
 func test_unit_scenes() -> bool:

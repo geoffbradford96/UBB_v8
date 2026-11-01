@@ -7,4 +7,5 @@
 script = ExtResource("1_script")
 card_name = "Medic"
 cost = 4.0
+description = "Combat Field Medic: Emits sustained restorative nanite beams to patch wounds and heal biological and cybernetic infantry."
 unit_scene = ExtResource("2_scene")

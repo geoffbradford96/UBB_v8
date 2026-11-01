@@ -6,4 +6,5 @@
 [resource]
 script = ExtResource("1_script")
 card_name = "RepairMan"
+description = "Combat Field Engineer: Armed with repair torches and auto-welders to restore damaged friendly vehicles, tanks, and mechs."
 unit_scene = ExtResource("2_scene")
