@@ -943,6 +943,284 @@ func _animate_mesh(delta: float, moving: bool):
 		if arm_l: arm_l.rotation.x = deg_to_rad(30.0) - stride_swing + atk_swing * 1.15
 		m_root.position.z = -atk_swing * 0.35
 
+	# Holiday Faction Procedural Rig Articulation (Nightmare Court & Winter Court)
+	var n_root = v_piv.get_node_or_null("NightmareRigRoot") if v_piv else null
+	if n_root:
+		_animate_nightmare_court(n_root, u_name, phase, atk_swing, moving, delta)
+
+	var w_root = v_piv.get_node_or_null("WinterRigRoot") if v_piv else null
+	if w_root:
+		_animate_winter_court(w_root, u_name, phase, atk_swing, moving, delta)
+
+
+func _animate_nightmare_court(root: Node3D, u_name: String, phase: float, atk_swing: float, moving: bool, delta: float) -> void:
+	var leg_l = root.get_node_or_null("LeftLeg")
+	var leg_r = root.get_node_or_null("RightLeg")
+	var arm_l = root.get_node_or_null("LeftArm")
+	var arm_r = root.get_node_or_null("RightArm")
+	var weap = root.get_node_or_null("Weapon")
+	var weap_l = root.get_node_or_null("WeaponL")
+	var weap_r = root.get_node_or_null("WeaponR")
+	var shield = root.get_node_or_null("Shield")
+	var staff = root.get_node_or_null("Staff")
+	var cape = root.get_node_or_null("Cape")
+	var tail = root.get_node_or_null("Tail")
+	var head = root.get_node_or_null("Head")
+	var wing_l = root.get_node_or_null("WingL")
+	var wing_r = root.get_node_or_null("WingR")
+
+	var stride: float = (0.45 if moving else 0.04) * sin(phase)
+
+	if "SupremeNecromancer" in u_name:
+		root.position.y = sin(phase * 1.5) * 0.18
+		if head: head.rotation.x = sin(phase * 0.8) * 0.06
+		if staff:
+			staff.rotation.x = -deg_to_rad(15.0) - atk_swing * 0.85
+			var flame = staff.get_node_or_null("StaffFlame")
+			if flame:
+				flame.scale = Vector3.ONE * (1.0 + sin(Time.get_ticks_msec() * 0.01) * 0.25 + atk_swing * 0.6)
+		if arm_l: arm_l.rotation.x = deg_to_rad(20.0) + sin(phase * 1.5) * 0.2 + atk_swing * 0.75
+		if arm_r: arm_r.rotation.x = -deg_to_rad(15.0) - atk_swing * 0.85
+		if cape: cape.rotation.x = deg_to_rad(10.0) + sin(phase * 2.0) * 0.1
+	elif "GrandVampire" in u_name:
+		if leg_l: leg_l.rotation.x = stride
+		if leg_r: leg_r.rotation.x = -stride
+		if weap_l: weap_l.rotation.x = deg_to_rad(15.0) - atk_swing * 1.15
+		if weap_r: weap_r.rotation.x = deg_to_rad(15.0) - atk_swing * 1.15
+		if cape: cape.rotation.x = deg_to_rad(15.0) + (sin(phase * 1.5) * 0.22 if moving else sin(phase) * 0.05)
+	elif "DemonKnight" in u_name:
+		var heavy_stride = (0.38 if moving else 0.03) * sin(phase * 0.85)
+		if leg_l: leg_l.rotation.x = heavy_stride
+		if leg_r: leg_r.rotation.x = -heavy_stride
+		if weap: weap.rotation.x = deg_to_rad(20.0) - atk_swing * 1.6
+		if shield: shield.rotation.y = deg_to_rad(15.0) + atk_swing * 0.35
+	elif "SkeletonSwordsman" in u_name:
+		var skel_stride = (0.50 if moving else 0.04) * sin(phase * 1.3)
+		if leg_l: leg_l.rotation.x = skel_stride
+		if leg_r: leg_r.rotation.x = -skel_stride
+		if weap: weap.rotation.x = deg_to_rad(25.0) - atk_swing * 1.45
+		if shield: shield.position.z = -0.35 - atk_swing * 0.15
+	elif "SkeletonArcher" in u_name:
+		var arch_stride = (0.42 if moving else 0.03) * sin(phase * 1.1)
+		if leg_l: leg_l.rotation.x = arch_stride
+		if leg_r: leg_r.rotation.x = -arch_stride
+		if weap:
+			weap.position.z = -0.38 - atk_swing * 0.22
+			weap.rotation.y = deg_to_rad(15.0) - atk_swing * 0.4
+	elif "Zombie" in u_name:
+		# Asymmetric limp & outstretched reaching arms
+		if leg_l: leg_l.rotation.x = sin(phase * 0.75) * (0.45 if moving else 0.04)
+		if leg_r: leg_r.rotation.x = -cos(phase * 0.75) * (0.24 if moving else 0.02)
+		root.rotation.z = sin(phase * 0.75) * 0.10
+		if arm_l: arm_l.rotation.x = deg_to_rad(75.0) + sin(phase * 1.4) * 0.15 + atk_swing * 0.55
+		if arm_r: arm_r.rotation.x = deg_to_rad(80.0) - cos(phase * 1.4) * 0.15 + atk_swing * 0.55
+	elif "BoneGiant" in u_name:
+		var giant_stride = (0.35 if moving else 0.03) * sin(phase * 0.6)
+		if leg_l: leg_l.rotation.x = giant_stride
+		if leg_r: leg_r.rotation.x = -giant_stride
+		if weap: weap.rotation.x = deg_to_rad(30.0) - atk_swing * 1.8
+		root.position.y = -atk_swing * 0.22
+	elif "VampireDuelist" in u_name:
+		if leg_l: leg_l.rotation.x = stride
+		if leg_r: leg_r.rotation.x = -stride
+		if weap:
+			weap.position.z = -0.35 - atk_swing * 0.70
+			weap.rotation.x = -atk_swing * 0.30
+		if cape: cape.rotation.x = deg_to_rad(12.0) + sin(phase * 1.5) * 0.15
+	elif "BatSwarm" in u_name:
+		var flap: float = sin(Time.get_ticks_msec() * 0.035) * 0.65
+		root.position.z = -atk_swing * 0.60
+		root.position.y = sin(phase * 2.0) * 0.25
+		for b_idx in range(3):
+			var bat = root.get_node_or_null("Bat_" + str(b_idx))
+			if bat:
+				var wl = bat.get_node_or_null("WingL")
+				var wr = bat.get_node_or_null("WingR")
+				if wl: wl.rotation.z = flap
+				if wr: wr.rotation.z = -flap
+	elif "Werewolf" in u_name:
+		var wolf_stride = (0.55 if moving else 0.05) * sin(phase * 1.2)
+		if leg_l: leg_l.rotation.x = wolf_stride
+		if leg_r: leg_r.rotation.x = -wolf_stride
+		if tail: tail.rotation.y = sin(phase * 1.5) * 0.35
+		if arm_l: arm_l.rotation.x = deg_to_rad(45.0) + sin(phase) * 0.25 - atk_swing * 1.2
+		if arm_r: arm_r.rotation.x = deg_to_rad(45.0) - sin(phase) * 0.25 - atk_swing * 1.2
+	elif "DireWolf" in u_name:
+		var q_stride = (0.60 if moving else 0.04) * sin(phase * 1.4)
+		var fl = root.get_node_or_null("Leg_FL")
+		var fr = root.get_node_or_null("Leg_FR")
+		var bl = root.get_node_or_null("Leg_BL")
+		var br = root.get_node_or_null("Leg_BR")
+		if fl: fl.rotation.x = q_stride
+		if br: br.rotation.x = q_stride
+		if fr: fr.rotation.x = -q_stride
+		if bl: bl.rotation.x = -q_stride
+		if tail: tail.rotation.y = sin(phase * 2.0) * 0.40
+		if head: head.rotation.x = atk_swing * 0.45
+	elif "FireImp" in u_name:
+		root.position.y = sin(phase * 2.0) * 0.22
+		if wing_l: wing_l.rotation.y = sin(Time.get_ticks_msec() * 0.03) * 0.55
+		if wing_r: wing_r.rotation.y = -sin(Time.get_ticks_msec() * 0.03) * 0.55
+		var fb = root.get_node_or_null("Fireball")
+		if fb:
+			fb.scale = Vector3.ONE * (1.0 + sin(Time.get_ticks_msec() * 0.015) * 0.25 + atk_swing * 0.5)
+			fb.position.z = -0.45 - atk_swing * 0.60
+	elif "HornedDemon" in u_name:
+		if leg_l: leg_l.rotation.x = stride
+		if leg_r: leg_r.rotation.x = -stride
+		if wing_l: wing_l.rotation.y = deg_to_rad(25.0) + sin(phase * 0.8) * 0.25
+		if wing_r: wing_r.rotation.y = -deg_to_rad(25.0) - sin(phase * 0.8) * 0.25
+		if weap: weap.rotation.y = deg_to_rad(-20.0) + atk_swing * 1.50
+	elif "Hellhound" in u_name:
+		var hound_stride = (0.58 if moving else 0.04) * sin(phase * 1.4)
+		var fl = root.get_node_or_null("Leg_FL")
+		var fr = root.get_node_or_null("Leg_FR")
+		var bl = root.get_node_or_null("Leg_BL")
+		var br = root.get_node_or_null("Leg_BR")
+		if fl: fl.rotation.x = hound_stride
+		if br: br.rotation.x = hound_stride
+		if fr: fr.rotation.x = -hound_stride
+		if bl: bl.rotation.x = -hound_stride
+		if tail: tail.rotation.y = sin(phase * 2.0) * 0.35
+		var crest = root.get_node_or_null("Crest")
+		if crest: crest.scale = Vector3.ONE * (1.0 + sin(Time.get_ticks_msec() * 0.012) * 0.20)
+		if head: head.rotation.x = atk_swing * 0.50
+	elif "JackOLantern" in u_name:
+		root.position.y = abs(sin(phase * 1.6)) * (0.28 if moving else 0.05)
+		root.rotation.z = sin(phase * 1.6) * 0.15
+		if weap: weap.rotation.x = deg_to_rad(15.0) - atk_swing * 1.30
+		var mouth = root.get_node_or_null("Mouth")
+		if mouth: mouth.scale.y = 1.0 + atk_swing * 1.20
+
+
+func _animate_winter_court(root: Node3D, u_name: String, phase: float, atk_swing: float, moving: bool, delta: float) -> void:
+	var leg_l = root.get_node_or_null("LeftLeg")
+	var leg_r = root.get_node_or_null("RightLeg")
+	var weap = root.get_node_or_null("Weapon")
+	var shield = root.get_node_or_null("Shield")
+	var head = root.get_node_or_null("Head")
+	var tail = root.get_node_or_null("Tail")
+	var wing_l = root.get_node_or_null("WingL")
+	var wing_r = root.get_node_or_null("WingR")
+
+	var stride: float = (0.45 if moving else 0.04) * sin(phase)
+
+	if "YuletideKing" in u_name:
+		var king_stride = (0.38 if moving else 0.03) * sin(phase * 0.85)
+		if leg_l: leg_l.rotation.x = king_stride
+		if leg_r: leg_r.rotation.x = -king_stride
+		var beard = root.get_node_or_null("Beard")
+		if beard: beard.rotation.x = sin(phase * 1.2) * 0.12
+		if weap: weap.rotation.x = -deg_to_rad(15.0) - atk_swing * 0.90
+	elif "KrampusLord" in u_name:
+		if leg_l: leg_l.rotation.x = stride
+		if leg_r: leg_r.rotation.x = -stride
+		if weap: weap.rotation.x = deg_to_rad(20.0) - atk_swing * 1.50
+		var hook = root.get_node_or_null("WeaponHook")
+		if hook: hook.position.z = -0.45 - atk_swing * 0.50
+		var chain = root.get_node_or_null("Chain")
+		if chain: chain.rotation.z = sin(phase * 2.0) * 0.35
+	elif "FrostQueen" in u_name:
+		root.position.y = sin(phase * 1.2) * 0.15
+		if weap: weap.position.z = -0.40 - atk_swing * 0.65
+		var orb = root.get_node_or_null("IceOrb")
+		if orb:
+			orb.rotation.y += delta * 4.0
+			orb.scale = Vector3.ONE * (1.0 + sin(Time.get_ticks_msec() * 0.008) * 0.18 + atk_swing * 0.40)
+	elif "ToySoldier" in u_name:
+		var clock_stride = (0.48 if moving else 0.0) * sin(phase * 1.5)
+		if leg_l: leg_l.rotation.x = clock_stride
+		if leg_r: leg_r.rotation.x = -clock_stride
+		var key = root.get_node_or_null("WindupKey")
+		if key: key.rotation.y += delta * (8.0 if moving else 2.0)
+		if weap: weap.position.z = -0.45 - atk_swing * 0.50
+	elif "Nutcracker" in u_name:
+		var nut_stride = (0.45 if moving else 0.0) * sin(phase * 1.4)
+		if leg_l: leg_l.rotation.x = nut_stride
+		if leg_r: leg_r.rotation.x = -nut_stride
+		var jaw = root.get_node_or_null("Jaw")
+		if jaw: jaw.position.y = -0.15 - abs(sin(phase * 2.0 + atk_swing * 6.0)) * 0.14
+		if weap: weap.rotation.x = deg_to_rad(20.0) - atk_swing * 1.50
+	elif "ToyGolem" in u_name:
+		var golem_stride = (0.35 if moving else 0.02) * sin(phase * 0.75)
+		if leg_l: leg_l.rotation.x = golem_stride
+		if leg_r: leg_r.rotation.x = -golem_stride
+		var gear = root.get_node_or_null("WindupKey")
+		if gear: gear.rotation.z += delta * 3.5
+		var fist_l = root.get_node_or_null("LeftFist")
+		var fist_r = root.get_node_or_null("RightFist")
+		if fist_l: fist_l.position.z = -0.45 - (atk_swing * 0.80 if atk_swing > 0.0 else sin(phase * 0.75) * 0.20)
+		if fist_r: fist_r.position.z = -0.45 - (atk_swing * 0.80 if atk_swing > 0.0 else -sin(phase * 0.75) * 0.20)
+	elif "GingerbreadBrawler" in u_name:
+		var brawler_stride = (0.48 if moving else 0.04) * sin(phase * 1.3)
+		if leg_l: leg_l.rotation.x = brawler_stride
+		if leg_r: leg_r.rotation.x = -brawler_stride
+		if weap: weap.rotation.x = deg_to_rad(25.0) - atk_swing * 1.40
+		if shield: shield.rotation.y = deg_to_rad(15.0) + atk_swing * 0.40
+	elif "WarReindeer" in u_name:
+		var deer_stride = (0.55 if moving else 0.04) * sin(phase * 1.4)
+		var fl = root.get_node_or_null("Leg_FL")
+		var fr = root.get_node_or_null("Leg_FR")
+		var bl = root.get_node_or_null("Leg_BL")
+		var br = root.get_node_or_null("Leg_BR")
+		if fl: fl.rotation.x = deer_stride
+		if br: br.rotation.x = deer_stride
+		if fr: fr.rotation.x = -deer_stride
+		if bl: bl.rotation.x = -deer_stride
+		if head: head.rotation.x = deg_to_rad(15.0) + atk_swing * 0.50
+	elif "AbominableYeti" in u_name:
+		var yeti_stride = (0.45 if moving else 0.03) * sin(phase * 0.9)
+		if leg_l: leg_l.rotation.x = yeti_stride
+		if leg_r: leg_r.rotation.x = -yeti_stride
+		var arm_l = root.get_node_or_null("LeftArm")
+		var arm_r = root.get_node_or_null("RightArm")
+		if arm_l: arm_l.rotation.x = deg_to_rad(40.0) + sin(phase * 0.9) * 0.30 - atk_swing * 1.30
+		if arm_r: arm_r.rotation.x = deg_to_rad(40.0) - sin(phase * 0.9) * 0.30 - atk_swing * 1.30
+	elif "FrostWolf" in u_name:
+		var fwolf_stride = (0.60 if moving else 0.04) * sin(phase * 1.4)
+		var fl = root.get_node_or_null("Leg_FL")
+		var fr = root.get_node_or_null("Leg_FR")
+		var bl = root.get_node_or_null("Leg_BL")
+		var br = root.get_node_or_null("Leg_BR")
+		if fl: fl.rotation.x = fwolf_stride
+		if br: br.rotation.x = fwolf_stride
+		if fr: fr.rotation.x = -fwolf_stride
+		if bl: bl.rotation.x = -fwolf_stride
+		if tail: tail.rotation.y = sin(phase * 2.0) * 0.35
+		if head: head.rotation.x = atk_swing * 0.45
+	elif "SnowSprite" in u_name:
+		root.position.y = sin(phase * 2.2) * 0.25
+		root.position.z = -atk_swing * 0.50
+		if wing_l: wing_l.rotation.y = sin(Time.get_ticks_msec() * 0.04) * 0.55
+		if wing_r: wing_r.rotation.y = -sin(Time.get_ticks_msec() * 0.04) * 0.55
+	elif "FrostElf" in u_name:
+		var elf_stride = (0.45 if moving else 0.03) * sin(phase * 1.2)
+		if leg_l: leg_l.rotation.x = elf_stride
+		if leg_r: leg_r.rotation.x = -elf_stride
+		if weap:
+			weap.position.z = -0.35 - atk_swing * 0.20
+			weap.rotation.y = deg_to_rad(15.0) - atk_swing * 0.35
+	elif "BlizzardWitch" in u_name:
+		root.position.y = sin(phase * 1.3) * 0.16
+		if weap: weap.rotation.x = -deg_to_rad(20.0) - atk_swing * 0.85
+		var orb = root.get_node_or_null("IceOrb")
+		if orb:
+			orb.rotation.y += delta * 5.0
+			orb.scale = Vector3.ONE * (1.0 + sin(Time.get_ticks_msec() * 0.01) * 0.20 + atk_swing * 0.50)
+	elif "SnowballCatapult" in u_name:
+		root.rotation.z = (sin(phase * 1.8) * 0.04) if moving else 0.0
+		var arm = root.get_node_or_null("CatapultArm")
+		if arm: arm.rotation.x = -deg_to_rad(35.0) + atk_swing * 1.60
+		var ball = root.get_node_or_null("Snowball")
+		if ball: ball.visible = (atk_swing < 0.70)
+	elif "YuleLog" in u_name:
+		var log = root.get_node_or_null("Log")
+		if log and moving: log.rotation.x += delta * 8.0
+		for f_idx in range(3):
+			var flame = root.get_node_or_null("Flame_" + str(f_idx))
+			if flame:
+				flame.scale.y = 1.0 + sin(Time.get_ticks_msec() * 0.015 + f_idx * 2.0) * 0.35 + atk_swing * 0.50
+
 
 func can_wander_off_path() -> bool:
 	if is_in_group("SideHarmony"):

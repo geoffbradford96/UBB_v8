@@ -359,6 +359,9 @@ func _physics_process(delta):
 			
 	if anim_mesh:
 		anim_mesh.position.z = lerp(anim_mesh.position.z, 0.0, 10.0 * delta)
+		var tur = anim_mesh.get_node_or_null("Turret")
+		if tur:
+			tur.position.z = lerp(tur.position.z, 0.0, 12.0 * delta)
 		var hc = get_node_or_null("HealthComponent")
 		if hc and hc.has_method("is_vehicle_damaged") and hc.is_vehicle_damaged():
 			anim_mesh.position.x = (randf() - 0.5) * 0.035
@@ -419,6 +422,9 @@ func shoot():
 		if not anim_mesh: anim_mesh = get_node_or_null("Body")
 		if anim_mesh:
 			anim_mesh.position.z += 0.35
+			var tur = anim_mesh.get_node_or_null("Turret")
+			if tur:
+				tur.position.z += 0.22
 
 func find_new_target():
 	current_target = null

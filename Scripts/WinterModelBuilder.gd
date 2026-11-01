@@ -97,6 +97,7 @@ static func _build_yuletide_king(root: Node3D):
 
 	# Robe / Torso
 	var robe = MeshInstance3D.new()
+	robe.name = "Torso"
 	var r_mesh = CylinderMesh.new()
 	r_mesh.top_radius = 0.55
 	r_mesh.bottom_radius = 0.85
@@ -137,6 +138,7 @@ static func _build_yuletide_king(root: Node3D):
 
 	# Head & Beard
 	var head = MeshInstance3D.new()
+	head.name = "Head"
 	var h_mesh = SphereMesh.new()
 	h_mesh.radius = 0.32
 	h_mesh.height = 0.60
@@ -147,6 +149,7 @@ static func _build_yuletide_king(root: Node3D):
 
 	# Majestic White Beard
 	var beard = MeshInstance3D.new()
+	beard.name = "Beard"
 	var bd_mesh = CylinderMesh.new()
 	bd_mesh.top_radius = 0.32
 	bd_mesh.bottom_radius = 0.08
@@ -188,6 +191,7 @@ static func _build_yuletide_king(root: Node3D):
 
 	# Candy Cane War Scepter
 	var scepter = MeshInstance3D.new()
+	scepter.name = "Weapon"
 	var sc_mesh = CylinderMesh.new()
 	sc_mesh.top_radius = 0.06
 	sc_mesh.bottom_radius = 0.06
@@ -199,6 +203,7 @@ static func _build_yuletide_king(root: Node3D):
 	root.add_child(scepter)
 
 	var hook = MeshInstance3D.new()
+	hook.name = "WeaponHook"
 	var hk_mesh = TorusMesh.new()
 	hk_mesh.inner_radius = 0.12
 	hk_mesh.outer_radius = 0.28
@@ -220,6 +225,7 @@ static func _build_krampus_lord(root: Node3D):
 
 	# Muscular Beast Torso
 	var torso = MeshInstance3D.new()
+	torso.name = "Torso"
 	var t_mesh = BoxMesh.new()
 	t_mesh.size = Vector3(0.9, 1.2, 0.6)
 	torso.mesh = t_mesh
@@ -228,29 +234,43 @@ static func _build_krampus_lord(root: Node3D):
 	root.add_child(torso)
 
 	# Legs & Hooves
-	for s in [-1.0, 1.0]:
-		var leg = MeshInstance3D.new()
-		var l_mesh = CylinderMesh.new()
-		l_mesh.top_radius = 0.18
-		l_mesh.bottom_radius = 0.14
-		l_mesh.height = 1.0
-		leg.mesh = l_mesh
-		leg.material_override = dark_mat
-		leg.position = Vector3(s * 0.3, 0.5, 0)
-		root.add_child(leg)
+	var leg_l = MeshInstance3D.new()
+	leg_l.name = "LeftLeg"
+	var l_mesh = CylinderMesh.new()
+	l_mesh.top_radius = 0.18
+	l_mesh.bottom_radius = 0.14
+	l_mesh.height = 1.0
+	leg_l.mesh = l_mesh
+	leg_l.material_override = dark_mat
+	leg_l.position = Vector3(-0.3, 0.5, 0)
+	root.add_child(leg_l)
 
-		var hoof = MeshInstance3D.new()
-		var hf_mesh = CylinderMesh.new()
-		hf_mesh.top_radius = 0.15
-		hf_mesh.bottom_radius = 0.20
-		hf_mesh.height = 0.25
-		hoof.mesh = hf_mesh
-		hoof.material_override = horn_mat
-		hoof.position = Vector3(s * 0.3, 0.12, 0.05)
-		root.add_child(hoof)
+	var hoof_l = MeshInstance3D.new()
+	var hf_mesh = CylinderMesh.new()
+	hf_mesh.top_radius = 0.15
+	hf_mesh.bottom_radius = 0.20
+	hf_mesh.height = 0.25
+	hoof_l.mesh = hf_mesh
+	hoof_l.material_override = horn_mat
+	hoof_l.position = Vector3(-0.3, 0.12, 0.05)
+	root.add_child(hoof_l)
+
+	var leg_r = MeshInstance3D.new()
+	leg_r.name = "RightLeg"
+	leg_r.mesh = l_mesh
+	leg_r.material_override = dark_mat
+	leg_r.position = Vector3(0.3, 0.5, 0)
+	root.add_child(leg_r)
+
+	var hoof_r = MeshInstance3D.new()
+	hoof_r.mesh = hf_mesh
+	hoof_r.material_override = horn_mat
+	hoof_r.position = Vector3(0.3, 0.12, 0.05)
+	root.add_child(hoof_r)
 
 	# Head with Goat Snout
 	var head = MeshInstance3D.new()
+	head.name = "Head"
 	var hd_mesh = BoxMesh.new()
 	hd_mesh.size = Vector3(0.5, 0.55, 0.65)
 	head.mesh = hd_mesh
@@ -283,6 +303,7 @@ static func _build_krampus_lord(root: Node3D):
 
 	# Clanking Iron Chains coiled around chest
 	var chain = MeshInstance3D.new()
+	chain.name = "Chain"
 	var ch_mesh = TorusMesh.new()
 	ch_mesh.inner_radius = 0.42
 	ch_mesh.outer_radius = 0.52
@@ -294,6 +315,7 @@ static func _build_krampus_lord(root: Node3D):
 
 	# Bundle of Birch Switches (Weapon)
 	var birch_bundle = MeshInstance3D.new()
+	birch_bundle.name = "Weapon"
 	var bb_mesh = CylinderMesh.new()
 	bb_mesh.top_radius = 0.15
 	bb_mesh.bottom_radius = 0.08
@@ -324,6 +346,7 @@ static func _build_frost_queen(root: Node3D):
 
 	# Flowing Ice Gown
 	var gown = MeshInstance3D.new()
+	gown.name = "Torso"
 	var g_mesh = CylinderMesh.new()
 	g_mesh.top_radius = 0.35
 	g_mesh.bottom_radius = 0.85
@@ -356,6 +379,7 @@ static func _build_frost_queen(root: Node3D):
 
 	# Pale Head
 	var head = MeshInstance3D.new()
+	head.name = "Head"
 	var hd_mesh = SphereMesh.new()
 	hd_mesh.radius = 0.25
 	hd_mesh.height = 0.50
@@ -379,6 +403,7 @@ static func _build_frost_queen(root: Node3D):
 
 	# Glacial Ice Lance / Scepter
 	var scepter = MeshInstance3D.new()
+	scepter.name = "Weapon"
 	var sc_mesh = CylinderMesh.new()
 	sc_mesh.top_radius = 0.05
 	sc_mesh.bottom_radius = 0.05
@@ -390,6 +415,7 @@ static func _build_frost_queen(root: Node3D):
 
 	# Floating Diamond Crystal at Scepter Tip
 	var dia = MeshInstance3D.new()
+	dia.name = "IceOrb"
 	var d_mesh = SphereMesh.new()
 	d_mesh.radius = 0.22
 	d_mesh.height = 0.44
@@ -411,6 +437,7 @@ static func _build_toy_soldier(root: Node3D):
 
 	# Tin Torso
 	var torso = MeshInstance3D.new()
+	torso.name = "Torso"
 	var t_mesh = CylinderMesh.new()
 	t_mesh.top_radius = 0.30
 	t_mesh.bottom_radius = 0.32
@@ -430,19 +457,27 @@ static func _build_toy_soldier(root: Node3D):
 	root.add_child(strap)
 
 	# Legs
-	for s in [-1.0, 1.0]:
-		var leg = MeshInstance3D.new()
-		var l_mesh = CylinderMesh.new()
-		l_mesh.top_radius = 0.12
-		l_mesh.bottom_radius = 0.10
-		l_mesh.height = 0.75
-		leg.mesh = l_mesh
-		leg.material_override = white_mat
-		leg.position = Vector3(s * 0.18, 0.45, 0)
-		root.add_child(leg)
+	var leg_l = MeshInstance3D.new()
+	leg_l.name = "LeftLeg"
+	var l_mesh = CylinderMesh.new()
+	l_mesh.top_radius = 0.12
+	l_mesh.bottom_radius = 0.10
+	l_mesh.height = 0.75
+	leg_l.mesh = l_mesh
+	leg_l.material_override = white_mat
+	leg_l.position = Vector3(-0.18, 0.45, 0)
+	root.add_child(leg_l)
+
+	var leg_r = MeshInstance3D.new()
+	leg_r.name = "RightLeg"
+	leg_r.mesh = l_mesh
+	leg_r.material_override = white_mat
+	leg_r.position = Vector3(0.18, 0.45, 0)
+	root.add_child(leg_r)
 
 	# Head
 	var head = MeshInstance3D.new()
+	head.name = "Head"
 	var h_mesh = SphereMesh.new()
 	h_mesh.radius = 0.22
 	head.mesh = h_mesh
@@ -474,6 +509,7 @@ static func _build_toy_soldier(root: Node3D):
 	root.add_child(key_stem)
 
 	var key_wing = MeshInstance3D.new()
+	key_wing.name = "WindupKey"
 	var kw_mesh = BoxMesh.new()
 	kw_mesh.size = Vector3(0.45, 0.25, 0.04)
 	key_wing.mesh = kw_mesh
@@ -483,6 +519,7 @@ static func _build_toy_soldier(root: Node3D):
 
 	# Miniature Musket with Bayonet
 	var gun = MeshInstance3D.new()
+	gun.name = "Weapon"
 	var g_mesh = CylinderMesh.new()
 	g_mesh.top_radius = 0.03
 	g_mesh.bottom_radius = 0.04
@@ -504,12 +541,32 @@ static func _build_nutcracker(root: Node3D):
 
 	# Heavy Carved Torso
 	var torso = MeshInstance3D.new()
+	torso.name = "Torso"
 	var t_mesh = BoxMesh.new()
 	t_mesh.size = Vector3(0.75, 1.0, 0.5)
 	torso.mesh = t_mesh
 	torso.material_override = blue_mat
 	torso.position.y = 1.15
 	root.add_child(torso)
+
+	# Stiff Wooden Legs
+	var leg_l = MeshInstance3D.new()
+	leg_l.name = "LeftLeg"
+	var l_cyl = CylinderMesh.new()
+	l_cyl.top_radius = 0.12
+	l_cyl.bottom_radius = 0.10
+	l_cyl.height = 0.75
+	leg_l.mesh = l_cyl
+	leg_l.material_override = wood_mat
+	leg_l.position = Vector3(-0.20, 0.45, 0)
+	root.add_child(leg_l)
+
+	var leg_r = MeshInstance3D.new()
+	leg_r.name = "RightLeg"
+	leg_r.mesh = l_cyl
+	leg_r.material_override = wood_mat
+	leg_r.position = Vector3(0.20, 0.45, 0)
+	root.add_child(leg_r)
 
 	# Gold Shoulder Epaulets
 	for s in [-1.0, 1.0]:
@@ -525,6 +582,7 @@ static func _build_nutcracker(root: Node3D):
 
 	# Head with Distinct Chomping Jaws
 	var head = MeshInstance3D.new()
+	head.name = "Head"
 	var hd_mesh = BoxMesh.new()
 	hd_mesh.size = Vector3(0.55, 0.55, 0.5)
 	head.mesh = hd_mesh
@@ -532,8 +590,9 @@ static func _build_nutcracker(root: Node3D):
 	head.position.y = 1.85
 	root.add_child(head)
 
-	# Square Wooden Chomping Teeth
+	# Square Wooden Chomping Teeth / Jaw
 	var teeth = MeshInstance3D.new()
+	teeth.name = "Jaw"
 	var tt_mesh = BoxMesh.new()
 	tt_mesh.size = Vector3(0.30, 0.16, 0.12)
 	teeth.mesh = tt_mesh
@@ -554,6 +613,7 @@ static func _build_nutcracker(root: Node3D):
 
 	# Ceremonial Golden Halberd
 	var halberd = MeshInstance3D.new()
+	halberd.name = "Weapon"
 	var hb_mesh = CylinderMesh.new()
 	hb_mesh.top_radius = 0.04
 	hb_mesh.bottom_radius = 0.04
@@ -564,6 +624,7 @@ static func _build_nutcracker(root: Node3D):
 	root.add_child(halberd)
 
 	var blade = MeshInstance3D.new()
+	blade.name = "WeaponBlade"
 	var bl_mesh = BoxMesh.new()
 	bl_mesh.size = Vector3(0.55, 0.6, 0.06)
 	blade.mesh = bl_mesh
@@ -581,6 +642,7 @@ static func _build_toy_golem(root: Node3D):
 
 	# Chunky Barrel Torso
 	var torso = MeshInstance3D.new()
+	torso.name = "Torso"
 	var t_mesh = CylinderMesh.new()
 	t_mesh.top_radius = 0.7
 	t_mesh.bottom_radius = 0.85
@@ -589,6 +651,25 @@ static func _build_toy_golem(root: Node3D):
 	torso.material_override = wood_mat
 	torso.position.y = 1.3
 	root.add_child(torso)
+
+	# Sturdy Piston Legs
+	var leg_l = MeshInstance3D.new()
+	leg_l.name = "LeftLeg"
+	var l_mesh = CylinderMesh.new()
+	l_mesh.top_radius = 0.22
+	l_mesh.bottom_radius = 0.26
+	l_mesh.height = 0.75
+	leg_l.mesh = l_mesh
+	leg_l.material_override = wood_mat
+	leg_l.position = Vector3(-0.45, 0.45, 0)
+	root.add_child(leg_l)
+
+	var leg_r = MeshInstance3D.new()
+	leg_r.name = "RightLeg"
+	leg_r.mesh = l_mesh
+	leg_r.material_override = wood_mat
+	leg_r.position = Vector3(0.45, 0.45, 0)
+	root.add_child(leg_r)
 
 	# Iron/Brass Furnace Grate with Glowing Fire
 	var furnace = MeshInstance3D.new()
@@ -601,6 +682,7 @@ static func _build_toy_golem(root: Node3D):
 
 	# Rotating Cog Gear on Chest/Shoulder
 	var gear = MeshInstance3D.new()
+	gear.name = "WindupKey"
 	var gr_mesh = CylinderMesh.new()
 	gr_mesh.top_radius = 0.32
 	gr_mesh.bottom_radius = 0.32
@@ -612,14 +694,21 @@ static func _build_toy_golem(root: Node3D):
 	root.add_child(gear)
 
 	# Heavy Wood and Riveted Brass Punching Fists
-	for s in [-1.0, 1.0]:
-		var fist = MeshInstance3D.new()
-		var ft_mesh = BoxMesh.new()
-		ft_mesh.size = Vector3(0.55, 0.55, 0.75)
-		fist.mesh = ft_mesh
-		fist.material_override = brass_mat
-		fist.position = Vector3(s * 1.05, 0.9, 0.4)
-		root.add_child(fist)
+	var fist_l = MeshInstance3D.new()
+	fist_l.name = "LeftArm"
+	var ft_mesh = BoxMesh.new()
+	ft_mesh.size = Vector3(0.55, 0.55, 0.75)
+	fist_l.mesh = ft_mesh
+	fist_l.material_override = brass_mat
+	fist_l.position = Vector3(-1.05, 0.9, 0.4)
+	root.add_child(fist_l)
+
+	var fist_r = MeshInstance3D.new()
+	fist_r.name = "RightArm"
+	fist_r.mesh = ft_mesh
+	fist_r.material_override = brass_mat
+	fist_r.position = Vector3(1.05, 0.9, 0.4)
+	root.add_child(fist_r)
 
 # -----------------------------------------------------------------------------
 # 7. GINGERBREAD BRAWLER
@@ -632,6 +721,7 @@ static func _build_gingerbread_brawler(root: Node3D):
 
 	# Cookie Body
 	var body = MeshInstance3D.new()
+	body.name = "Torso"
 	var b_mesh = BoxMesh.new()
 	b_mesh.size = Vector3(0.65, 0.85, 0.22)
 	body.mesh = b_mesh
@@ -639,8 +729,28 @@ static func _build_gingerbread_brawler(root: Node3D):
 	body.position.y = 0.95
 	root.add_child(body)
 
+	# Sturdy Cookie Legs
+	var leg_l = MeshInstance3D.new()
+	leg_l.name = "LeftLeg"
+	var l_cyl = CylinderMesh.new()
+	l_cyl.top_radius = 0.08
+	l_cyl.bottom_radius = 0.07
+	l_cyl.height = 0.55
+	leg_l.mesh = l_cyl
+	leg_l.material_override = ginger_mat
+	leg_l.position = Vector3(-0.18, 0.32, 0)
+	root.add_child(leg_l)
+
+	var leg_r = MeshInstance3D.new()
+	leg_r.name = "RightLeg"
+	leg_r.mesh = l_cyl
+	leg_r.material_override = ginger_mat
+	leg_r.position = Vector3(0.18, 0.32, 0)
+	root.add_child(leg_r)
+
 	# Round Cookie Head
 	var head = MeshInstance3D.new()
+	head.name = "Head"
 	var hd_mesh = CylinderMesh.new()
 	hd_mesh.top_radius = 0.28
 	hd_mesh.bottom_radius = 0.28
@@ -675,6 +785,7 @@ static func _build_gingerbread_brawler(root: Node3D):
 
 	# Peppermint Swirl Buckler Shield
 	var shield = MeshInstance3D.new()
+	shield.name = "Shield"
 	var sh_mesh = CylinderMesh.new()
 	sh_mesh.top_radius = 0.35
 	sh_mesh.bottom_radius = 0.35
@@ -684,6 +795,19 @@ static func _build_gingerbread_brawler(root: Node3D):
 	shield.position = Vector3(-0.45, 0.95, 0.3)
 	shield.rotation_degrees.x = 90
 	root.add_child(shield)
+
+	# Candy Cane Cudgel (Weapon)
+	var cudgel = MeshInstance3D.new()
+	cudgel.name = "Weapon"
+	var cd_mesh = CylinderMesh.new()
+	cd_mesh.top_radius = 0.05
+	cd_mesh.bottom_radius = 0.06
+	cd_mesh.height = 0.85
+	cudgel.mesh = cd_mesh
+	cudgel.material_override = pepperm_mat
+	cudgel.position = Vector3(0.42, 0.95, 0.3)
+	cudgel.rotation_degrees.x = 45
+	root.add_child(cudgel)
 
 # -----------------------------------------------------------------------------
 # 8. WAR REINDEER (CAVALRY)
@@ -697,6 +821,7 @@ static func _build_war_reindeer(root: Node3D):
 
 	# Quadruped Body Barrel
 	var body = MeshInstance3D.new()
+	body.name = "Torso"
 	var b_mesh = BoxMesh.new()
 	b_mesh.size = Vector3(0.85, 0.85, 1.8)
 	body.mesh = b_mesh
@@ -718,6 +843,8 @@ static func _build_war_reindeer(root: Node3D):
 	for x_s in [-1.0, 1.0]:
 		for z_s in [-1.0, 1.0]:
 			var leg = MeshInstance3D.new()
+			var leg_tag = ("Leg_FL" if (x_s < 0 and z_s > 0) else ("Leg_FR" if (x_s > 0 and z_s > 0) else ("Leg_BL" if (x_s < 0 and z_s < 0) else "Leg_BR")))
+			leg.name = leg_tag
 			var l_mesh = CylinderMesh.new()
 			l_mesh.top_radius = 0.12
 			l_mesh.bottom_radius = 0.08
@@ -729,6 +856,7 @@ static func _build_war_reindeer(root: Node3D):
 
 	# Reindeer Head & Snout
 	var head = MeshInstance3D.new()
+	head.name = "Head"
 	var hd_mesh = BoxMesh.new()
 	hd_mesh.size = Vector3(0.42, 0.45, 0.75)
 	head.mesh = hd_mesh
@@ -780,12 +908,32 @@ static func _build_abominable_yeti(root: Node3D):
 
 	# Massive Hulking Torso
 	var torso = MeshInstance3D.new()
+	torso.name = "Torso"
 	var t_mesh = BoxMesh.new()
 	t_mesh.size = Vector3(1.4, 1.6, 1.1)
 	torso.mesh = t_mesh
 	torso.material_override = fur_mat
 	torso.position.y = 1.6
 	root.add_child(torso)
+
+	# Sturdy Yeti Legs
+	var leg_l = MeshInstance3D.new()
+	leg_l.name = "LeftLeg"
+	var l_cyl = CylinderMesh.new()
+	l_cyl.top_radius = 0.35
+	l_cyl.bottom_radius = 0.32
+	l_cyl.height = 0.95
+	leg_l.mesh = l_cyl
+	leg_l.material_override = fur_mat
+	leg_l.position = Vector3(-0.48, 0.55, 0)
+	root.add_child(leg_l)
+
+	var leg_r = MeshInstance3D.new()
+	leg_r.name = "RightLeg"
+	leg_r.mesh = l_cyl
+	leg_r.material_override = fur_mat
+	leg_r.position = Vector3(0.48, 0.55, 0)
+	root.add_child(leg_r)
 
 	# Blue Frost Chest Plate
 	var chest = MeshInstance3D.new()
@@ -797,27 +945,43 @@ static func _build_abominable_yeti(root: Node3D):
 	root.add_child(chest)
 
 	# Massive Ape Arms & Giant Fists
-	for s in [-1.0, 1.0]:
-		var arm = MeshInstance3D.new()
-		var a_mesh = CylinderMesh.new()
-		a_mesh.top_radius = 0.32
-		a_mesh.bottom_radius = 0.28
-		a_mesh.height = 1.4
-		arm.mesh = a_mesh
-		arm.material_override = fur_mat
-		arm.position = Vector3(s * 1.05, 1.3, 0.2)
-		root.add_child(arm)
+	var arm_l = MeshInstance3D.new()
+	arm_l.name = "LeftArm"
+	var a_mesh = CylinderMesh.new()
+	a_mesh.top_radius = 0.32
+	a_mesh.bottom_radius = 0.28
+	a_mesh.height = 1.4
+	arm_l.mesh = a_mesh
+	arm_l.material_override = fur_mat
+	arm_l.position = Vector3(-1.05, 1.3, 0.2)
+	root.add_child(arm_l)
 
-		var fist = MeshInstance3D.new()
-		var f_mesh = BoxMesh.new()
-		f_mesh.size = Vector3(0.48, 0.52, 0.58)
-		fist.mesh = f_mesh
-		fist.material_override = blue_skin
-		fist.position = Vector3(s * 1.05, 0.55, 0.35)
-		root.add_child(fist)
+	var fist_l = MeshInstance3D.new()
+	fist_l.name = "LeftFist"
+	var f_mesh = BoxMesh.new()
+	f_mesh.size = Vector3(0.48, 0.52, 0.58)
+	fist_l.mesh = f_mesh
+	fist_l.material_override = blue_skin
+	fist_l.position = Vector3(-1.05, 0.55, 0.35)
+	root.add_child(fist_l)
+
+	var arm_r = MeshInstance3D.new()
+	arm_r.name = "RightArm"
+	arm_r.mesh = a_mesh
+	arm_r.material_override = fur_mat
+	arm_r.position = Vector3(1.05, 1.3, 0.2)
+	root.add_child(arm_r)
+
+	var fist_r = MeshInstance3D.new()
+	fist_r.name = "RightFist"
+	fist_r.mesh = f_mesh
+	fist_r.material_override = blue_skin
+	fist_r.position = Vector3(1.05, 0.55, 0.35)
+	root.add_child(fist_r)
 
 	# Head with Blue Snout and Icy Horns
 	var head = MeshInstance3D.new()
+	head.name = "Head"
 	var hd_mesh = BoxMesh.new()
 	hd_mesh.size = Vector3(0.7, 0.65, 0.7)
 	head.mesh = hd_mesh
@@ -846,6 +1010,7 @@ static func _build_frost_wolf(root: Node3D):
 
 	# Sleek Wolf Torso
 	var body = MeshInstance3D.new()
+	body.name = "Torso"
 	var b_mesh = BoxMesh.new()
 	b_mesh.size = Vector3(0.55, 0.55, 1.2)
 	body.mesh = b_mesh
@@ -857,6 +1022,8 @@ static func _build_frost_wolf(root: Node3D):
 	for x_s in [-1.0, 1.0]:
 		for z_s in [-1.0, 1.0]:
 			var leg = MeshInstance3D.new()
+			var leg_tag = ("Leg_FL" if (x_s < 0 and z_s > 0) else ("Leg_FR" if (x_s > 0 and z_s > 0) else ("Leg_BL" if (x_s < 0 and z_s < 0) else "Leg_BR")))
+			leg.name = leg_tag
 			var l_mesh = CylinderMesh.new()
 			l_mesh.top_radius = 0.09
 			l_mesh.bottom_radius = 0.07
@@ -868,6 +1035,7 @@ static func _build_frost_wolf(root: Node3D):
 
 	# Head & Muzzle
 	var head = MeshInstance3D.new()
+	head.name = "Head"
 	var hd_mesh = BoxMesh.new()
 	hd_mesh.size = Vector3(0.32, 0.32, 0.5)
 	head.mesh = hd_mesh
@@ -886,6 +1054,7 @@ static func _build_frost_wolf(root: Node3D):
 
 	# Bushy Frost Tail
 	var tail = MeshInstance3D.new()
+	tail.name = "Tail"
 	var tl_mesh = CylinderMesh.new()
 	tl_mesh.top_radius = 0.04
 	tl_mesh.bottom_radius = 0.12
@@ -905,6 +1074,7 @@ static func _build_snow_sprite(root: Node3D):
 
 	# Tiny Luminous Body
 	var body = MeshInstance3D.new()
+	body.name = "Body"
 	var b_mesh = SphereMesh.new()
 	b_mesh.radius = 0.22
 	b_mesh.height = 0.44
@@ -914,15 +1084,23 @@ static func _build_snow_sprite(root: Node3D):
 	root.add_child(body)
 
 	# Crystalline Snowflake Wings
-	for s in [-1.0, 1.0]:
-		var wing = MeshInstance3D.new()
-		var w_mesh = BoxMesh.new()
-		w_mesh.size = Vector3(0.55, 0.35, 0.04)
-		wing.mesh = w_mesh
-		wing.material_override = wing_mat
-		wing.position = Vector3(s * 0.32, 0.75, -0.1)
-		wing.rotation_degrees = Vector3(15, s * 25, s * 20)
-		root.add_child(wing)
+	var wing_l = MeshInstance3D.new()
+	wing_l.name = "WingL"
+	var w_mesh = BoxMesh.new()
+	w_mesh.size = Vector3(0.55, 0.35, 0.04)
+	wing_l.mesh = w_mesh
+	wing_l.material_override = wing_mat
+	wing_l.position = Vector3(-0.32, 0.75, -0.1)
+	wing_l.rotation_degrees = Vector3(15, -25, -20)
+	root.add_child(wing_l)
+
+	var wing_r = MeshInstance3D.new()
+	wing_r.name = "WingR"
+	wing_r.mesh = w_mesh
+	wing_r.material_override = wing_mat
+	wing_r.position = Vector3(0.32, 0.75, -0.1)
+	wing_r.rotation_degrees = Vector3(15, 25, 20)
+	root.add_child(wing_r)
 
 # -----------------------------------------------------------------------------
 # 12. FROST ELF
@@ -934,6 +1112,7 @@ static func _build_frost_elf(root: Node3D):
 
 	# Slender Torso
 	var torso = MeshInstance3D.new()
+	torso.name = "Torso"
 	var t_mesh = CylinderMesh.new()
 	t_mesh.top_radius = 0.26
 	t_mesh.bottom_radius = 0.28
@@ -943,8 +1122,28 @@ static func _build_frost_elf(root: Node3D):
 	torso.position.y = 1.0
 	root.add_child(torso)
 
+	# Legs
+	var leg_l = MeshInstance3D.new()
+	leg_l.name = "LeftLeg"
+	var l_cyl = CylinderMesh.new()
+	l_cyl.top_radius = 0.08
+	l_cyl.bottom_radius = 0.06
+	l_cyl.height = 0.75
+	leg_l.mesh = l_cyl
+	leg_l.material_override = green_mat
+	leg_l.position = Vector3(-0.14, 0.45, 0)
+	root.add_child(leg_l)
+
+	var leg_r = MeshInstance3D.new()
+	leg_r.name = "RightLeg"
+	leg_r.mesh = l_cyl
+	leg_r.material_override = green_mat
+	leg_r.position = Vector3(0.14, 0.45, 0)
+	root.add_child(leg_r)
+
 	# Pointed Hooded Cap with Fur Trim
 	var hood = MeshInstance3D.new()
+	hood.name = "Head"
 	var hd_mesh = CylinderMesh.new()
 	hd_mesh.top_radius = 0.05
 	hd_mesh.bottom_radius = 0.28
@@ -957,6 +1156,7 @@ static func _build_frost_elf(root: Node3D):
 
 	# Silver Recurve Bow
 	var bow = MeshInstance3D.new()
+	bow.name = "Weapon"
 	var bw_mesh = TorusMesh.new()
 	bw_mesh.inner_radius = 0.35
 	bw_mesh.outer_radius = 0.42
@@ -976,6 +1176,7 @@ static func _build_blizzard_witch(root: Node3D):
 
 	# Dark Flowing Gown
 	var gown = MeshInstance3D.new()
+	gown.name = "Torso"
 	var g_mesh = CylinderMesh.new()
 	g_mesh.top_radius = 0.32
 	g_mesh.bottom_radius = 0.75
@@ -997,6 +1198,7 @@ static func _build_blizzard_witch(root: Node3D):
 
 	# Gnarled Staff with Swirling Blizzard Orb
 	var staff = MeshInstance3D.new()
+	staff.name = "Weapon"
 	var st_mesh = CylinderMesh.new()
 	st_mesh.top_radius = 0.04
 	st_mesh.bottom_radius = 0.05
@@ -1007,6 +1209,7 @@ static func _build_blizzard_witch(root: Node3D):
 	root.add_child(staff)
 
 	var orb = MeshInstance3D.new()
+	orb.name = "IceOrb"
 	var ob_mesh = SphereMesh.new()
 	ob_mesh.radius = 0.22
 	orb.mesh = ob_mesh
@@ -1055,6 +1258,7 @@ static func _build_snowball_catapult(root: Node3D):
 
 	# Catapult Throwing Arm
 	var arm = MeshInstance3D.new()
+	arm.name = "CatapultArm"
 	var a_mesh = BoxMesh.new()
 	a_mesh.size = Vector3(0.2, 1.6, 0.2)
 	arm.mesh = a_mesh
@@ -1065,6 +1269,7 @@ static func _build_snowball_catapult(root: Node3D):
 
 	# Giant Packed Snowball Loaded in Bucket
 	var snowball = MeshInstance3D.new()
+	snowball.name = "Snowball"
 	var sb_mesh = SphereMesh.new()
 	sb_mesh.radius = 0.38
 	snowball.mesh = sb_mesh
@@ -1083,6 +1288,7 @@ static func _build_yule_log(root: Node3D):
 
 	# Gnarled Wooden Log (horizontal cylinder)
 	var log = MeshInstance3D.new()
+	log.name = "Log"
 	var lg_mesh = CylinderMesh.new()
 	lg_mesh.top_radius = 0.32
 	lg_mesh.bottom_radius = 0.32
@@ -1113,6 +1319,7 @@ static func _build_yule_log(root: Node3D):
 	# Crackling Holiday Flames along top
 	for i in range(3):
 		var flame = MeshInstance3D.new()
+		flame.name = "Flame_" + str(i)
 		var fl_mesh = CylinderMesh.new()
 		fl_mesh.top_radius = 0.02
 		fl_mesh.bottom_radius = 0.16

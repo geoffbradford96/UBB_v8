@@ -114,12 +114,32 @@ static func _build_supreme_necromancer(root: Node3D):
 
 	# Torso with Ribcage Opening
 	var torso = MeshInstance3D.new()
+	torso.name = "Torso"
 	var t_box = BoxMesh.new()
 	t_box.size = Vector3(0.48, 0.55, 0.32)
 	torso.mesh = t_box
 	torso.material_override = robe_mat
 	torso.position = Vector3(0, 1.25, 0)
 	body.add_child(torso)
+
+	# Skeletal Floating Arms for spellcasting
+	var arm_l = MeshInstance3D.new()
+	arm_l.name = "LeftArm"
+	var al_box = BoxMesh.new()
+	al_box.size = Vector3(0.10, 0.10, 0.55)
+	arm_l.mesh = al_box
+	arm_l.material_override = bone_mat
+	arm_l.position = Vector3(-0.35, 1.25, 0.22)
+	arm_l.rotation.x = deg_to_rad(-20.0)
+	body.add_child(arm_l)
+
+	var arm_r = MeshInstance3D.new()
+	arm_r.name = "RightArm"
+	arm_r.mesh = al_box
+	arm_r.material_override = bone_mat
+	arm_r.position = Vector3(0.35, 1.25, 0.22)
+	arm_r.rotation.x = deg_to_rad(-20.0)
+	body.add_child(arm_r)
 
 	# Glowing Soul Inside Chest
 	var soul_core = MeshInstance3D.new()
@@ -143,6 +163,7 @@ static func _build_supreme_necromancer(root: Node3D):
 	body.add_child(hood)
 
 	var skull = MeshInstance3D.new()
+	skull.name = "Head"
 	var sk_sphere = SphereMesh.new()
 	sk_sphere.radius = 0.16
 	sk_sphere.height = 0.30
@@ -187,6 +208,7 @@ static func _build_supreme_necromancer(root: Node3D):
 	staff.add_child(staff_skull)
 
 	var staff_flame = MeshInstance3D.new()
+	staff_flame.name = "StaffFlame"
 	var sf_sphere = SphereMesh.new()
 	sf_sphere.radius = 0.18
 	sf_sphere.height = 0.38
@@ -208,6 +230,7 @@ static func _build_grand_vampire(root: Node3D):
 
 	# Torso & Waistcoat
 	var torso = MeshInstance3D.new()
+	torso.name = "Torso"
 	var t_box = BoxMesh.new()
 	t_box.size = Vector3(0.44, 0.62, 0.26)
 	torso.mesh = t_box
@@ -234,6 +257,7 @@ static func _build_grand_vampire(root: Node3D):
 
 	# Flowing Midnight Cape
 	var cape = MeshInstance3D.new()
+	cape.name = "Cape"
 	var cp_box = BoxMesh.new()
 	cp_box.size = Vector3(0.68, 1.25, 0.06)
 	cape.mesh = cp_box
@@ -244,6 +268,7 @@ static func _build_grand_vampire(root: Node3D):
 
 	# Head
 	var head = MeshInstance3D.new()
+	head.name = "Head"
 	var h_sphere = SphereMesh.new()
 	h_sphere.radius = 0.16
 	h_sphere.height = 0.32
@@ -263,29 +288,44 @@ static func _build_grand_vampire(root: Node3D):
 		root.add_child(eye)
 
 	# Legs
-	for x in [-0.14, 0.14]:
-		var leg = MeshInstance3D.new()
-		var l_cyl = CylinderMesh.new()
-		l_cyl.top_radius = 0.08
-		l_cyl.bottom_radius = 0.06
-		l_cyl.height = 0.85
-		leg.mesh = l_cyl
-		leg.material_override = cape_black
-		leg.position = Vector3(x, 0.44, 0)
-		root.add_child(leg)
+	var leg_l = MeshInstance3D.new()
+	leg_l.name = "LeftLeg"
+	var l_cyl = CylinderMesh.new()
+	l_cyl.top_radius = 0.08
+	l_cyl.bottom_radius = 0.06
+	l_cyl.height = 0.85
+	leg_l.mesh = l_cyl
+	leg_l.material_override = cape_black
+	leg_l.position = Vector3(-0.14, 0.44, 0)
+	root.add_child(leg_l)
+
+	var leg_r = MeshInstance3D.new()
+	leg_r.name = "RightLeg"
+	leg_r.mesh = l_cyl
+	leg_r.material_override = cape_black
+	leg_r.position = Vector3(0.14, 0.44, 0)
+	root.add_child(leg_r)
 
 	# Dual Blood Rapiers
-	for x_side in [-0.36, 0.36]:
-		var rapier = MeshInstance3D.new()
-		var r_cyl = CylinderMesh.new()
-		r_cyl.top_radius = 0.015
-		r_cyl.bottom_radius = 0.03
-		r_cyl.height = 1.05
-		rapier.mesh = r_cyl
-		rapier.material_override = steel_mat
-		rapier.rotation.x = deg_to_rad(65.0)
-		rapier.position = Vector3(x_side, 0.95, 0.35)
-		root.add_child(rapier)
+	var rapier_l = MeshInstance3D.new()
+	rapier_l.name = "WeaponL"
+	var r_cyl = CylinderMesh.new()
+	r_cyl.top_radius = 0.015
+	r_cyl.bottom_radius = 0.03
+	r_cyl.height = 1.05
+	rapier_l.mesh = r_cyl
+	rapier_l.material_override = steel_mat
+	rapier_l.rotation.x = deg_to_rad(65.0)
+	rapier_l.position = Vector3(-0.36, 0.95, 0.35)
+	root.add_child(rapier_l)
+
+	var rapier_r = MeshInstance3D.new()
+	rapier_r.name = "WeaponR"
+	rapier_r.mesh = r_cyl
+	rapier_r.material_override = steel_mat
+	rapier_r.rotation.x = deg_to_rad(65.0)
+	rapier_r.position = Vector3(0.36, 0.95, 0.35)
+	root.add_child(rapier_r)
 
 # -----------------------------------------------------------------------------
 # 3. DEMON KNIGHT (Commander)
@@ -298,6 +338,7 @@ static func _build_demon_knight(root: Node3D):
 
 	# Heavy Plate Torso
 	var torso = MeshInstance3D.new()
+	torso.name = "Torso"
 	var t_box = BoxMesh.new()
 	t_box.size = Vector3(0.56, 0.65, 0.38)
 	torso.mesh = t_box
@@ -327,6 +368,7 @@ static func _build_demon_knight(root: Node3D):
 
 	# Greathelm with Visor
 	var helm = MeshInstance3D.new()
+	helm.name = "Head"
 	var h_box = BoxMesh.new()
 	h_box.size = Vector3(0.32, 0.36, 0.34)
 	helm.mesh = h_box
@@ -358,17 +400,25 @@ static func _build_demon_knight(root: Node3D):
 		root.add_child(horn)
 
 	# Armored Legs
-	for x in [-0.16, 0.16]:
-		var leg = MeshInstance3D.new()
-		var l_box = BoxMesh.new()
-		l_box.size = Vector3(0.18, 0.85, 0.20)
-		leg.mesh = l_box
-		leg.material_override = plate_mat
-		leg.position = Vector3(x, 0.44, 0)
-		root.add_child(leg)
+	var leg_l = MeshInstance3D.new()
+	leg_l.name = "LeftLeg"
+	var l_box = BoxMesh.new()
+	l_box.size = Vector3(0.18, 0.85, 0.20)
+	leg_l.mesh = l_box
+	leg_l.material_override = plate_mat
+	leg_l.position = Vector3(-0.16, 0.44, 0)
+	root.add_child(leg_l)
+
+	var leg_r = MeshInstance3D.new()
+	leg_r.name = "RightLeg"
+	leg_r.mesh = l_box
+	leg_r.material_override = plate_mat
+	leg_r.position = Vector3(0.16, 0.44, 0)
+	root.add_child(leg_r)
 
 	# Massive Jagged Flaming Greatsword
 	var sword = Node3D.new()
+	sword.name = "Weapon"
 	sword.position = Vector3(0.38, 1.0, 0.25)
 	sword.rotation.x = deg_to_rad(30.0)
 	root.add_child(sword)
@@ -399,6 +449,7 @@ static func _build_skeleton_swordsman(root: Node3D):
 
 	# Ribcage
 	var rib = MeshInstance3D.new()
+	rib.name = "Torso"
 	var r_box = BoxMesh.new()
 	r_box.size = Vector3(0.38, 0.48, 0.22)
 	rib.mesh = r_box
@@ -408,6 +459,7 @@ static func _build_skeleton_swordsman(root: Node3D):
 
 	# Skull
 	var skull = MeshInstance3D.new()
+	skull.name = "Head"
 	var s_sphere = SphereMesh.new()
 	s_sphere.radius = 0.15
 	s_sphere.height = 0.28
@@ -426,19 +478,27 @@ static func _build_skeleton_swordsman(root: Node3D):
 		root.add_child(eye)
 
 	# Bony Legs
-	for x in [-0.12, 0.12]:
-		var leg = MeshInstance3D.new()
-		var l_cyl = CylinderMesh.new()
-		l_cyl.top_radius = 0.04
-		l_cyl.bottom_radius = 0.035
-		l_cyl.height = 0.82
-		leg.mesh = l_cyl
-		leg.material_override = bone_mat
-		leg.position = Vector3(x, 0.45, 0)
-		root.add_child(leg)
+	var leg_l = MeshInstance3D.new()
+	leg_l.name = "LeftLeg"
+	var l_cyl = CylinderMesh.new()
+	l_cyl.top_radius = 0.04
+	l_cyl.bottom_radius = 0.035
+	l_cyl.height = 0.82
+	leg_l.mesh = l_cyl
+	leg_l.material_override = bone_mat
+	leg_l.position = Vector3(-0.12, 0.45, 0)
+	root.add_child(leg_l)
+
+	var leg_r = MeshInstance3D.new()
+	leg_r.name = "RightLeg"
+	leg_r.mesh = l_cyl
+	leg_r.material_override = bone_mat
+	leg_r.position = Vector3(0.12, 0.45, 0)
+	root.add_child(leg_r)
 
 	# Rusty Scimitar / Shortsword
 	var sword = MeshInstance3D.new()
+	sword.name = "Weapon"
 	var sw_box = BoxMesh.new()
 	sw_box.size = Vector3(0.06, 0.85, 0.03)
 	sword.mesh = sw_box
@@ -449,6 +509,7 @@ static func _build_skeleton_swordsman(root: Node3D):
 
 	# Chipped Buckler Shield
 	var buckler = MeshInstance3D.new()
+	buckler.name = "Shield"
 	var b_cyl = CylinderMesh.new()
 	b_cyl.top_radius = 0.22
 	b_cyl.bottom_radius = 0.22
@@ -469,6 +530,7 @@ static func _build_skeleton_archer(root: Node3D):
 
 	# Ribcage
 	var rib = MeshInstance3D.new()
+	rib.name = "Torso"
 	var r_box = BoxMesh.new()
 	r_box.size = Vector3(0.36, 0.46, 0.20)
 	rib.mesh = r_box
@@ -478,6 +540,7 @@ static func _build_skeleton_archer(root: Node3D):
 
 	# Skull with tattered hood
 	var hood = MeshInstance3D.new()
+	hood.name = "Head"
 	var h_cyl = CylinderMesh.new()
 	h_cyl.top_radius = 0.18
 	h_cyl.bottom_radius = 0.24
@@ -489,6 +552,7 @@ static func _build_skeleton_archer(root: Node3D):
 
 	# Bone Bow
 	var bow = MeshInstance3D.new()
+	bow.name = "Weapon"
 	var b_cyl = CylinderMesh.new()
 	b_cyl.top_radius = 0.025
 	b_cyl.bottom_radius = 0.025
@@ -499,16 +563,23 @@ static func _build_skeleton_archer(root: Node3D):
 	root.add_child(bow)
 
 	# Bony Legs
-	for x in [-0.12, 0.12]:
-		var leg = MeshInstance3D.new()
-		var l_cyl = CylinderMesh.new()
-		l_cyl.top_radius = 0.04
-		l_cyl.bottom_radius = 0.035
-		l_cyl.height = 0.82
-		leg.mesh = l_cyl
-		leg.material_override = bone_mat
-		leg.position = Vector3(x, 0.45, 0)
-		root.add_child(leg)
+	var leg_l = MeshInstance3D.new()
+	leg_l.name = "LeftLeg"
+	var l_cyl = CylinderMesh.new()
+	l_cyl.top_radius = 0.04
+	l_cyl.bottom_radius = 0.035
+	l_cyl.height = 0.82
+	leg_l.mesh = l_cyl
+	leg_l.material_override = bone_mat
+	leg_l.position = Vector3(-0.12, 0.45, 0)
+	root.add_child(leg_l)
+
+	var leg_r = MeshInstance3D.new()
+	leg_r.name = "RightLeg"
+	leg_r.mesh = l_cyl
+	leg_r.material_override = bone_mat
+	leg_r.position = Vector3(0.12, 0.45, 0)
+	root.add_child(leg_r)
 
 # -----------------------------------------------------------------------------
 # 6. SHAMBLING ZOMBIE
@@ -519,6 +590,7 @@ static func _build_zombie(root: Node3D):
 
 	# Hunched Torso
 	var torso = MeshInstance3D.new()
+	torso.name = "Torso"
 	var t_box = BoxMesh.new()
 	t_box.size = Vector3(0.48, 0.58, 0.32)
 	torso.mesh = t_box
@@ -538,6 +610,7 @@ static func _build_zombie(root: Node3D):
 
 	# Rotting Head with slack jaw
 	var head = MeshInstance3D.new()
+	head.name = "Head"
 	var h_sphere = SphereMesh.new()
 	h_sphere.radius = 0.17
 	h_sphere.height = 0.32
@@ -548,17 +621,25 @@ static func _build_zombie(root: Node3D):
 	root.add_child(head)
 
 	# Reaching Outstretched Zombie Arms
-	for x_side in [-0.28, 0.28]:
-		var arm = MeshInstance3D.new()
-		var a_box = BoxMesh.new()
-		a_box.size = Vector3(0.12, 0.12, 0.65)
-		arm.mesh = a_box
-		arm.material_override = rot_skin
-		arm.position = Vector3(x_side, 1.15, 0.35)
-		root.add_child(arm)
+	var arm_l = MeshInstance3D.new()
+	arm_l.name = "LeftArm"
+	var a_box = BoxMesh.new()
+	a_box.size = Vector3(0.12, 0.12, 0.65)
+	arm_l.mesh = a_box
+	arm_l.material_override = rot_skin
+	arm_l.position = Vector3(-0.28, 1.15, 0.35)
+	root.add_child(arm_l)
+
+	var arm_r = MeshInstance3D.new()
+	arm_r.name = "RightArm"
+	arm_r.mesh = a_box
+	arm_r.material_override = rot_skin
+	arm_r.position = Vector3(0.28, 1.15, 0.35)
+	root.add_child(arm_r)
 
 	# Asymmetrical Stumbling Legs
 	var leg_l = MeshInstance3D.new()
+	leg_l.name = "LeftLeg"
 	var ll_box = BoxMesh.new()
 	ll_box.size = Vector3(0.16, 0.80, 0.16)
 	leg_l.mesh = ll_box
@@ -567,6 +648,7 @@ static func _build_zombie(root: Node3D):
 	root.add_child(leg_l)
 
 	var leg_r = MeshInstance3D.new()
+	leg_r.name = "RightLeg"
 	leg_r.mesh = ll_box
 	leg_r.material_override = rag_mat
 	leg_r.position = Vector3(0.14, 0.40, -0.08)
@@ -583,6 +665,7 @@ static func _build_bone_giant(root: Node3D):
 
 	# Colossal Chest
 	var torso = MeshInstance3D.new()
+	torso.name = "Torso"
 	var t_box = BoxMesh.new()
 	t_box.size = Vector3(0.85, 0.95, 0.55)
 	torso.mesh = t_box
@@ -603,6 +686,7 @@ static func _build_bone_giant(root: Node3D):
 
 	# Giant Skull Head
 	var head = MeshInstance3D.new()
+	head.name = "Head"
 	var h_s = SphereMesh.new()
 	h_s.radius = 0.26
 	h_s.height = 0.48
@@ -612,19 +696,27 @@ static func _build_bone_giant(root: Node3D):
 	root.add_child(head)
 
 	# Massive Bone Pillars for Legs
-	for x in [-0.28, 0.28]:
-		var leg = MeshInstance3D.new()
-		var l_cyl = CylinderMesh.new()
-		l_cyl.top_radius = 0.16
-		l_cyl.bottom_radius = 0.14
-		l_cyl.height = 1.05
-		leg.mesh = l_cyl
-		leg.material_override = bone_mat
-		leg.position = Vector3(x, 0.55, 0)
-		root.add_child(leg)
+	var leg_l = MeshInstance3D.new()
+	leg_l.name = "LeftLeg"
+	var l_cyl = CylinderMesh.new()
+	l_cyl.top_radius = 0.16
+	l_cyl.bottom_radius = 0.14
+	l_cyl.height = 1.05
+	leg_l.mesh = l_cyl
+	leg_l.material_override = bone_mat
+	leg_l.position = Vector3(-0.28, 0.55, 0)
+	root.add_child(leg_l)
+
+	var leg_r = MeshInstance3D.new()
+	leg_r.name = "RightLeg"
+	leg_r.mesh = l_cyl
+	leg_r.material_override = bone_mat
+	leg_r.position = Vector3(0.28, 0.55, 0)
+	root.add_child(leg_r)
 
 	# Giant Bone Club
 	var club = MeshInstance3D.new()
+	club.name = "Weapon"
 	var c_cyl = CylinderMesh.new()
 	c_cyl.top_radius = 0.22
 	c_cyl.bottom_radius = 0.08
@@ -646,6 +738,7 @@ static func _build_vampire_duelist(root: Node3D):
 	var steel_mat = _get_mat("vamp_steel", Color(0.85, 0.88, 0.92), 0.2, 0.9)
 
 	var torso = MeshInstance3D.new()
+	torso.name = "Torso"
 	var t_box = BoxMesh.new()
 	t_box.size = Vector3(0.42, 0.58, 0.24)
 	torso.mesh = t_box
@@ -662,6 +755,7 @@ static func _build_vampire_duelist(root: Node3D):
 	root.add_child(ascot)
 
 	var head = MeshInstance3D.new()
+	head.name = "Head"
 	var h_s = SphereMesh.new()
 	h_s.radius = 0.15
 	h_s.height = 0.30
@@ -670,18 +764,26 @@ static func _build_vampire_duelist(root: Node3D):
 	head.position = Vector3(0, 1.55, 0)
 	root.add_child(head)
 
-	for x in [-0.12, 0.12]:
-		var leg = MeshInstance3D.new()
-		var l_cyl = CylinderMesh.new()
-		l_cyl.top_radius = 0.07
-		l_cyl.bottom_radius = 0.05
-		l_cyl.height = 0.82
-		leg.mesh = l_cyl
-		leg.material_override = coat_mat
-		leg.position = Vector3(x, 0.42, 0)
-		root.add_child(leg)
+	var leg_l = MeshInstance3D.new()
+	leg_l.name = "LeftLeg"
+	var l_cyl = CylinderMesh.new()
+	l_cyl.top_radius = 0.07
+	l_cyl.bottom_radius = 0.05
+	l_cyl.height = 0.82
+	leg_l.mesh = l_cyl
+	leg_l.material_override = coat_mat
+	leg_l.position = Vector3(-0.12, 0.42, 0)
+	root.add_child(leg_l)
+
+	var leg_r = MeshInstance3D.new()
+	leg_r.name = "RightLeg"
+	leg_r.mesh = l_cyl
+	leg_r.material_override = coat_mat
+	leg_r.position = Vector3(0.12, 0.42, 0)
+	root.add_child(leg_r)
 
 	var rapier = MeshInstance3D.new()
+	rapier.name = "Weapon"
 	var r_cyl = CylinderMesh.new()
 	r_cyl.top_radius = 0.015
 	r_cyl.bottom_radius = 0.025
@@ -700,13 +802,15 @@ static func _build_bat_swarm(root: Node3D):
 	var eye_mat = _get_mat("bat_eye", Color(1.0, 0.15, 0.20), 0.2, 0.0, Color(1.0, 0.15, 0.20), 3.0)
 
 	var offsets = [Vector3(-0.35, 1.2, 0.1), Vector3(0.35, 1.45, -0.1), Vector3(0, 1.7, 0.25)]
-	for off in offsets:
+	for i in range(offsets.size()):
 		var bat = Node3D.new()
-		bat.position = off
+		bat.name = "Bat_" + str(i)
+		bat.position = offsets[i]
 		root.add_child(bat)
 
 		# Bat Body
 		var body = MeshInstance3D.new()
+		body.name = "Body"
 		var b_s = SphereMesh.new()
 		b_s.radius = 0.10
 		b_s.height = 0.22
@@ -715,15 +819,23 @@ static func _build_bat_swarm(root: Node3D):
 		bat.add_child(body)
 
 		# Wings
-		for w_side in [-1.0, 1.0]:
-			var wing = MeshInstance3D.new()
-			var w_box = BoxMesh.new()
-			w_box.size = Vector3(0.35, 0.02, 0.20)
-			wing.mesh = w_box
-			wing.material_override = bat_mat
-			wing.position = Vector3(0.22 * w_side, 0.02, 0)
-			wing.rotation.z = deg_to_rad(20.0 * w_side)
-			bat.add_child(wing)
+		var wing_l = MeshInstance3D.new()
+		wing_l.name = "WingL"
+		var w_box = BoxMesh.new()
+		w_box.size = Vector3(0.35, 0.02, 0.20)
+		wing_l.mesh = w_box
+		wing_l.material_override = bat_mat
+		wing_l.position = Vector3(-0.22, 0.02, 0)
+		wing_l.rotation.z = deg_to_rad(-20.0)
+		bat.add_child(wing_l)
+
+		var wing_r = MeshInstance3D.new()
+		wing_r.name = "WingR"
+		wing_r.mesh = w_box
+		wing_r.material_override = bat_mat
+		wing_r.position = Vector3(0.22, 0.02, 0)
+		wing_r.rotation.z = deg_to_rad(20.0)
+		bat.add_child(wing_r)
 
 		# Red Eyes
 		for x in [-0.04, 0.04]:
@@ -746,6 +858,7 @@ static func _build_werewolf(root: Node3D):
 
 	# Muscular Broad Torso
 	var torso = MeshInstance3D.new()
+	torso.name = "Torso"
 	var t_box = BoxMesh.new()
 	t_box.size = Vector3(0.62, 0.72, 0.42)
 	torso.mesh = t_box
@@ -756,6 +869,7 @@ static func _build_werewolf(root: Node3D):
 
 	# Snouted Lupine Head
 	var head = MeshInstance3D.new()
+	head.name = "Head"
 	var h_box = BoxMesh.new()
 	h_box.size = Vector3(0.32, 0.32, 0.32)
 	head.mesh = h_box
@@ -794,37 +908,60 @@ static func _build_werewolf(root: Node3D):
 		root.add_child(eye)
 
 	# Heavy Claws on Arms
-	for x_side in [-0.38, 0.38]:
-		var arm = MeshInstance3D.new()
-		var a_box = BoxMesh.new()
-		a_box.size = Vector3(0.18, 0.72, 0.20)
-		arm.mesh = a_box
-		arm.material_override = fur_mat
-		arm.position = Vector3(x_side, 1.05, 0.28)
-		arm.rotation.x = deg_to_rad(35.0)
-		root.add_child(arm)
+	var arm_l = MeshInstance3D.new()
+	arm_l.name = "LeftArm"
+	var a_box = BoxMesh.new()
+	a_box.size = Vector3(0.18, 0.72, 0.20)
+	arm_l.mesh = a_box
+	arm_l.material_override = fur_mat
+	arm_l.position = Vector3(-0.38, 1.05, 0.28)
+	arm_l.rotation.x = deg_to_rad(35.0)
+	root.add_child(arm_l)
 
-		var claws = MeshInstance3D.new()
-		var c_box = BoxMesh.new()
-		c_box.size = Vector3(0.14, 0.12, 0.16)
-		claws.mesh = c_box
-		claws.material_override = claw_mat
-		claws.position = Vector3(x_side, 0.72, 0.50)
-		root.add_child(claws)
+	var claws_l = MeshInstance3D.new()
+	var c_box = BoxMesh.new()
+	c_box.size = Vector3(0.14, 0.12, 0.16)
+	claws_l.mesh = c_box
+	claws_l.material_override = claw_mat
+	claws_l.position = Vector3(-0.38, 0.72, 0.50)
+	root.add_child(claws_l)
+
+	var arm_r = MeshInstance3D.new()
+	arm_r.name = "RightArm"
+	arm_r.mesh = a_box
+	arm_r.material_override = fur_mat
+	arm_r.position = Vector3(0.38, 1.05, 0.28)
+	arm_r.rotation.x = deg_to_rad(35.0)
+	root.add_child(arm_r)
+
+	var claws_r = MeshInstance3D.new()
+	claws_r.mesh = c_box
+	claws_r.material_override = claw_mat
+	claws_r.position = Vector3(0.38, 0.72, 0.50)
+	root.add_child(claws_r)
 
 	# Digitigrade Wolf Legs
-	for x in [-0.20, 0.20]:
-		var leg = MeshInstance3D.new()
-		var l_box = BoxMesh.new()
-		l_box.size = Vector3(0.20, 0.85, 0.24)
-		leg.mesh = l_box
-		leg.material_override = fur_mat
-		leg.position = Vector3(x, 0.44, -0.05)
-		leg.rotation.x = -0.15
-		root.add_child(leg)
+	var leg_l = MeshInstance3D.new()
+	leg_l.name = "LeftLeg"
+	var l_box = BoxMesh.new()
+	l_box.size = Vector3(0.20, 0.85, 0.24)
+	leg_l.mesh = l_box
+	leg_l.material_override = fur_mat
+	leg_l.position = Vector3(-0.20, 0.44, -0.05)
+	leg_l.rotation.x = -0.15
+	root.add_child(leg_l)
+
+	var leg_r = MeshInstance3D.new()
+	leg_r.name = "RightLeg"
+	leg_r.mesh = l_box
+	leg_r.material_override = fur_mat
+	leg_r.position = Vector3(0.20, 0.44, -0.05)
+	leg_r.rotation.x = -0.15
+	root.add_child(leg_r)
 
 	# Wolf Tail
 	var tail = MeshInstance3D.new()
+	tail.name = "Tail"
 	var tl_cyl = CylinderMesh.new()
 	tl_cyl.top_radius = 0.04
 	tl_cyl.bottom_radius = 0.08
@@ -845,6 +982,7 @@ static func _build_dire_wolf(root: Node3D):
 
 	# Quadruped Horizontal Torso
 	var torso = MeshInstance3D.new()
+	torso.name = "Torso"
 	var t_box = BoxMesh.new()
 	t_box.size = Vector3(0.48, 0.45, 0.95)
 	torso.mesh = t_box
@@ -854,6 +992,7 @@ static func _build_dire_wolf(root: Node3D):
 
 	# Wolf Head & Snout
 	var head = MeshInstance3D.new()
+	head.name = "Head"
 	var h_box = BoxMesh.new()
 	h_box.size = Vector3(0.28, 0.26, 0.35)
 	head.mesh = h_box
@@ -874,6 +1013,8 @@ static func _build_dire_wolf(root: Node3D):
 	for z in [-0.30, 0.30]:
 		for x in [-0.18, 0.18]:
 			var leg = MeshInstance3D.new()
+			var leg_tag = ("Leg_FL" if (x < 0 and z > 0) else ("Leg_FR" if (x > 0 and z > 0) else ("Leg_BL" if (x < 0 and z < 0) else "Leg_BR")))
+			leg.name = leg_tag
 			var l_cyl = CylinderMesh.new()
 			l_cyl.top_radius = 0.07
 			l_cyl.bottom_radius = 0.05
@@ -894,10 +1035,12 @@ static func _build_fire_imp(root: Node3D):
 
 	# Flying Body
 	var body = Node3D.new()
+	body.name = "Body"
 	body.position = Vector3(0, 1.15, 0)
 	root.add_child(body)
 
 	var torso = MeshInstance3D.new()
+	torso.name = "Torso"
 	var t_box = BoxMesh.new()
 	t_box.size = Vector3(0.32, 0.38, 0.24)
 	torso.mesh = t_box
@@ -906,6 +1049,7 @@ static func _build_fire_imp(root: Node3D):
 
 	# Head with Devil Horns
 	var head = MeshInstance3D.new()
+	head.name = "Head"
 	var h_s = SphereMesh.new()
 	h_s.radius = 0.14
 	h_s.height = 0.26
@@ -926,18 +1070,27 @@ static func _build_fire_imp(root: Node3D):
 		body.add_child(horn)
 
 	# Leathery Bat Wings
-	for w_side in [-1.0, 1.0]:
-		var wing = MeshInstance3D.new()
-		var w_box = BoxMesh.new()
-		w_box.size = Vector3(0.42, 0.02, 0.24)
-		wing.mesh = w_box
-		wing.material_override = horn_mat
-		wing.position = Vector3(0.28 * w_side, 0.12, -0.12)
-		wing.rotation.z = deg_to_rad(30.0 * w_side)
-		body.add_child(wing)
+	var wing_l = MeshInstance3D.new()
+	wing_l.name = "WingL"
+	var w_box = BoxMesh.new()
+	w_box.size = Vector3(0.42, 0.02, 0.24)
+	wing_l.mesh = w_box
+	wing_l.material_override = horn_mat
+	wing_l.position = Vector3(-0.28, 0.12, -0.12)
+	wing_l.rotation.z = deg_to_rad(-30.0)
+	body.add_child(wing_l)
+
+	var wing_r = MeshInstance3D.new()
+	wing_r.name = "WingR"
+	wing_r.mesh = w_box
+	wing_r.material_override = horn_mat
+	wing_r.position = Vector3(0.28, 0.12, -0.12)
+	wing_r.rotation.z = deg_to_rad(30.0)
+	body.add_child(wing_r)
 
 	# Flaming Fireball in Hand
 	var fireball = MeshInstance3D.new()
+	fireball.name = "Fireball"
 	var fb_s = SphereMesh.new()
 	fb_s.radius = 0.12
 	fb_s.height = 0.24
@@ -957,6 +1110,7 @@ static func _build_horned_demon(root: Node3D):
 
 	# Muscular Crimson Torso
 	var torso = MeshInstance3D.new()
+	torso.name = "Torso"
 	var t_box = BoxMesh.new()
 	t_box.size = Vector3(0.65, 0.75, 0.42)
 	torso.mesh = t_box
@@ -966,6 +1120,7 @@ static func _build_horned_demon(root: Node3D):
 
 	# Head with Massive Ram Horns
 	var head = MeshInstance3D.new()
+	head.name = "Head"
 	var h_s = SphereMesh.new()
 	h_s.radius = 0.20
 	h_s.height = 0.38
@@ -987,19 +1142,27 @@ static func _build_horned_demon(root: Node3D):
 		root.add_child(horn)
 
 	# Hoofed Legs
-	for x in [-0.22, 0.22]:
-		var leg = MeshInstance3D.new()
-		var l_cyl = CylinderMesh.new()
-		l_cyl.top_radius = 0.14
-		l_cyl.bottom_radius = 0.09
-		l_cyl.height = 0.95
-		leg.mesh = l_cyl
-		leg.material_override = demon_skin
-		leg.position = Vector3(x, 0.48, 0)
-		root.add_child(leg)
+	var leg_l = MeshInstance3D.new()
+	leg_l.name = "LeftLeg"
+	var l_cyl = CylinderMesh.new()
+	l_cyl.top_radius = 0.14
+	l_cyl.bottom_radius = 0.09
+	l_cyl.height = 0.95
+	leg_l.mesh = l_cyl
+	leg_l.material_override = demon_skin
+	leg_l.position = Vector3(-0.22, 0.48, 0)
+	root.add_child(leg_l)
+
+	var leg_r = MeshInstance3D.new()
+	leg_r.name = "RightLeg"
+	leg_r.mesh = l_cyl
+	leg_r.material_override = demon_skin
+	leg_r.position = Vector3(0.22, 0.48, 0)
+	root.add_child(leg_r)
 
 	# Spiked Hell Cleaver
 	var cleaver = MeshInstance3D.new()
+	cleaver.name = "Weapon"
 	var c_box = BoxMesh.new()
 	c_box.size = Vector3(0.24, 1.15, 0.06)
 	cleaver.mesh = c_box
@@ -1018,6 +1181,7 @@ static func _build_hellhound(root: Node3D):
 
 	# Hound Body
 	var torso = MeshInstance3D.new()
+	torso.name = "Torso"
 	var t_box = BoxMesh.new()
 	t_box.size = Vector3(0.44, 0.42, 0.88)
 	torso.mesh = t_box
@@ -1027,6 +1191,7 @@ static func _build_hellhound(root: Node3D):
 
 	# Fiery Molten Spine Crest
 	var crest = MeshInstance3D.new()
+	crest.name = "Crest"
 	var c_box = BoxMesh.new()
 	c_box.size = Vector3(0.06, 0.14, 0.72)
 	crest.mesh = c_box
@@ -1036,6 +1201,7 @@ static func _build_hellhound(root: Node3D):
 
 	# Snouted Head with Flaming Eyes
 	var head = MeshInstance3D.new()
+	head.name = "Head"
 	var h_box = BoxMesh.new()
 	h_box.size = Vector3(0.26, 0.24, 0.32)
 	head.mesh = h_box
@@ -1056,6 +1222,8 @@ static func _build_hellhound(root: Node3D):
 	for z in [-0.28, 0.28]:
 		for x in [-0.16, 0.16]:
 			var leg = MeshInstance3D.new()
+			var leg_tag = ("Leg_FL" if (x < 0 and z > 0) else ("Leg_FR" if (x > 0 and z > 0) else ("Leg_BL" if (x < 0 and z < 0) else "Leg_BR")))
+			leg.name = leg_tag
 			var l_cyl = CylinderMesh.new()
 			l_cyl.top_radius = 0.06
 			l_cyl.bottom_radius = 0.05
@@ -1076,6 +1244,7 @@ static func _build_jack_o_lantern(root: Node3D):
 
 	# Knotted Vine Torso
 	var torso = MeshInstance3D.new()
+	torso.name = "Torso"
 	var t_cyl = CylinderMesh.new()
 	t_cyl.top_radius = 0.16
 	t_cyl.bottom_radius = 0.12
@@ -1087,6 +1256,7 @@ static func _build_jack_o_lantern(root: Node3D):
 
 	# Carved Pumpkin Head
 	var head = MeshInstance3D.new()
+	head.name = "Head"
 	var p_sphere = SphereMesh.new()
 	p_sphere.radius = 0.32
 	p_sphere.height = 0.55
@@ -1119,6 +1289,7 @@ static func _build_jack_o_lantern(root: Node3D):
 
 	# Jagged Carved Grin
 	var mouth = MeshInstance3D.new()
+	mouth.name = "Mouth"
 	var m_box = BoxMesh.new()
 	m_box.size = Vector3(0.24, 0.06, 0.04)
 	mouth.mesh = m_box
@@ -1127,13 +1298,20 @@ static func _build_jack_o_lantern(root: Node3D):
 	root.add_child(mouth)
 
 	# Vine Root Limbs
-	for x in [-0.12, 0.12]:
-		var leg = MeshInstance3D.new()
-		var l_cyl = CylinderMesh.new()
-		l_cyl.top_radius = 0.045
-		l_cyl.bottom_radius = 0.035
-		l_cyl.height = 0.55
-		leg.mesh = l_cyl
-		leg.material_override = vine_mat
-		leg.position = Vector3(x, 0.27, 0)
-		root.add_child(leg)
+	var leg_l = MeshInstance3D.new()
+	leg_l.name = "LeftLeg"
+	var l_cyl = CylinderMesh.new()
+	l_cyl.top_radius = 0.045
+	l_cyl.bottom_radius = 0.035
+	l_cyl.height = 0.55
+	leg_l.mesh = l_cyl
+	leg_l.material_override = vine_mat
+	leg_l.position = Vector3(-0.12, 0.27, 0)
+	root.add_child(leg_l)
+
+	var leg_r = MeshInstance3D.new()
+	leg_r.name = "RightLeg"
+	leg_r.mesh = l_cyl
+	leg_r.material_override = vine_mat
+	leg_r.position = Vector3(0.12, 0.27, 0)
+	root.add_child(leg_r)
