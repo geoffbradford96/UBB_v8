@@ -142,7 +142,7 @@ func _physics_process(delta):
 	if "SupremeNecromancer" in name:
 		if not has_meta("necro_summon_timer"):
 			set_meta("necro_summon_timer", 6.5)
-		var n_timer = get_meta("necro_summon_timer", 6.5) - delta
+		var n_timer = (float(get_meta("necro_summon_timer")) if has_meta("necro_summon_timer") else 6.5) - delta
 		if n_timer <= 0.0:
 			set_meta("necro_summon_timer", 8.5)
 			var sk_scene = load("res://Scenes/Units/NightmareSkeletonSwordsman.tscn")
@@ -165,7 +165,7 @@ func _physics_process(delta):
 	if "YuletideKing" in name:
 		if not has_meta("yuletide_bounty_timer"):
 			set_meta("yuletide_bounty_timer", 2.0)
-		var y_timer = get_meta("yuletide_bounty_timer", 2.0) - delta
+		var y_timer = (float(get_meta("yuletide_bounty_timer")) if has_meta("yuletide_bounty_timer") else 2.0) - delta
 		if y_timer <= 0.0:
 			set_meta("yuletide_bounty_timer", 2.5)
 			var my_team = ""
@@ -186,7 +186,7 @@ func _physics_process(delta):
 	if "KrampusLord" in name:
 		if not has_meta("krampus_terror_timer"):
 			set_meta("krampus_terror_timer", 1.0)
-		var k_timer = get_meta("krampus_terror_timer", 1.0) - delta
+		var k_timer = (float(get_meta("krampus_terror_timer")) if has_meta("krampus_terror_timer") else 1.0) - delta
 		if k_timer <= 0.0:
 			set_meta("krampus_terror_timer", 1.0)
 			var my_team = ""
@@ -227,7 +227,7 @@ func _physics_process(delta):
 			return
 		
 	if has_meta("stealth_revealed_timer"):
-		var __s_timer = get_meta("stealth_revealed_timer", 0.0)
+		var __s_timer = float(get_meta("stealth_revealed_timer")) if has_meta("stealth_revealed_timer") else 0.0
 		if __s_timer > 0.0:
 			set_meta("stealth_revealed_timer", max(0.0, __s_timer - delta))
 		
@@ -953,7 +953,7 @@ func _animate_mesh(delta: float, moving: bool):
 		_animate_winter_court(w_root, u_name, phase, atk_swing, moving, delta)
 
 
-func _animate_nightmare_court(root: Node3D, u_name: String, phase: float, atk_swing: float, moving: bool, delta: float) -> void:
+func _animate_nightmare_court(root: Node3D, u_name: String, phase: float, atk_swing: float, moving: bool, _delta: float) -> void:
 	var leg_l = root.get_node_or_null("LeftLeg")
 	var leg_r = root.get_node_or_null("RightLeg")
 	var arm_l = root.get_node_or_null("LeftArm")
@@ -1214,8 +1214,8 @@ func _animate_winter_court(root: Node3D, u_name: String, phase: float, atk_swing
 		var ball = root.get_node_or_null("Snowball")
 		if ball: ball.visible = (atk_swing < 0.70)
 	elif "YuleLog" in u_name:
-		var log = root.get_node_or_null("Log")
-		if log and moving: log.rotation.x += delta * 8.0
+		var yule_log = root.get_node_or_null("Log")
+		if yule_log and moving: yule_log.rotation.x += delta * 8.0
 		for f_idx in range(3):
 			var flame = root.get_node_or_null("Flame_" + str(f_idx))
 			if flame:

@@ -162,8 +162,8 @@ func _trigger_festive_fireworks(pos: Vector3, arena: Node) -> void:
 
 	# Visual fireworks spark bursts
 	var blast_node = Node3D.new()
-	blast_node.global_position = pos
 	arena.add_child(blast_node)
+	blast_node.global_position = pos
 
 	var spark_colors = [
 		Color(1.0, 0.2, 0.2), Color(0.2, 0.9, 0.3),

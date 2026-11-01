@@ -342,12 +342,12 @@ func _process(delta):
         var t_anim = Time.get_ticks_msec() / 1000.0
         for child in b_root.get_children():
             if child.has_meta("is_lower_jaw"):
-                var base_ly = float(child.get_meta("base_y", -4.0))
+                var base_ly = float(child.get_meta("base_y")) if child.has_meta("base_y") else -4.0
                 child.position.y = base_ly + sin(t_anim * 1.1) * 1.2
                 var jaw_pulse = 1.0 + sin(t_anim * 1.1) * 0.02
                 child.scale = Vector3(jaw_pulse, 1.0, jaw_pulse)
             elif child.has_meta("is_upper_jaw"):
-                var base_uy = float(child.get_meta("base_y", 85.0))
+                var base_uy = float(child.get_meta("base_y")) if child.has_meta("base_y") else 85.0
                 child.position.y = base_uy - sin(t_anim * 1.1) * 3.5
                 child.rotation.y = -b_root.rotation.y * 1.6 + sin(t_anim * 0.4) * 0.12
             elif child.has_meta("is_uvula"):
@@ -355,11 +355,11 @@ func _process(delta):
                 child.position.y = -72.0 + sin(t_anim * 1.8) * 2.5
                 child.scale = Vector3(pulse, 1.0 + cos(t_anim * 2.4) * 0.15, pulse)
             elif child.has_meta("seg_phase"):
-                var phase = float(child.get_meta("seg_phase", 0.0))
-                var base_y = float(child.get_meta("base_y", 0.0))
+                var phase = float(child.get_meta("seg_phase")) if child.has_meta("seg_phase") else 0.0
+                var base_y = float(child.get_meta("base_y")) if child.has_meta("base_y") else 0.0
                 child.position.y = base_y + sin(t_anim * 1.5 + phase) * 3.5
-                var base_rx = float(child.get_meta("base_rx", 0.0))
-                var base_rz = float(child.get_meta("base_rz", 0.0))
+                var base_rx = float(child.get_meta("base_rx")) if child.has_meta("base_rx") else 0.0
+                var base_rz = float(child.get_meta("base_rz")) if child.has_meta("base_rz") else 0.0
                 child.rotation.x = base_rx + sin(t_anim * 1.8 + phase) * 0.14
                 child.rotation.z = base_rz + cos(t_anim * 1.6 + phase) * 0.14
                 
@@ -786,7 +786,7 @@ func _on_koth_tick():
         if not is_instance_valid(kz) or not (kz is Node3D):
             continue
         var kz_node: Node3D = kz as Node3D
-        var kz_rad: float = float(kz_node.get_meta("koth_radius", 16.0))
+        var kz_rad: float = float(kz_node.get_meta("koth_radius")) if kz_node.has_meta("koth_radius") else 16.0
         var kz_pos2 := Vector2(kz_node.global_position.x, kz_node.global_position.z)
 
         var team_counts := {}
@@ -2088,7 +2088,9 @@ func sync_end_match(message: String, winning_team: String = ""):
 func _animate_faction_structures(delta):
     var t = Time.get_ticks_msec() * 0.001
     for s in get_tree().get_nodes_in_group("FactionStructures"):
-        var f_mesh = s.get_meta("faction_mesh", null)
+        if not is_instance_valid(s) or not s.has_meta("faction_mesh"):
+            continue
+        var f_mesh = s.get_meta("faction_mesh")
         if f_mesh and is_instance_valid(f_mesh):
             if f_mesh.has_meta("reach_hover"):
                 var node = f_mesh.get_meta("reach_hover")
@@ -2329,7 +2331,7 @@ func _apply_biome_visuals(biome_name: String):
                 if child is MeshInstance3D and child.name.begins_with("Path"):
                     var p_mat = StandardMaterial3D.new()
                     p_mat.albedo_texture = chk_tex
-                    p_mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
+                    p_mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
                     p_mat.roughness = 0.55
                     p_mat.emission_enabled = true
                     p_mat.emission_texture = chk_tex
@@ -2395,7 +2397,7 @@ func _apply_biome_visuals(biome_name: String):
                 if child is MeshInstance3D and child.name.begins_with("Path"):
                     var p_mat = StandardMaterial3D.new()
                     p_mat.albedo_texture = wood_tex
-                    p_mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
+                    p_mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
                     p_mat.roughness = 0.78
                     p_mat.uv1_scale = Vector3(14.0, 14.0, 14.0)
                     child.material_override = p_mat
@@ -2427,7 +2429,7 @@ func _apply_biome_visuals(biome_name: String):
                 if child is MeshInstance3D and child.name.begins_with("Path"):
                     var p_mat = StandardMaterial3D.new()
                     p_mat.albedo_texture = stone_tex
-                    p_mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
+                    p_mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
                     p_mat.roughness = 0.85
                     p_mat.uv1_scale = Vector3(14.0, 14.0, 14.0)
                     child.material_override = p_mat
@@ -2460,7 +2462,7 @@ func _apply_biome_visuals(biome_name: String):
                 if child is MeshInstance3D and child.name.begins_with("Path"):
                     var p_mat = StandardMaterial3D.new()
                     p_mat.albedo_texture = snow_tex
-                    p_mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
+                    p_mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
                     p_mat.roughness = 0.70
                     p_mat.uv1_scale = Vector3(14.0, 14.0, 14.0)
                     child.material_override = p_mat
@@ -3048,7 +3050,7 @@ func _update_stealth_visibility():
     for unit in get_tree().get_nodes_in_group("Targetable"):
         if not is_instance_valid(unit): continue
         # Fast path: the vast majority of units are not in stealth grass - skip all string/property checks
-        if not (unit.has_meta("in_stealth_grass") and unit.get_meta("in_stealth_grass", false)):
+        if not (unit.has_meta("in_stealth_grass") and bool(unit.get_meta("in_stealth_grass"))):
             if not unit.visible:
                 unit.visible = true
             continue
@@ -3059,7 +3061,7 @@ func _update_stealth_visibility():
         if is_spectator:
             unit.visible = true
             continue
-        if unit.has_meta("stealth_revealed_timer") and unit.get_meta("stealth_revealed_timer", 0.0) > 0.0:
+        if unit.has_meta("stealth_revealed_timer") and float(unit.get_meta("stealth_revealed_timer")) > 0.0:
             unit.visible = true
             continue
         if local_team != "" and unit.is_in_group(local_team):
@@ -3366,7 +3368,7 @@ func _update_realm_of_harmony(delta: float) -> void:
 
         var dist_to_lane: float = GameState.get_distance_to_nearest_lane(u.global_position)
         if dist_to_lane > 13.0:
-            var off_timer: float = float(u.get_meta("harmony_off_path_timer", 0.0)) + step_dt
+            var off_timer: float = (float(u.get_meta("harmony_off_path_timer")) if u.has_meta("harmony_off_path_timer") else 0.0) + step_dt
             if off_timer >= 10.0:
                 off_timer -= 10.0
                 u.set_meta("harmony_off_path_timer", off_timer)
@@ -3452,8 +3454,8 @@ func _generate_frozen_tundra(parent: Node3D):
         if _is_pos_clear(c_pos, 3.0, 8.0, 2.0):
             var h_val: float = randf_range(3.0, 5.5)
             var rot_vec := Vector3(deg_to_rad(randf_range(-8.0, 8.0)), randf() * TAU, deg_to_rad(randf_range(-8.0, 8.0)))
-            var basis := Basis.from_euler(rot_vec).scaled(Vector3(1.2, h_val, 1.2))
-            frost_tfs.append(Transform3D(basis, c_pos + Vector3(0.0, h_val * 0.5, 0.0)))
+            var m_basis := Basis.from_euler(rot_vec).scaled(Vector3(1.2, h_val, 1.2))
+            frost_tfs.append(Transform3D(m_basis, c_pos + Vector3(0.0, h_val * 0.5, 0.0)))
             placed_feature_records.append({"pos": c_pos, "radius": 2.0, "type": "ice_spire"})
 
     if frost_tfs.size() > 0:
@@ -3506,8 +3508,8 @@ func _generate_volcanic_brimstone(parent: Node3D):
             var sy := randf_range(3.5, 6.5)
             var sz := randf_range(1.6, 2.8)
             var rot_vec := Vector3(deg_to_rad(randf_range(-10.0, 10.0)), randf() * TAU, deg_to_rad(randf_range(-10.0, 10.0)))
-            var basis := Basis.from_euler(rot_vec).scaled(Vector3(sx, sy, sz))
-            obs_tfs.append(Transform3D(basis, r_pos + Vector3(0.0, sy * 0.5, 0.0)))
+            var m_basis := Basis.from_euler(rot_vec).scaled(Vector3(sx, sy, sz))
+            obs_tfs.append(Transform3D(m_basis, r_pos + Vector3(0.0, sy * 0.5, 0.0)))
             placed_feature_records.append({"pos": r_pos, "radius": 2.5, "type": "obsidian_spire"})
 
     if obs_tfs.size() > 0:

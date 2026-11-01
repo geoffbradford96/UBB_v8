@@ -144,7 +144,7 @@ func _spawn_clone(template_unit: Node3D, target_gen: int, world_pos: Vector3, ta
 		HarmonyHuskBuilderScript.transform_into_husk(clone, true, team)
 		var hc := clone.get_node_or_null("HealthComponent")
 		if hc:
-			var base_hp: float = float(clone.get_meta("base_gilded_hp", hc.max_health))
+			var base_hp: float = float(clone.get_meta("base_gilded_hp")) if clone.has_meta("base_gilded_hp") else hc.max_health
 			clone.set_meta("base_gilded_hp", base_hp)
 			var new_max: float = maxf(18.0, base_hp * stat_mult)
 			hc.max_health = new_max
@@ -152,11 +152,11 @@ func _spawn_clone(template_unit: Node3D, target_gen: int, world_pos: Vector3, ta
 			if hc.has_method("_refresh_hp_visuals"):
 				hc._refresh_hp_visuals()
 		if "attack_damage" in clone:
-			var base_dmg: float = float(clone.get_meta("base_gilded_dmg", clone.get("attack_damage")))
+			var base_dmg: float = float(clone.get_meta("base_gilded_dmg")) if clone.has_meta("base_gilded_dmg") else float(clone.get("attack_damage"))
 			clone.set_meta("base_gilded_dmg", base_dmg)
 			clone.set("attack_damage", maxf(4.0, base_dmg * stat_mult))
 		elif "damage" in clone:
-			var base_tdmg: float = float(clone.get_meta("base_gilded_dmg", clone.get("damage")))
+			var base_tdmg: float = float(clone.get_meta("base_gilded_dmg")) if clone.has_meta("base_gilded_dmg") else float(clone.get("damage"))
 			clone.set_meta("base_gilded_dmg", base_tdmg)
 			clone.set("damage", maxf(4.0, base_tdmg * stat_mult))
 

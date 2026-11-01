@@ -52,7 +52,7 @@ func _physics_process(delta):
 		velocity.y -= 9.8 * delta
 		
 	if has_meta("stealth_revealed_timer"):
-		var __s_timer = get_meta("stealth_revealed_timer", 0.0)
+		var __s_timer = float(get_meta("stealth_revealed_timer")) if has_meta("stealth_revealed_timer") else 0.0
 		if __s_timer > 0.0:
 			set_meta("stealth_revealed_timer", max(0.0, __s_timer - delta))
 		

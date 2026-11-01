@@ -1067,7 +1067,7 @@ static func _build_primate(root: Node3D, key: String, m1: Material, m2: Material
 				t_mat = m2 if (t_i % 2 == 0) else m3
 			_add_cyl(tail, 0.038, 0.042, 0.20, Vector3(0, float(t_i) * 0.13 + 0.06, float(t_i) * 0.09 + 0.06), t_mat, Vector3(-38 + t_i * 8, 0, 0))
 
-static func _build_crocodilian(root: Node3D, key: String, m1: Material, m2: Material, m3: Material, m_dark: Material, m_white: Material, m_eye: Material) -> void:
+static func _build_crocodilian(root: Node3D, key: String, m1: Material, m2: Material, _m3: Material, m_dark: Material, m_white: Material, m_eye: Material) -> void:
 	var body = _add_box(root, Vector3(0.62, 0.32, 1.35), Vector3(0, 0.26, 0.05), m1, Vector3.ZERO, "Torso")
 	_add_box(body, Vector3(0.56, 0.12, 1.28), Vector3(0, -0.14, 0), m2, Vector3.ZERO, "Belly")
 	for r in range(5):
@@ -1312,7 +1312,7 @@ static func _build_avian_flyer(root: Node3D, key: String, info: Dictionary, m1: 
 		var rock_mat = _make_mat(Color(0.48, 0.46, 0.44), 0.90, 0.05)
 		_add_sphere(root, 0.13, 0.24, Vector3(0, 0.20, -0.10), rock_mat, Vector3(1.15, 0.85, 1.05), "HeldRock")
 
-static func _build_avian_walker(root: Node3D, key: String, m1: Material, m2: Material, m3: Material, m_dark: Material, m_white: Material, m_eye: Material) -> void:
+static func _build_avian_walker(root: Node3D, key: String, m1: Material, m2: Material, m3: Material, m_dark: Material, _m_white: Material, m_eye: Material) -> void:
 	var tall = ("Ostrich" in key or "Cassowary" in key or "Emu" in key or "Secretary" in key or "Shoebill" in key or "Swan" in key or "Goose" in key)
 	var body_y = 0.78 if tall else 0.48
 	var body = _add_sphere(root, 0.32 if tall else 0.24, 0.72 if tall else 0.52, Vector3(0, body_y, 0.06), m1, Vector3(0.95, 0.90, 1.28), "Torso")
@@ -1438,15 +1438,15 @@ static func _build_insect(root: Node3D, key: String, arch: String, m1: Material,
 
 static func _build_arachnid_or_crawler(root: Node3D, key: String, arch: String, m1: Material, m2: Material, m3: Material, m_dark: Material, m_eye: Material) -> void:
 	if arch == "CENTIPEDE":
-		var head = Node3D.new()
-		head.name = "HeadPivot"
-		head.position = Vector3(0, 0.20, -0.58)
-		root.add_child(head)
-		_add_box(head, Vector3(0.28, 0.12, 0.24), Vector3.ZERO, m2)
-		_add_eyes(head, 0.10, 0.03, -0.10, 0.03, m_eye, m_dark)
+		var centi_head = Node3D.new()
+		centi_head.name = "HeadPivot"
+		centi_head.position = Vector3(0, 0.20, -0.58)
+		root.add_child(centi_head)
+		_add_box(centi_head, Vector3(0.28, 0.12, 0.24), Vector3.ZERO, m2)
+		_add_eyes(centi_head, 0.10, 0.03, -0.10, 0.03, m_eye, m_dark)
 		for s in [-1.0, 1.0]:
-			_add_cyl(head, 0.008, 0.016, 0.26, Vector3(s * 0.08, 0.04, -0.20), m1, Vector3(-68, -s * 24.0, 0), "Antenna")
-			_add_box(head, Vector3(0.05, 0.04, 0.18), Vector3(s * 0.14, -0.02, -0.14), m3, Vector3(0, s * 24.0, 0), "Forcipule")
+			_add_cyl(centi_head, 0.008, 0.016, 0.26, Vector3(s * 0.08, 0.04, -0.20), m1, Vector3(-68, -s * 24.0, 0), "Antenna")
+			_add_box(centi_head, Vector3(0.05, 0.04, 0.18), Vector3(s * 0.14, -0.02, -0.14), m3, Vector3(0, s * 24.0, 0), "Forcipule")
 		for seg in range(7):
 			var z = -0.34 + float(seg) * 0.20
 			var seg_piv = Node3D.new()
@@ -1508,19 +1508,19 @@ static func _build_arachnid_or_crawler(root: Node3D, key: String, arch: String, 
 
 static func _build_aquatic(root: Node3D, key: String, arch: String, m1: Material, m2: Material, m3: Material, m_dark: Material, m_white: Material, m_eye: Material) -> void:
 	if arch == "EEL":
-		var head = Node3D.new()
-		head.name = "HeadPivot"
-		head.position = Vector3(0, 0.30, -0.58)
-		root.add_child(head)
-		_add_sphere(head, 0.16, 0.32, Vector3.ZERO, m1, Vector3(1.1, 0.82, 1.35))
-		_add_eyes(head, 0.10, 0.04, -0.12, 0.032, m3, m_dark)
-		var tail = Node3D.new()
-		tail.name = "TailPivot"
-		tail.position = Vector3(0, 0.28, -0.38)
-		root.add_child(tail)
+		var eel_head = Node3D.new()
+		eel_head.name = "HeadPivot"
+		eel_head.position = Vector3(0, 0.30, -0.58)
+		root.add_child(eel_head)
+		_add_sphere(eel_head, 0.16, 0.32, Vector3.ZERO, m1, Vector3(1.1, 0.82, 1.35))
+		_add_eyes(eel_head, 0.10, 0.04, -0.12, 0.032, m3, m_dark)
+		var eel_tail = Node3D.new()
+		eel_tail.name = "TailPivot"
+		eel_tail.position = Vector3(0, 0.28, -0.38)
+		root.add_child(eel_tail)
 		for i in range(7):
 			var x_w = sin(float(i) * 0.85) * 0.18
-			var coil = _add_sphere(tail, 0.14 * (1.0 - float(i) * 0.09), 0.28, Vector3(x_w, 0, float(i) * 0.20), m1 if i % 2 == 0 else m2, Vector3(0.85, 1.0, 1.35), "Coil" + str(i))
+			var coil = _add_sphere(eel_tail, 0.14 * (1.0 - float(i) * 0.09), 0.28, Vector3(x_w, 0, float(i) * 0.20), m1 if i % 2 == 0 else m2, Vector3(0.85, 1.0, 1.35), "Coil" + str(i))
 			coil.set_meta("base_x", x_w)
 			if "Electric" in key and i < 5:
 				for s in [-1.0, 1.0]:

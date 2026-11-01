@@ -96,7 +96,7 @@ func _ready():
 	mesh_node.add_child(eye)
 
 func _physics_process(delta):
-	var mn = get_meta("mesh_node", null)
+	var mn = get_meta("mesh_node") if has_meta("mesh_node") else null
 	var is_tweening = false
 	if has_meta("attack_tween"):
 		var tw = get_meta("attack_tween")
@@ -148,7 +148,7 @@ func execute_tentacle_slam():
 	if hp: hp.take_damage(damage)
 	
 	# Whip slam animation
-	var mn = get_meta("mesh_node", null)
+	var mn = get_meta("mesh_node") if has_meta("mesh_node") else null
 	if mn:
 		if has_meta("attack_tween"):
 			var old_tw = get_meta("attack_tween")

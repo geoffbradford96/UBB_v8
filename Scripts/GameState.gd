@@ -222,7 +222,7 @@ func disconnect_multiplayer():
 func is_unit_stealthed_from(target: Node3D, observer: Node3D) -> bool:
 	if not is_instance_valid(target) or not target.is_inside_tree(): return false
 	if not target.has_meta("in_stealth_grass"): return false
-	if not target.get_meta("in_stealth_grass", false): return false
+	if not (target.has_meta("in_stealth_grass") and bool(target.get_meta("in_stealth_grass"))): return false
 	
 	# Flying units NEVER get stealth in grass
 	if "Plane" in target.name or target.get("flight_height") != null or target.get("is_flying") == true or target.get("unit_attribute") == "Flying":
@@ -232,7 +232,7 @@ func is_unit_stealthed_from(target: Node3D, observer: Node3D) -> bool:
 		
 	# If target recently fired/attacked, it is temporarily revealed for retaliation
 	if target.has_meta("stealth_revealed_timer"):
-		if target.get_meta("stealth_revealed_timer", 0.0) > 0.0:
+		if target.has_meta("stealth_revealed_timer") and float(target.get_meta("stealth_revealed_timer")) > 0.0:
 			return false
 		
 	# Friendly / same team check

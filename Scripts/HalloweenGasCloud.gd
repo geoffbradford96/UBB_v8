@@ -98,7 +98,7 @@ func _apply_gas_effects(step_time: float):
 			continue
 		var hc = body.get_node_or_null("HealthComponent")
 		if hc and not hc.is_dead and hc.has_method("take_damage"):
-			hc.take_damage(damage_per_sec * step_time, null)
+			hc.take_damage(damage_per_sec * step_time, global_position)
 		# Apply temporary slow speed debuff
 		if body.get("speed") != null and body.get("base_speed") != null:
 			var b_speed: float = float(body.get("base_speed"))

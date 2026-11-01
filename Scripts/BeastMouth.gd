@@ -110,7 +110,7 @@ func _ready():
 		mesh_node.add_child(pustule)
 
 func _physics_process(delta):
-	var mn = get_meta("mesh_node", null)
+	var mn = get_meta("mesh_node") if has_meta("mesh_node") else null
 	if mn and is_instance_valid(mn):
 		var t = Time.get_ticks_msec() * 0.004
 		var s = sin(t) * 0.08
@@ -168,7 +168,7 @@ func sync_spawn_cell(cell_type: int = 0):
 			c.add_to_group("Beast")
 		
 		# Regurgitation convulsive gulp animation
-		var mn = get_meta("mesh_node", null)
+		var mn = get_meta("mesh_node") if has_meta("mesh_node") else null
 		if mn and is_instance_valid(mn):
 			var tw = create_tween()
 			if tw:

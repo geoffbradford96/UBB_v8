@@ -400,17 +400,19 @@ func _refresh_hp_visuals():
 	if hp_viewport:
 		hp_viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
 
-func take_damage(amount: float, source_pos: Vector3 = Vector3.INF):
+func take_damage(amount: float, source_pos: Variant = Vector3.INF):
+	var s_pos: Vector3 = source_pos if (source_pos is Vector3) else Vector3.INF
 	if multiplayer and multiplayer.has_multiplayer_peer() and multiplayer.multiplayer_peer.get_connection_status() == MultiplayerPeer.CONNECTION_CONNECTED:
 		if not multiplayer.is_server():
 			return # Only Server handles damage logic
-		rpc("sync_take_damage", amount, source_pos)
+		rpc("sync_take_damage", amount, s_pos)
 	else:
-		sync_take_damage(amount, source_pos)
+		sync_take_damage(amount, s_pos)
 
 @rpc("authority", "call_local", "reliable")
-func sync_take_damage(amount: float, source_pos: Vector3 = Vector3.INF):
+func sync_take_damage(amount: float, source_pos: Variant = Vector3.INF):
 	if is_dead: return
+	var s_pos: Vector3 = source_pos if (source_pos is Vector3) else Vector3.INF
 	
 	shield_recharge_timer = 0.0
 	var remaining_damage = amount
@@ -422,10 +424,10 @@ func sync_take_damage(amount: float, source_pos: Vector3 = Vector3.INF):
 			blocks_damage = true
 		elif shield_type == "FRONT":
 			var p = get_parent()
-			if p is Node3D and source_pos != Vector3.INF:
+			if p is Node3D and s_pos != Vector3.INF:
 				var fwd = -p.global_transform.basis.z
 				fwd.y = 0.0
-				var to_src = source_pos - p.global_position
+				var to_src = s_pos - p.global_position
 				to_src.y = 0.0
 				if fwd.length_squared() > 0.01 and to_src.length_squared() > 0.01:
 					var angle = rad_to_deg(fwd.normalized().angle_to(to_src.normalized()))
@@ -1020,7 +1022,7 @@ func _spawn_unit_corpse(parent: Node3D):
 	corpse.name = "Corpse_" + str(parent.name)
 	
 	var p_name = parent.name
-	var is_gilded_unit: bool = bool(parent.get_meta("is_gilded_harmony", false)) or parent.is_in_group("GildedHarmony")
+	var is_gilded_unit: bool = (bool(parent.get_meta("is_gilded_harmony")) if parent.has_meta("is_gilded_harmony") else false) or parent.is_in_group("GildedHarmony")
 	var is_humanoid = false
 	if parent.has_method("is_humanoid"):
 		is_humanoid = parent.is_humanoid()
@@ -1879,7 +1881,7 @@ func _build_broken_beast(corpse: Node3D, parent: Node3D):
 		return
 
 	if parent.is_in_group("HarmonyInfector") or "HarmonyInfector" in p_name:
-		var is_gilded_inf: bool = bool(parent.get_meta("is_gilded_harmony", false))
+		var is_gilded_inf: bool = bool(parent.get_meta("is_gilded_harmony")) if parent.has_meta("is_gilded_harmony") else false
 		var gold_mat = HarmonyHuskBuilderScript.get_gold_vein_material()
 		var robe_mat = HarmonyHuskBuilderScript.get_gilded_dark_green_material() if is_gilded_inf else HarmonyHuskBuilderScript.get_husk_body_material()
 		var orb_mat = HarmonyHuskBuilderScript.get_gilded_pale_blue_material() if is_gilded_inf else gold_mat

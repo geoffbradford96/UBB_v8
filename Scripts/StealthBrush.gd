@@ -96,7 +96,7 @@ func _on_body_entered(body: Node):
 	if not body.is_in_group("Targetable"): return
 	if is_flying_unit(body): return # Flying units cannot hide in tall grass!
 	
-	var count = body.get_meta("stealth_brush_count", 0) + 1
+	var count = (int(body.get_meta("stealth_brush_count")) if body.has_meta("stealth_brush_count") else 0) + 1
 	body.set_meta("stealth_brush_count", count)
 	body.set_meta("in_stealth_grass", true)
 	body.set_meta("current_brush_zone", self)
@@ -104,9 +104,9 @@ func _on_body_entered(body: Node):
 func _on_body_exited(body: Node):
 	if not is_instance_valid(body): return
 	if body.has_meta("stealth_brush_count"):
-		var count = max(0, body.get_meta("stealth_brush_count", 1) - 1)
+		var count = max(0, (int(body.get_meta("stealth_brush_count")) if body.has_meta("stealth_brush_count") else 1) - 1)
 		body.set_meta("stealth_brush_count", count)
 		if count <= 0:
 			body.set_meta("in_stealth_grass", false)
-			if body.get_meta("current_brush_zone", null) == self:
+			if body.has_meta("current_brush_zone") and body.get_meta("current_brush_zone") == self:
 				body.set_meta("current_brush_zone", null)

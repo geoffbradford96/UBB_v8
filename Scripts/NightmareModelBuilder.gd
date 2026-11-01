@@ -93,7 +93,6 @@ static func _build_supreme_necromancer(root: Node3D):
 	var robe_mat = _get_mat("necro_robe", Color(0.12, 0.06, 0.18), 0.85)
 	var bone_mat = _get_mat("bone_mat", Color(0.86, 0.84, 0.76), 0.6)
 	var soul_mat = _get_mat("soul_green", Color(0.2, 1.0, 0.35), 0.3, 0.0, Color(0.2, 1.0, 0.35), 3.2)
-	var gold_mat = _get_mat("dark_gold", Color(0.78, 0.62, 0.22), 0.3, 0.8)
 
 	# Hovering Body Center
 	var body = Node3D.new()

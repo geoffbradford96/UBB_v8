@@ -25,20 +25,28 @@ static func get_cached_biome_texture(biome_name: String) -> ImageTexture:
 		return _texture_cache[key]
 
 	if key == "VOLCANIC_BRIMSTONE":
-		var chk_img := Image.create(16, 16, false, Image.FORMAT_RGBA8)
-		for py in range(16):
-			for px in range(16):
-				var is_orange := (int(float(px) / 4.0) + int(float(py) / 4.0)) % 2 == 0
-				if is_orange:
-					chk_img.set_pixel(px, py, Color(1.0, 0.48, 0.05))
+		var chk_img := Image.create(32, 32, true, Image.FORMAT_RGBA8)
+		for py in range(32):
+			for px in range(32):
+				var tile_x := px % 8
+				var tile_y := py % 8
+				var is_crack := (tile_x == 0 or tile_y == 0 or ((tile_x == tile_y) and (px + py) % 6 == 0))
+				if is_crack:
+					var is_magma := ((px * 2 + py * 5) % 3 != 0)
+					if is_magma:
+						chk_img.set_pixel(px, py, Color(1.0, 0.42, 0.04)) # Molten orange magma vein
+					else:
+						chk_img.set_pixel(px, py, Color(0.35, 0.08, 0.04)) # Cooled volcanic crust
 				else:
-					chk_img.set_pixel(px, py, Color(0.14, 0.08, 0.08))
+					var grain := sin(float(px) * 0.9 + float(py) * 1.3) * 0.03
+					chk_img.set_pixel(px, py, Color(0.15 + grain, 0.12 + grain, 0.13 + grain)) # Dark basalt flagstone
+		chk_img.generate_mipmaps()
 		var chk_tex := ImageTexture.create_from_image(chk_img)
 		_texture_cache[key] = chk_tex
 		return chk_tex
 
 	elif key == "DEEP_JUNGLE":
-		var wood_img := Image.create(32, 32, false, Image.FORMAT_RGBA8)
+		var wood_img := Image.create(32, 32, true, Image.FORMAT_RGBA8)
 		for py in range(32):
 			var plank_idx := int(float(py) / 8.0)
 			var is_seam := (py % 8 == 0) or (py % 8 == 7)
@@ -61,12 +69,13 @@ static func get_cached_biome_texture(biome_name: String) -> ImageTexture:
 								clampf(base_col.b + grain * 0.6, 0.0, 1.0)
 							)
 						)
+		wood_img.generate_mipmaps()
 		var wood_tex := ImageTexture.create_from_image(wood_img)
 		_texture_cache[key] = wood_tex
 		return wood_tex
 
 	elif key == "HAUNTED_HALLOW" or key == "HALLOWEEN":
-		var stone_img := Image.create(32, 32, false, Image.FORMAT_RGBA8)
+		var stone_img := Image.create(32, 32, true, Image.FORMAT_RGBA8)
 		for py in range(32):
 			for px in range(32):
 				# Cobblestone tile grid with irregular broken edges
@@ -89,12 +98,13 @@ static func get_cached_biome_texture(biome_name: String) -> ImageTexture:
 						var noise_val := sin(float(px) * 0.8 + float(py) * 1.2) * 0.04
 						var stone_col := Color(0.32 + noise_val, 0.30 + noise_val, 0.34 + noise_val)
 						stone_img.set_pixel(px, py, stone_col)
+		stone_img.generate_mipmaps()
 		var stone_tex := ImageTexture.create_from_image(stone_img)
 		_texture_cache[key] = stone_tex
 		return stone_tex
 
 	elif key == "FROZEN_WONDERLAND" or key == "WINTER" or key == "YULETIDE":
-		var winter_img := Image.create(32, 32, false, Image.FORMAT_RGBA8)
+		var winter_img := Image.create(32, 32, true, Image.FORMAT_RGBA8)
 		for py in range(32):
 			for px in range(32):
 				var tile_x := px % 8
@@ -116,6 +126,7 @@ static func get_cached_biome_texture(biome_name: String) -> ImageTexture:
 						var noise_val := sin(float(px) * 0.9 + float(py) * 0.7) * 0.05
 						var snow_col := Color(0.88 + noise_val, 0.92 + noise_val, 0.98)
 						winter_img.set_pixel(px, py, snow_col)
+		winter_img.generate_mipmaps()
 		var winter_tex := ImageTexture.create_from_image(winter_img)
 		_texture_cache[key] = winter_tex
 		return winter_tex

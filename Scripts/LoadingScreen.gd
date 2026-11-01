@@ -113,7 +113,7 @@ func set_stage(progress: float, stage_text: String, stats_text: String = "") -> 
 	if stats_text != "" and _stats_lbl:
 		_stats_lbl.text = stats_text
 
-func run_arena_pre_render_sequence(arena: Node3D, biome_name: String, bake_stats: Dictionary) -> void:
+func run_arena_pre_render_sequence(_arena: Node3D, biome_name: String, bake_stats: Dictionary) -> void:
 	_build_ui()
 	var nice_biome := biome_name.replace("_", " ")
 	if _title_lbl:

@@ -145,7 +145,7 @@ func _physics_process(delta):
 		recheck_timer = randf_range(0.2, 0.4)
 		_evaluate_targeting()
 
-	var is_moving = false
+	var _is_moving = false
 
 	if is_instance_valid(current_target):
 		var target_hc = current_target.get_node_or_null("HealthComponent")
@@ -159,7 +159,7 @@ func _physics_process(delta):
 			var move_dir = (current_target.global_position - global_position).normalized()
 			velocity.x = move_dir.x * speed
 			velocity.z = move_dir.z * speed
-			is_moving = true
+			_is_moving = true
 
 			var look_pos = Vector3(current_target.global_position.x, global_position.y, current_target.global_position.z)
 			if global_position.distance_to(look_pos) > 0.1:
