@@ -397,19 +397,30 @@ func _find_target():
 	var best_struct: Node3D = null
 	var best_struct_dist: float = 999999.0
 
-	var candidates: Array = get_tree().get_nodes_in_group("Targetable").duplicate()
-	for u in get_tree().get_nodes_in_group("Units"):
-		if not candidates.has(u):
-			candidates.append(u)
-	for st in get_tree().get_nodes_in_group("Structures"):
-		if not candidates.has(st):
-			candidates.append(st)
+	# O(n) candidate merge (dictionary de-dup instead of O(n^2) Array.has())
+	var seen: Dictionary = {}
+	var candidates: Array = []
+	for grp in ["Targetable", "Units", "Structures"]:
+		for c in get_tree().get_nodes_in_group(grp):
+			var cid: int = c.get_instance_id()
+			if not seen.has(cid):
+				seen[cid] = true
+				candidates.append(c)
 
 	var can_hit_air = is_flying or drops_rocks or projectile_type != "NONE" or attack_range >= 4.0
 	var gs = _get_game_state()
+	var my_pos2 := Vector2(global_position.x, global_position.z)
 
 	for node in candidates:
 		if not is_instance_valid(node) or node.is_queued_for_deletion() or node == self or not (node is Node3D):
+			continue
+		# Cheap distance pre-filter BEFORE expensive team/HealthComponent/stealth lookups
+		var pre_d: float = my_pos2.distance_to(Vector2(node.global_position.x, node.global_position.z))
+		var pre_is_struct: bool = node.is_in_group("Structures") or node.is_in_group("Structure") or "Base" in node.name or "Tower" in node.name or "CommandBay" in node.name
+		if pre_is_struct:
+			if pre_d >= best_struct_dist:
+				continue
+		elif pre_d > best_unit_dist:
 			continue
 		if _is_same_team(node):
 			continue

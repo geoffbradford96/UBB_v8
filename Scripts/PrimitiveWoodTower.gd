@@ -275,31 +275,42 @@ func _build_archer_model():
 	bow_arm.position = Vector3(0.20, 0.86, -0.42)
 	archer_node.add_child(bow_arm)
 
-	# Recurve Bow Arc
-	var bow = MeshInstance3D.new()
-	var b_tor = TorusMesh.new()
-	b_tor.inner_radius = 0.42
-	b_tor.outer_radius = 0.48
-	bow.mesh = b_tor
-	bow.material_override = bow_wood
-	bow.rotation.y = PI / 2.0
-	bow.rotation.z = PI / 4.0
-	bow_arm.add_child(bow)
+	# Recurve Bow: central grip + two limbs raked back toward the archer + vertical bowstring
+	var grip = MeshInstance3D.new()
+	var g_cyl = CylinderMesh.new()
+	g_cyl.top_radius = 0.035; g_cyl.bottom_radius = 0.035; g_cyl.height = 0.30
+	grip.mesh = g_cyl
+	grip.material_override = leather_mat
+	bow_arm.add_child(grip)
+
+	for limb_s in [1.0, -1.0]:
+		var limb = MeshInstance3D.new()
+		var lb_cyl = CylinderMesh.new()
+		lb_cyl.top_radius = 0.016; lb_cyl.bottom_radius = 0.03; lb_cyl.height = 0.36
+		limb.mesh = lb_cyl
+		limb.material_override = bow_wood
+		limb.position = Vector3(0.0, limb_s * 0.28, 0.065)
+		# Upper limb: top (thin tip) leans back; lower limb is the mirror image
+		limb.rotation_degrees = Vector3(24.0 * limb_s, 0.0, 0.0)
+		if limb_s < 0.0:
+			limb.rotation_degrees.x = 180.0 - 24.0 # flip so the thin end points down & back toward the archer
+		bow_arm.add_child(limb)
 
 	var b_string = MeshInstance3D.new()
 	var bs_cyl = CylinderMesh.new()
-	bs_cyl.top_radius = 0.008; bs_cyl.bottom_radius = 0.008; bs_cyl.height = 0.86
+	bs_cyl.top_radius = 0.008; bs_cyl.bottom_radius = 0.008; bs_cyl.height = 0.87
 	b_string.mesh = bs_cyl
 	b_string.material_override = string_mat
-	b_string.position = Vector3(0.0, 0.0, 0.14)
+	b_string.position = Vector3(0.0, 0.0, 0.134)
 	bow_arm.add_child(b_string)
 
 	var nocked_arrow = MeshInstance3D.new()
+	nocked_arrow.name = "NockedArrow"
 	var na_cyl = CylinderMesh.new()
 	na_cyl.top_radius = 0.014; na_cyl.bottom_radius = 0.014; na_cyl.height = 0.65
 	nocked_arrow.mesh = na_cyl
 	nocked_arrow.material_override = string_mat
-	nocked_arrow.position = Vector3(0.0, 0.02, -0.08)
+	nocked_arrow.position = Vector3(0.0, 0.0, -0.19)
 	nocked_arrow.rotation_degrees.x = 90.0
 	bow_arm.add_child(nocked_arrow)
 
@@ -366,11 +377,17 @@ func _shoot_fast_arrow(target: Node3D):
 	proj.set("damage", attack_damage)
 	proj.set("speed", 28.0)
 
-	# Recoil bow animation
+	# Recoil bow animation (relative to the bow's resting offset) + hide the nocked arrow until re-nocked
 	if bow_arm:
+		var rest_z: float = -0.42
+		var nocked = bow_arm.get_node_or_null("NockedArrow")
+		if nocked:
+			nocked.visible = false
 		var tw = create_tween()
-		tw.tween_property(bow_arm, "position:z", 0.05, 0.06)
-		tw.tween_property(bow_arm, "position:z", -0.15, 0.12)
+		tw.tween_property(bow_arm, "position:z", rest_z + 0.20, 0.06)
+		tw.tween_property(bow_arm, "position:z", rest_z, 0.12)
+		if nocked:
+			tw.tween_callback(func(): if is_instance_valid(nocked): nocked.visible = true)
 
 	# Format projectile to look like a wooden arrow
 	var p_mesh = proj.get_node_or_null("MeshInstance3D")

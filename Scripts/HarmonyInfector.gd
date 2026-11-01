@@ -356,10 +356,13 @@ func _acquire_convertible_target(my_team: String) -> void:
 	var best_unit: Node3D = null
 
 	var candidates: Array[Node] = []
-	candidates.append_array(get_tree().get_nodes_in_group("Targetable"))
-	for u in get_tree().get_nodes_in_group("Units"):
-		if not candidates.has(u):
-			candidates.append(u)
+	var seen_ids: Dictionary = {}
+	for grp in ["Targetable", "Units"]:
+		for c in get_tree().get_nodes_in_group(grp):
+			var cid: int = c.get_instance_id()
+			if not seen_ids.has(cid):
+				seen_ids[cid] = true
+				candidates.append(c)
 
 	for node in candidates:
 		if not _is_convertible_unit(node, my_team):

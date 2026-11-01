@@ -31,13 +31,17 @@ func _ready():
 		var camera_offset = Vector3(0, 20.0 * zoom_level, 16.0 * zoom_level)
 		global_position = target_position + camera_offset
 
+var _hero_search_cd: float = 0.0
+
 func _process(delta):
 	if is_spectator:
 		_process_spectator(delta)
 		return
 		
-	# Find the Commander if we don't have one and we're not manually exploring
-	if hero == null or not is_instance_valid(hero):
+	# Find the Commander if we don't have one and we're not manually exploring (throttled to 2 Hz)
+	_hero_search_cd -= delta
+	if (hero == null or not is_instance_valid(hero)) and _hero_search_cd <= 0.0:
+		_hero_search_cd = 0.5
 		if is_inside_tree() and get_tree():
 			var potential_heroes = get_tree().get_nodes_in_group(assigned_team)
 			for p in potential_heroes:

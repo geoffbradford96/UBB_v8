@@ -1570,7 +1570,7 @@ static func _build_aquatic(root: Node3D, key: String, arch: String, m1: Material
 	_add_sphere(body, 0.26, 0.62, Vector3(0, -0.08, -0.02), m2, Vector3(0.82, 0.75, 1.38), "Belly")
 	if not is_manta:
 		var df_h = 0.56 if ("Orca" in key or "Swordfish" in key or "Megalodon" in key) else 0.38
-		_add_prism(body, Vector3(0.32, df_h, 0.06), Vector3(0, 0.34, 0.02), m1, Vector3(0, 90, 0), 0.82, "DorsalFin")
+		_add_prism(body, Vector3(0.32, df_h, 0.06), Vector3(0, 0.34, 0.02), m1, Vector3(0, 90, 0), 0.12, "DorsalFin")
 	if arch == "SHARK":
 		for g_s in [-1.0, 1.0]:
 			for g_i in range(5):
@@ -1636,8 +1636,9 @@ static func _build_aquatic(root: Node3D, key: String, arch: String, m1: Material
 	elif is_manta:
 		_add_cyl(tail, 0.006, 0.03, 0.65, Vector3(0, 0, 0.42), m_dark, Vector3(88, 0, 0), "WhipTail")
 	else:
-		_add_prism(tail, Vector3(0.28, 0.38, 0.06), Vector3(0, 0.16, 0.38), m1, Vector3(-28, 90, 0), 0.85, "UpperCaudalLobe")
-		_add_prism(tail, Vector3(0.22, 0.26, 0.05), Vector3(0, -0.12, 0.36), m1, Vector3(-152, 90, 0), 0.85, "LowerCaudalLobe")
+		# Crescent caudal fin: two symmetric triangular lobes raked rearward (tilt about local Z, applied before the Y turn)
+		_add_prism(tail, Vector3(0.26, 0.38, 0.06), Vector3(0, 0.15, 0.40), m1, Vector3(0, 90, 24), 0.5, "UpperCaudalLobe")
+		_add_prism(tail, Vector3(0.20, 0.26, 0.05), Vector3(0, -0.11, 0.38), m1, Vector3(0, 90, 156), 0.5, "LowerCaudalLobe")
 
 static func _build_crab(root: Node3D, key: String, m1: Material, m2: Material, m3: Material, _m_dark: Material, _m_eye: Material) -> void:
 	var is_shrimp = ("Shrimp" in key)

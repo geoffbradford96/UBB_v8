@@ -1377,10 +1377,10 @@ func _build_structure_mesh(node, faction: String, is_tower: bool):
             for s_side in [-1.0, 1.0]:
                 var skein = MeshInstance3D.new(); skein.mesh = CylinderMesh.new(); skein.mesh.height = 0.65; skein.mesh.bottom_radius = 0.16; skein.mesh.top_radius = 0.16
                 skein.material_override = iron_mat; skein.position = Vector3(s_side * 0.42, 0.2, 1.4); ballista_carriage.add_child(skein)
-                var b_str = MeshInstance3D.new(); b_str.mesh = CylinderMesh.new(); b_str.mesh.height = 1.95; b_str.mesh.bottom_radius = 0.025; b_str.mesh.top_radius = 0.025
+                var b_str = MeshInstance3D.new(); b_str.mesh = CylinderMesh.new(); b_str.mesh.height = 2.06; b_str.mesh.bottom_radius = 0.025; b_str.mesh.top_radius = 0.025
                 b_str.material_override = gold_trim_mat
-                b_str.position = Vector3(s_side * 0.62, 0.22, 0.55)
-                b_str.rotation_degrees = Vector3(90.0, s_side * -36.0, 0.0)
+                b_str.position = Vector3(s_side * 0.65, 0.22, 0.60)
+                b_str.rotation_degrees = Vector3(90.0, s_side * 39.0, 0.0)
                 ballista_carriage.add_child(b_str)
             # Winch Spool at rear
             var winch = MeshInstance3D.new(); winch.mesh = CylinderMesh.new(); winch.mesh.height = 0.6; winch.mesh.bottom_radius = 0.25; winch.mesh.top_radius = 0.25
@@ -1440,11 +1440,11 @@ func _build_structure_mesh(node, faction: String, is_tower: bool):
             var crest_mat = StandardMaterial3D.new(); crest_mat.albedo_color = Color(0.95, 0.94, 0.90); crest_mat.roughness = 0.65
             var beak_mat = StandardMaterial3D.new(); beak_mat.albedo_color = Color(0.95, 0.75, 0.15); beak_mat.roughness = 0.35
             var eagle_body = MeshInstance3D.new(); eagle_body.mesh = SphereMesh.new(); eagle_body.mesh.radius = 0.68; eagle_body.mesh.height = 1.45
-            eagle_body.material_override = feather_mat; eagle_body.position = Vector3(0, 0.35, -0.1); eagle_body.rotation_degrees.x = 24.0; turret_nest.add_child(eagle_body)
+            eagle_body.material_override = feather_mat; eagle_body.position = Vector3(0, 0.35, 0.10); eagle_body.rotation_degrees.x = -24.0; turret_nest.add_child(eagle_body)
             var eagle_head = MeshInstance3D.new(); eagle_head.mesh = SphereMesh.new(); eagle_head.mesh.radius = 0.42; eagle_head.mesh.height = 0.82
-            eagle_head.material_override = crest_mat; eagle_head.position = Vector3(0, 1.05, 0.35); turret_nest.add_child(eagle_head)
+            eagle_head.material_override = crest_mat; eagle_head.position = Vector3(0, 1.05, -0.35); turret_nest.add_child(eagle_head)
             var eagle_beak = MeshInstance3D.new(); eagle_beak.mesh = CylinderMesh.new(); eagle_beak.mesh.bottom_radius = 0.20; eagle_beak.mesh.top_radius = 0.02; eagle_beak.mesh.height = 0.58
-            eagle_beak.material_override = beak_mat; eagle_beak.position = Vector3(0, 0.98, 0.82); eagle_beak.rotation_degrees.x = -76.0; turret_nest.add_child(eagle_beak)
+            eagle_beak.material_override = beak_mat; eagle_beak.position = Vector3(0, 0.98, -0.82); eagle_beak.rotation_degrees.x = -76.0; turret_nest.add_child(eagle_beak)
             for w_s in [-1.0, 1.0]:
                 var e_wing = MeshInstance3D.new(); e_wing.mesh = BoxMesh.new(); e_wing.mesh.size = Vector3(1.35, 0.16, 0.85)
                 e_wing.material_override = feather_mat; e_wing.position = Vector3(w_s * 0.95, 0.55, -0.05); e_wing.rotation_degrees = Vector3(15.0, w_s * -12.0, w_s * 22.0)
@@ -2828,34 +2828,40 @@ func _update_stealth_visibility():
     
     var local_team = GameState.local_player_team if GameState.local_player_team != "" else (players[0].team if players.size() > 0 else "")
     var is_spectator = (GameState.current_mode == "AI_VS_AI")
-    var local_allies = get_tree().get_nodes_in_group(local_team) if (local_team != "" and not is_spectator) else []
+    var local_allies: Array = []
+    var allies_loaded := false
     
     for unit in get_tree().get_nodes_in_group("Targetable"):
         if not is_instance_valid(unit): continue
+        # Fast path: the vast majority of units are not in stealth grass - skip all string/property checks
+        if not (unit.has_meta("in_stealth_grass") and unit.get_meta("in_stealth_grass", false)):
+            if not unit.visible:
+                unit.visible = true
+            continue
         if "Plane" in unit.name or unit.get("flight_height") != null or unit.get("is_flying") == true:
             unit.visible = true
             continue
             
-        if unit.has_meta("in_stealth_grass") and unit.get_meta("in_stealth_grass", false):
-            if is_spectator:
-                unit.visible = true
-                continue
-            if unit.has_meta("stealth_revealed_timer") and unit.get_meta("stealth_revealed_timer", 0.0) > 0.0:
-                unit.visible = true
-                continue
-            if local_team != "" and unit.is_in_group(local_team):
-                unit.visible = true
-            else:
-                var revealed = false
-                var u_pos = unit.global_position
-                for ally in local_allies:
-                    if is_instance_valid(ally) and ally != unit:
-                        if ally.global_position.distance_to(u_pos) <= 4.0:
-                            revealed = true
-                            break
-                unit.visible = revealed
-        else:
+        if is_spectator:
             unit.visible = true
+            continue
+        if unit.has_meta("stealth_revealed_timer") and unit.get_meta("stealth_revealed_timer", 0.0) > 0.0:
+            unit.visible = true
+            continue
+        if local_team != "" and unit.is_in_group(local_team):
+            unit.visible = true
+        else:
+            if not allies_loaded:
+                allies_loaded = true
+                local_allies = get_tree().get_nodes_in_group(local_team) if local_team != "" else []
+            var revealed = false
+            var u_pos = unit.global_position
+            for ally in local_allies:
+                if is_instance_valid(ally) and ally != unit:
+                    if ally.global_position.distance_squared_to(u_pos) <= 16.0:
+                        revealed = true
+                        break
+            unit.visible = revealed
 
 # =========================================================================
 # THE REALM OF HARMONY: GOLD FACE PATHS, MULTICOLORED LINES & OFF-PATH HUSKS

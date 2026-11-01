@@ -1060,9 +1060,18 @@ func _spawn_unit_corpse(parent: Node3D):
 		if gs and gs.has_method("register_corpse"):
 			gs.register_corpse(corpse)
 
+var _bar_refresh_cd: float = 0.0
+
+func _request_bar_render() -> void:
+	# Throttle SubViewport re-renders for continuous effects (regen/recharge) to ~4 Hz instead of every frame
+	if hp_viewport and _bar_refresh_cd <= 0.0:
+		hp_viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
+		_bar_refresh_cd = 0.25
+
 func _process(delta):
 
 	if is_dead: return
+	_bar_refresh_cd = maxf(0.0, _bar_refresh_cd - delta)
 	if poison_ticks > 0:
 		poison_timer -= delta
 		if poison_timer <= 0:
@@ -1076,7 +1085,7 @@ func _process(delta):
 		if current_health > max_health: current_health = max_health
 		if hp_bar:
 			hp_bar.value = current_health
-			if hp_viewport: hp_viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
+			_request_bar_render()
 		emit_signal("health_changed", current_health, max_health)
 			
 	if current_health > 0 and current_health < max_health:
@@ -1086,7 +1095,7 @@ func _process(delta):
 			if current_health > max_health: current_health = max_health
 			if hp_bar:
 				hp_bar.value = current_health
-				if hp_viewport: hp_viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
+				_request_bar_render()
 	# Shield Recharge over time
 	if shield_recharge_rate > 0.0 and max_shield > 0.0 and not is_dead:
 		shield_recharge_timer += delta
@@ -1097,8 +1106,7 @@ func _process(delta):
 				_restore_shield()
 			emit_signal("shield_changed", current_shield, max_shield)
 			_refresh_shield_bar()
-			if hp_viewport:
-				hp_viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
+			_request_bar_render()
 
 	if shield_ring_node and is_instance_valid(shield_ring_node) and current_shield > 0.0:
 		shield_ring_node.rotate_y(1.6 * delta)
