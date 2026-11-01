@@ -47,6 +47,7 @@ func _ready():
 	diff_option.add_item("Easy")
 	diff_option.add_item("Medium")
 	diff_option.add_item("Hard")
+	diff_option.add_item("Nightmare (Extreme)")
 	diff_option.select(1) # Default to Medium
 	
 	# AI Factions Selection (Random Dice Roll including Chaos by default)
@@ -311,6 +312,7 @@ func _on_start_pressed():
 	var diff = diff_option.selected
 	if diff == 0: GameState.ai_difficulty = "EASY"
 	elif diff == 2: GameState.ai_difficulty = "HARD"
+	elif diff == 3: GameState.ai_difficulty = "NIGHTMARE"
 	else: GameState.ai_difficulty = "MEDIUM"
 	
 	if ai_faction_option:

@@ -195,7 +195,7 @@ func assess_threats() -> Dictionary:
 					
 			# Check territorial neutral creatures (scorpions & swarm ants)
 			if node.is_in_group("NeutralCreature"):
-				var max_neutral_dist_sq = 100.0 if difficulty == "HARD" else (256.0 if difficulty == "MEDIUM" else 484.0)
+				var max_neutral_dist_sq = 100.0 if (difficulty == "HARD" or difficulty == "NIGHTMARE") else (256.0 if difficulty == "MEDIUM" else 484.0)
 				var threatening_structure = false
 				for s in my_structures:
 					if s.global_position.distance_squared_to(node.global_position) <= max_neutral_dist_sq:
@@ -239,7 +239,8 @@ func assess_threats() -> Dictionary:
 				var is_beast = h.is_in_group("Beast")
 				var beast_mult = 1.0
 				if is_beast and is_sudden_death:
-					if difficulty == "HARD": beast_mult = 2.4
+					if difficulty == "NIGHTMARE": beast_mult = 2.8
+					elif difficulty == "HARD": beast_mult = 2.4
 					elif difficulty == "MEDIUM": beast_mult = 1.6
 					else: beast_mult = 1.1
 				threat_score += (18.0 * prox_factor * beast_mult) * base_mult
@@ -365,7 +366,7 @@ func evaluate_moves():
 			)
 		elif archetype == "The Reach":
 			# The Reach banks to deploy 2+ cybernetic units together for the +15% to +75% network synergy
-			var reach_bank = 5.5 * bank_scale if difficulty == "HARD" else 4.2 * bank_scale
+			var reach_bank = 5.5 * bank_scale if (difficulty == "HARD" or difficulty == "NIGHTMARE") else 4.2 * bank_scale
 			if threat_info.threat_score < 10.0 and current_requisition < reach_bank:
 				return
 			valid_hand.sort_custom(func(a, b):
@@ -378,7 +379,7 @@ func evaluate_moves():
 			)
 		elif archetype == "Pirates":
 			# Pirates love sudden 2-card salvage pushes (ScrapTank / ScrapMech / ScrapArmoredInfantry vanguard + ScrapRepair)
-			var pirate_bank = 5.5 * bank_scale if difficulty == "HARD" else 4.0 * bank_scale
+			var pirate_bank = 5.5 * bank_scale if (difficulty == "HARD" or difficulty == "NIGHTMARE") else 4.0 * bank_scale
 			if threat_info.threat_score < 10.0 and current_requisition < pirate_bank:
 				return
 			valid_hand.sort_custom(func(a, b):
@@ -393,7 +394,7 @@ func evaluate_moves():
 			)
 		elif archetype == "Rimworlders":
 			# Rimworlders lead with Leviathan/Monstrous/Octopus sponges, then GreatBeastSpeaker for +20% Beast Aura
-			var rim_bank = 5.0 * bank_scale if difficulty == "HARD" else 3.8 * bank_scale
+			var rim_bank = 5.0 * bank_scale if (difficulty == "HARD" or difficulty == "NIGHTMARE") else 3.8 * bank_scale
 			if threat_info.threat_score < 10.0 and current_requisition < rim_bank:
 				return
 			valid_hand.sort_custom(func(a, b):
@@ -408,7 +409,7 @@ func evaluate_moves():
 			)
 		elif archetype == "Dominion":
 			# Dominion establishes forward CommandBay, then HeavyTank/DominionShieldTank/DominionMech + RepairMan/Medic/Sniper
-			var dom_bank = 5.8 * bank_scale if difficulty == "HARD" else 4.2 * bank_scale
+			var dom_bank = 5.8 * bank_scale if (difficulty == "HARD" or difficulty == "NIGHTMARE") else 4.2 * bank_scale
 			if threat_info.threat_score < 10.0 and current_requisition < dom_bank:
 				return
 			valid_hand.sort_custom(func(a, b):
@@ -421,7 +422,7 @@ func evaluate_moves():
 			)
 		elif archetype == "Plague of Harmony":
 			# Plague of Harmony deploys Eye Creatures, Armored Tanks & Husks first as a screen, and uses Infector when screens or high-value enemy targets exist
-			var plague_bank = 5.0 * bank_scale if difficulty == "HARD" else 3.8 * bank_scale
+			var plague_bank = 5.0 * bank_scale if (difficulty == "HARD" or difficulty == "NIGHTMARE") else 3.8 * bank_scale
 			if threat_info.threat_score < 10.0 and current_requisition < plague_bank:
 				return
 			var has_hv_target: bool = threat_info["high_value_hostiles"].size() > 0
@@ -444,7 +445,7 @@ func evaluate_moves():
 					break
 			if has_saved_horde and threat_info.threat_score < 14.0 and current_requisition < 11.0 and current_requisition >= (6.0 * bank_scale):
 				return # Save up for the 6-unit Saved Horde!
-			var gilded_bank = 5.0 * bank_scale if difficulty == "HARD" else 3.8 * bank_scale
+			var gilded_bank = 5.0 * bank_scale if (difficulty == "HARD" or difficulty == "NIGHTMARE") else 3.8 * bank_scale
 			if threat_info.threat_score < 10.0 and current_requisition < gilded_bank:
 				return
 			valid_hand.sort_custom(func(a, b):
@@ -809,7 +810,7 @@ func calculate_optimal_spawn(card: CardData, threat_info: Dictionary, team_ctx: 
 
 		# Tactical Stealth Ambush for long-range and flanking units
 		var is_ambusher = card.card_name in ["Sniper", "VoidSpitter", "SpiderTank", "ReachRanged", "RimworlderGunner", "Assassin", "VoidStalker", "VoidShieldStalker", "ReachHunter", "SupportingFire"]
-		var ambush_chance = 0.65 if difficulty == "HARD" else (0.30 if difficulty == "MEDIUM" else 0.0)
+		var ambush_chance = 0.85 if difficulty == "NIGHTMARE" else (0.65 if difficulty == "HARD" else (0.30 if difficulty == "MEDIUM" else 0.0))
 		var ambushed = false
 		if is_ambusher and randf() < ambush_chance and am and "placed_feature_records" in am:
 			var candidate_brushes = []
@@ -923,7 +924,7 @@ func calculate_optimal_spawn(card: CardData, threat_info: Dictionary, team_ctx: 
 	if am and "current_solar_beam" in am and am.current_solar_beam != null and is_instance_valid(am.current_solar_beam):
 		var beam_pos = am.current_solar_beam.global_position
 		if target_pos.distance_to(beam_pos) < 7.5:
-			var avoid_chance = 1.0 if difficulty == "HARD" else (0.70 if difficulty == "MEDIUM" else 0.20)
+			var avoid_chance = 1.0 if (difficulty == "HARD" or difficulty == "NIGHTMARE") else (0.70 if difficulty == "MEDIUM" else 0.20)
 			if randf() < avoid_chance:
 				var away_dir = (target_pos - beam_pos).normalized()
 				if away_dir.length() < 0.1: away_dir = Vector3(1, 0, 0)
