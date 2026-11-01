@@ -158,10 +158,19 @@ func _erupt_magma_rocks() -> void:
 	var launch_count = randi_range(1, 3)
 	var spawn_origin = global_position + Vector3(0.0, 7.5, 0.0)
 
+	var eff_launch_radius = launch_radius
+	var max_extent = 120.0
+	var gs = get_node_or_null("/root/GameState")
+	if gs and "current_map_radius" in gs and gs.current_map_radius > 40.0:
+		eff_launch_radius = clampf(gs.current_map_radius * 0.35, 42.0, 95.0)
+		max_extent = maxf(80.0, gs.current_map_radius * 0.82)
+
 	for i in range(launch_count):
 		var angle = randf() * TAU
-		var dist = randf_range(14.0, launch_radius)
+		var dist = randf_range(14.0, eff_launch_radius)
 		var target_loc = global_position + Vector3(cos(angle) * dist, 0.0, sin(angle) * dist)
+		target_loc.x = clampf(target_loc.x, -max_extent, max_extent)
+		target_loc.z = clampf(target_loc.z, -max_extent, max_extent)
 
 		var proj = rock_projectile_script.new()
 		scene_root.add_child(proj)

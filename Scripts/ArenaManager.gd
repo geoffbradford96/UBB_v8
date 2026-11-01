@@ -3536,12 +3536,13 @@ func _generate_volcanic_brimstone(parent: Node3D):
     placed_feature_records.clear()
     var span = maxf(72.0, GameState.current_map_radius * 0.65)
 
-    # 0. Active Volcanoes shooting Magma Rocks off-path
+    # 0. Active Volcanoes shooting Magma Rocks off-path (scales smoothly with map radius & player count)
     var volcano_script = load("res://Scripts/Volcano.gd")
-    var volcano_count = randi_range(2, 4)
+    var volcano_count = clampi(int(round(GameState.current_map_radius / 40.0)), 2, 10)
     var v_attempts = 0
     var placed_volcanoes = 0
-    while placed_volcanoes < volcano_count and v_attempts < 200:
+    var max_v_attempts = volcano_count * 50
+    while placed_volcanoes < volcano_count and v_attempts < max_v_attempts:
         v_attempts += 1
         var v_cand = Vector3(randf_range(-span, span), 0.0, randf_range(-span, span))
         if _is_pos_clear(v_cand, 8.0, 16.0, 7.0):
@@ -3553,11 +3554,12 @@ func _generate_volcanic_brimstone(parent: Node3D):
 
     var vfh_script = load("res://Scripts/VolcanicFireHazard.gd")
     
-    # 1. Volcanic Fire Hazards popping up off-path
-    var hazard_count = randi_range(16, 22)
+    # 1. Volcanic Fire Hazards popping up off-path (scales with map size)
+    var hazard_count = clampi(int(round(GameState.current_map_radius * 0.16)), 16, 65)
     var attempts = 0
     var placed_hazards = 0
-    while placed_hazards < hazard_count and attempts < 250:
+    var max_h_attempts = hazard_count * 20
+    while placed_hazards < hazard_count and attempts < max_h_attempts:
         attempts += 1
         var candidate = Vector3(randf_range(-span, span), 0.0, randf_range(-span, span))
         if _is_pos_clear(candidate, 4.0, 11.0, 3.0):
@@ -3569,7 +3571,8 @@ func _generate_volcanic_brimstone(parent: Node3D):
 
     # 2. Obsidian Basalt Rock Spires (GPU MultiMeshInstance3D Batched)
     var obs_tfs: Array[Transform3D] = []
-    for r in range(14):
+    var spire_count = clampi(int(round(GameState.current_map_radius * 0.12)), 14, 45)
+    for r in range(spire_count):
         var r_pos = Vector3(randf_range(-span, span), 0.0, randf_range(-span, span))
         if _is_pos_clear(r_pos, 3.0, 9.0, 2.5):
             var sx := randf_range(1.6, 2.8)

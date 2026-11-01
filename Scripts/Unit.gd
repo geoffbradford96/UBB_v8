@@ -1280,8 +1280,8 @@ func find_new_target():
 func _spawn_ranged_attack_fx(p_target: Node3D):
 	if not is_instance_valid(p_target): return
 	var u_name = self.name
-	if not ("Crossbowman" in u_name or "ShortBow" in u_name or "RockThrower" in u_name):
-		return # Only primitive ranged units need custom procedural projectile FX here
+	if not ("Crossbowman" in u_name or "ShortBow" in u_name or "RockThrower" in u_name or "MagmaSpitter" in u_name or "MagmaTurretSpire" in u_name or "MagmaColossalDragon" in u_name):
+		return
 	var scene_root = get_tree().current_scene if (is_inside_tree() and get_tree() and get_tree().current_scene) else get_parent()
 	if not scene_root: return
 	
@@ -1314,6 +1314,17 @@ func _spawn_ranged_attack_fx(p_target: Node3D):
 		mat.albedo_color = Color(0.48, 0.44, 0.40)
 		mat.roughness = 0.95
 		flight_duration = clampf(dist / 20.0, 0.12, 0.60)
+	elif "MagmaSpitter" in u_name or "MagmaTurretSpire" in u_name or "MagmaColossalDragon" in u_name:
+		var slag_sph = SphereMesh.new()
+		var is_dragon = "Dragon" in u_name
+		slag_sph.radius = 0.45 if is_dragon else 0.24
+		slag_sph.height = 0.75 if is_dragon else 0.45
+		proj_mesh.mesh = slag_sph
+		mat.albedo_color = Color(1.0, 0.42, 0.05)
+		mat.emission_enabled = true
+		mat.emission = Color(1.0, 0.42, 0.05)
+		mat.emission_energy_multiplier = 4.2
+		flight_duration = clampf(dist / 24.0, 0.12, 0.55)
 		
 	proj_mesh.material_override = mat
 	scene_root.add_child(proj_mesh)
@@ -1323,21 +1334,21 @@ func _spawn_ranged_attack_fx(p_target: Node3D):
 	if dir != Vector3.ZERO:
 		var up = Vector3.UP if abs(dir.dot(Vector3.UP)) < 0.9 else Vector3.FORWARD
 		proj_mesh.look_at(start_pos + dir, up)
-		if not ("RockThrower" in u_name):
+		if not ("RockThrower" in u_name or "Magma" in u_name):
 			proj_mesh.rotate_object_local(Vector3.RIGHT, deg_to_rad(90.0))
 			
 	var tw = proj_mesh.create_tween()
 	if tw:
 		tw.set_parallel(true)
 		tw.tween_property(proj_mesh, "global_position", end_pos, flight_duration)
-		if "RockThrower" in u_name:
+		if "RockThrower" in u_name or "Magma" in u_name:
 			tw.tween_property(proj_mesh, "rotation:x", 12.0, flight_duration)
 		tw.chain().tween_callback(proj_mesh.queue_free)
 	else:
 		proj_mesh.queue_free()
 
 
-func _animate_magma_born(root: Node3D, u_name: String, phase: float, atk_swing: float, moving: bool, delta: float) -> void:
+func _animate_magma_born(root: Node3D, u_name: String, phase: float, atk_swing: float, moving: bool, _delta: float) -> void:
 	var leg_l = root.get_node_or_null("LeftLeg")
 	var leg_r = root.get_node_or_null("RightLeg")
 	var arm_l = root.get_node_or_null("LeftArm")
@@ -1353,6 +1364,7 @@ func _animate_magma_born(root: Node3D, u_name: String, phase: float, atk_swing: 
 	if "MagmaOverlord" in u_name:
 		if leg_l: leg_l.rotation.x = stride
 		if leg_r: leg_r.rotation.x = -stride
+		if arm_l: arm_l.rotation.x = -stride * 0.75
 		if weap:
 			weap.rotation_degrees.x = 65.0 - atk_swing * 110.0
 		var vent = root.get_node_or_null("Torso/MoltenCore")
@@ -1362,8 +1374,11 @@ func _animate_magma_born(root: Node3D, u_name: String, phase: float, atk_swing: 
 		var squat_stride = (0.55 if moving else 0.04) * sin(phase * 1.35)
 		if leg_l: leg_l.rotation.x = squat_stride
 		if leg_r: leg_r.rotation.x = -squat_stride
+		if arm_l: arm_l.rotation.x = -squat_stride * 0.65
 		if weap:
 			weap.rotation_degrees.x = 45.0 - atk_swing * 95.0
+		if head:
+			head.position.y = 0.42 + sin(phase * 2.7) * 0.04
 	elif "MagmaTentacleLavaDog" in u_name:
 		var gallop = (0.60 if moving else 0.04) * sin(phase * 1.45)
 		var fl = root.get_node_or_null("Leg_FL")
@@ -1378,34 +1393,45 @@ func _animate_magma_born(root: Node3D, u_name: String, phase: float, atk_swing: 
 		if tail: tail.rotation.y = sin(phase * 2.0) * 0.40
 		var t0 = root.get_node_or_null("Torso/Tentacle_0")
 		var t1 = root.get_node_or_null("Torso/Tentacle_1")
-		var t_wave = sin(Time.get_ticks_msec() * 0.012) * 0.4
+		var t2 = root.get_node_or_null("Torso/Tentacle_2")
+		var t3 = root.get_node_or_null("Torso/Tentacle_3")
+		var t_wave = sin(Time.get_ticks_msec() * 0.012) * 0.45
+		var t_wave2 = cos(Time.get_ticks_msec() * 0.014) * 0.40
 		if t0: t0.rotation.z = deg_to_rad(35.0) + t_wave + atk_swing * 0.8
 		if t1: t1.rotation.z = -deg_to_rad(35.0) - t_wave - atk_swing * 0.8
+		if t2: t2.rotation.z = deg_to_rad(40.0) + t_wave2 + atk_swing * 0.6
+		if t3: t3.rotation.z = -deg_to_rad(40.0) - t_wave2 - atk_swing * 0.6
 	elif "MagmaSpitter" in u_name:
 		for i in range(4):
 			var leg = root.get_node_or_null("Leg_" + str(i))
 			if leg:
 				leg.rotation.z = deg_to_rad(35.0) + sin(phase * 1.5 + float(i) * 1.57) * (0.22 if moving else 0.03)
 		root.position.z = atk_swing * 0.28
+		var crater = root.get_node_or_null("Torso/Crater")
+		if crater:
+			crater.scale = Vector3.ONE * (1.0 + atk_swing * 0.4 + sin(Time.get_ticks_msec() * 0.008) * 0.12)
 	elif "MagmaGolem" in u_name:
 		var golem_stride = (0.35 if moving else 0.02) * sin(phase * 0.75)
 		if leg_l: leg_l.rotation.x = golem_stride
 		if leg_r: leg_r.rotation.x = -golem_stride
 		var fist_l = root.get_node_or_null("LeftFist")
 		var fist_r = root.get_node_or_null("RightFist")
-		if fist_l: fist_l.position.z = -0.25 - atk_swing * 0.75
-		if fist_r: fist_r.position.z = -0.25 - atk_swing * 0.75
+		if fist_l: fist_l.position.z = -0.25 - atk_swing * 0.45
+		if fist_r: fist_r.position.z = -0.28 - atk_swing * 0.95
 	elif "MagmaPyrodactyl" in u_name:
 		root.position.y = sin(phase * 2.0) * 0.22
 		root.position.z = -atk_swing * 0.55
 		var flap = sin(Time.get_ticks_msec() * 0.008) * 0.35
 		if wing_l: wing_l.rotation.z = flap
 		if wing_r: wing_r.rotation.z = -flap
+		if head: head.rotation.x = -atk_swing * 0.42
 	elif "MagmaTurretSpire" in u_name:
 		var core = root.get_node_or_null("Torso/LavaCore")
 		if core: core.scale = Vector3.ONE * (1.0 + sin(Time.get_ticks_msec() * 0.006) * 0.15 + atk_swing * 0.3)
 		var tur = root.get_node_or_null("Torso/Turret")
-		if tur: tur.position.z = -0.35 + atk_swing * 0.22
+		if tur:
+			tur.position.z = -0.32 + atk_swing * 0.25
+			tur.rotation_degrees.x = 90.0 - atk_swing * 12.0
 	elif "MagmaColossalDragon" in u_name:
 		root.position.y = sin(phase * 1.1) * 0.18
 		var wing_sweep = sin(Time.get_ticks_msec() * 0.005) * 0.45
