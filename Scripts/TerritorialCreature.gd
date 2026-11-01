@@ -102,6 +102,7 @@ func configure_creature(type: String, home: Vector3):
 			_build_gorilla_mesh()
 		elif creature_type == "Monkey":
 			_build_monkey_mesh()
+		_apply_creature_lod_and_shadow_culling(visual_mesh)
 
 func _setup_collision():
 	var col = get_node_or_null("CollisionShape3D")
@@ -137,6 +138,27 @@ func _setup_model():
 		_build_gorilla_mesh()
 	elif creature_type == "Monkey":
 		_build_monkey_mesh()
+	_apply_creature_lod_and_shadow_culling(visual_mesh)
+
+func _apply_creature_lod_and_shadow_culling(node: Node) -> void:
+	if node == null:
+		return
+	if node is MeshInstance3D:
+		var mi := node as MeshInstance3D
+		if mi.mesh:
+			var aabb := mi.mesh.get_aabb()
+			var max_dim := maxf(aabb.size.x, maxf(aabb.size.y, aabb.size.z))
+			if max_dim < 0.16:
+				mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+				mi.visibility_range_end = 85.0
+				mi.visibility_range_end_margin = 10.0
+				mi.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
+			else:
+				mi.visibility_range_end = 175.0
+				mi.visibility_range_end_margin = 16.0
+				mi.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
+	for ch in node.get_children():
+		_apply_creature_lod_and_shadow_culling(ch)
 
 func _build_scorpion_mesh():
 	var chitin_mat = StandardMaterial3D.new()

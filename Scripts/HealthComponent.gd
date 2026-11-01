@@ -196,6 +196,15 @@ func _ready():
 	call_deferred("_setup_ground_marker")
 	call_deferred("_setup_shield_and_armor_visuals")
 
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_PREDELETE:
+		if hp_viewport and is_instance_valid(hp_viewport) and hp_viewport.get_parent() == null:
+			hp_viewport.free()
+		if hp_sprite and is_instance_valid(hp_sprite) and hp_sprite.get_parent() == null:
+			hp_sprite.free()
+		if ground_marker and is_instance_valid(ground_marker) and ground_marker.get_parent() == null:
+			ground_marker.free()
+
 func _setup_ground_marker():
 	var parent = get_parent()
 	if not parent or not is_instance_valid(parent): return

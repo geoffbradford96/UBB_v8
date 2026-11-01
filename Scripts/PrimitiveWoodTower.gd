@@ -144,6 +144,30 @@ func _build_wood_tower_model():
 	roof.position.y = 6.4
 	visual_root.add_child(roof)
 
+	# Wooden Rung Ladder climbing the rear side of the tower
+	var ladder_root = Node3D.new()
+	ladder_root.name = "TowerLadder"
+	ladder_root.position = Vector3(0.0, 2.1, 1.25)
+	ladder_root.rotation_degrees.x = -8.0
+	visual_root.add_child(ladder_root)
+	for l_side in [-1.0, 1.0]:
+		var rail_pole = MeshInstance3D.new()
+		var rp_c = CylinderMesh.new()
+		rp_c.top_radius = 0.045; rp_c.bottom_radius = 0.055; rp_c.height = 4.3
+		rail_pole.mesh = rp_c
+		rail_pole.material_override = wood_mat
+		rail_pole.position = Vector3(l_side * 0.28, 0.0, 0.0)
+		ladder_root.add_child(rail_pole)
+	for rung_i in range(8):
+		var rung = MeshInstance3D.new()
+		var rg_c = CylinderMesh.new()
+		rg_c.top_radius = 0.03; rg_c.bottom_radius = 0.03; rg_c.height = 0.58
+		rung.mesh = rg_c
+		rung.material_override = plank_mat
+		rung.position = Vector3(0.0, -1.75 + float(rung_i) * 0.5, 0.0)
+		rung.rotation_degrees.z = 90.0
+		ladder_root.add_child(rung)
+
 	# Bowman on Platform
 	_build_archer_model()
 
@@ -160,26 +184,61 @@ func _build_archer_model():
 	cloth_mat.albedo_color = Color(0.35, 0.45, 0.28) # Rustic green tunic
 	cloth_mat.roughness = 0.85
 
+	var leather_mat = StandardMaterial3D.new()
+	leather_mat.albedo_color = Color(0.32, 0.20, 0.12)
+	leather_mat.roughness = 0.82
+
 	var bow_wood = StandardMaterial3D.new()
 	bow_wood.albedo_color = Color(0.38, 0.22, 0.12)
 
-	# Torso
+	var string_mat = StandardMaterial3D.new()
+	string_mat.albedo_color = Color(0.88, 0.84, 0.72)
+
+	# Legs & Boots
+	for s_leg in [-1.0, 1.0]:
+		var leg = MeshInstance3D.new()
+		var l_cyl = CylinderMesh.new()
+		l_cyl.top_radius = 0.085; l_cyl.bottom_radius = 0.07; l_cyl.height = 0.46
+		leg.mesh = l_cyl
+		leg.material_override = leather_mat
+		leg.position = Vector3(s_leg * 0.12, 0.23, 0.0)
+		archer_node.add_child(leg)
+
+	# Torso & Leather Belt
 	var torso = MeshInstance3D.new()
 	var t_box = BoxMesh.new()
-	t_box.size = Vector3(0.45, 0.7, 0.3)
+	t_box.size = Vector3(0.45, 0.62, 0.28)
 	torso.mesh = t_box
 	torso.material_override = cloth_mat
-	torso.position.y = 0.7
+	torso.position.y = 0.74
 	archer_node.add_child(torso)
 
-	# Head
+	var belt = MeshInstance3D.new()
+	var b_box = BoxMesh.new()
+	b_box.size = Vector3(0.47, 0.09, 0.30)
+	belt.mesh = b_box
+	belt.material_override = leather_mat
+	belt.position.y = 0.52
+	archer_node.add_child(belt)
+
+	# Back Quiver with Arrows
+	var quiver = MeshInstance3D.new()
+	var q_cyl = CylinderMesh.new()
+	q_cyl.top_radius = 0.08; q_cyl.bottom_radius = 0.06; q_cyl.height = 0.48
+	quiver.mesh = q_cyl
+	quiver.material_override = leather_mat
+	quiver.position = Vector3(-0.08, 0.82, 0.19)
+	quiver.rotation_degrees.z = -18.0
+	archer_node.add_child(quiver)
+
+	# Head & Eyes
 	var head = MeshInstance3D.new()
 	var h_sph = SphereMesh.new()
 	h_sph.radius = 0.18
 	h_sph.height = 0.36
 	head.mesh = h_sph
 	head.material_override = skin_mat
-	head.position.y = 1.2
+	head.position.y = 1.22
 	archer_node.add_child(head)
 
 	# Straw Coif / Hat
@@ -190,12 +249,30 @@ func _build_archer_model():
 	hat_c.height = 0.25
 	hat.mesh = hat_c
 	hat.material_override = cloth_mat
-	hat.position.y = 1.35
+	hat.position.y = 1.38
 	archer_node.add_child(hat)
 
-	# Bow Arm (Right arm holding bow)
+	# Left Arm extended holding the bow riser
+	var left_arm = MeshInstance3D.new()
+	var la_cyl = CylinderMesh.new()
+	la_cyl.top_radius = 0.065; la_cyl.bottom_radius = 0.055; la_cyl.height = 0.48
+	left_arm.mesh = la_cyl
+	left_arm.material_override = skin_mat
+	left_arm.position = Vector3(0.24, 0.88, -0.22)
+	left_arm.rotation_degrees = Vector3(82.0, -12.0, 0.0)
+	archer_node.add_child(left_arm)
+
+	# Right String-Drawing Arm
+	var right_arm = MeshInstance3D.new()
+	right_arm.mesh = la_cyl
+	right_arm.material_override = skin_mat
+	right_arm.position = Vector3(-0.24, 0.88, -0.10)
+	right_arm.rotation_degrees = Vector3(68.0, 18.0, 0.0)
+	archer_node.add_child(right_arm)
+
+	# Bow Arm Pivot (holding Recurve Bow, Bowstring & Nocked Arrow)
 	bow_arm = Node3D.new()
-	bow_arm.position = Vector3(0.28, 0.8, -0.15)
+	bow_arm.position = Vector3(0.20, 0.86, -0.42)
 	archer_node.add_child(bow_arm)
 
 	# Recurve Bow Arc
@@ -208,6 +285,23 @@ func _build_archer_model():
 	bow.rotation.y = PI / 2.0
 	bow.rotation.z = PI / 4.0
 	bow_arm.add_child(bow)
+
+	var b_string = MeshInstance3D.new()
+	var bs_cyl = CylinderMesh.new()
+	bs_cyl.top_radius = 0.008; bs_cyl.bottom_radius = 0.008; bs_cyl.height = 0.86
+	b_string.mesh = bs_cyl
+	b_string.material_override = string_mat
+	b_string.position = Vector3(0.0, 0.0, 0.14)
+	bow_arm.add_child(b_string)
+
+	var nocked_arrow = MeshInstance3D.new()
+	var na_cyl = CylinderMesh.new()
+	na_cyl.top_radius = 0.014; na_cyl.bottom_radius = 0.014; na_cyl.height = 0.65
+	nocked_arrow.mesh = na_cyl
+	nocked_arrow.material_override = string_mat
+	nocked_arrow.position = Vector3(0.0, 0.02, -0.08)
+	nocked_arrow.rotation_degrees.x = 90.0
+	bow_arm.add_child(nocked_arrow)
 
 func _physics_process(delta: float):
 	fire_timer += delta

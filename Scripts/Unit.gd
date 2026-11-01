@@ -45,6 +45,7 @@ var _separation_shape: SphereShape3D = null
 var _lane_check_timer: float = 0.0
 var _cached_lane_dist: float = 0.0
 var _cached_lane_pull: Vector3 = Vector3.ZERO
+const GpuAcceleratorScript = preload("res://Scripts/GpuAccelerator.gd")
 
 func _get_game_state():
 	if Engine.has_singleton("GameState"):
@@ -78,6 +79,7 @@ func _ready():
 		base_attack_speed = 1.0
 
 	add_to_group("Targetable")
+	add_to_group("Units")
 
 		# Dynamically assign attribute based on name if not set manually
 	if "Tank" in name or "Walker" in name or "Plane" in name or "Tower" in name or "Base" in name or "CommandBay" in name or "Mech" in name or "Leviathan" in name or "Spiker" in name:
@@ -200,34 +202,44 @@ func _physics_process(delta):
 			new_velocity.y = velocity.y # Preserve gravity
 			velocity = new_velocity
 			
-			# --- Separation / Friendly Unit Avoidance ---
+			# --- Separation / Friendly Unit Avoidance (O(1) Spatial Hash Grid via GpuAccelerator) ---
 			var my_team = ""
 			for g in get_groups():
 				if g.begins_with("Side") or g == "Beast":
 					my_team = g
 					break
-			if _separation_query == null:
-				_separation_shape = SphereShape3D.new()
-				_separation_shape.radius = 1.2
-				_separation_query = PhysicsShapeQueryParameters3D.new()
-				_separation_query.shape = _separation_shape
-			_separation_query.transform = global_transform
-			var results = space_state.intersect_shape(_separation_query)
 			var separation = Vector3.ZERO
 			var reach_count = 0
-			if unit_attribute == "Ethereal":
-				results.clear()
-			for res in results:
-				var col = res.collider
-				if col != self and col.is_in_group(my_team):
-					if "Reach" in self.name and "Reach" in col.name: reach_count += 1
-					if col.get("unit_attribute") == "Ethereal": continue
-
-					var push = global_position - col.global_position
-					push.y = 0
-					var dist_to_col = push.length()
-					if dist_to_col < 1.2 and dist_to_col > 0.01:
-						separation += push.normalized() * (1.2 - dist_to_col)
+			if unit_attribute != "Ethereal":
+				var nearby = GpuAcceleratorScript.query_nearby_units(global_position, 1.25, get_tree())
+				if not nearby.is_empty():
+					for col in nearby:
+						if col != self and is_instance_valid(col) and col.is_in_group(my_team):
+							if "Reach" in self.name and "Reach" in col.name: reach_count += 1
+							if col.get("unit_attribute") == "Ethereal": continue
+							var push = global_position - col.global_position
+							push.y = 0
+							var dist_to_col = push.length()
+							if dist_to_col < 1.2 and dist_to_col > 0.01:
+								separation += push.normalized() * (1.2 - dist_to_col)
+				elif space_state:
+					if _separation_query == null:
+						_separation_shape = SphereShape3D.new()
+						_separation_shape.radius = 1.2
+						_separation_query = PhysicsShapeQueryParameters3D.new()
+						_separation_query.shape = _separation_shape
+					_separation_query.transform = global_transform
+					var results = space_state.intersect_shape(_separation_query)
+					for res in results:
+						var col = res.collider
+						if col != self and col.is_in_group(my_team):
+							if "Reach" in self.name and "Reach" in col.name: reach_count += 1
+							if col.get("unit_attribute") == "Ethereal": continue
+							var push = global_position - col.global_position
+							push.y = 0
+							var dist_to_col = push.length()
+							if dist_to_col < 1.2 and dist_to_col > 0.01:
+								separation += push.normalized() * (1.2 - dist_to_col)
 			# Lateral separation to prevent clumping
 			if desired_dir.length_squared() > 0.01:
 				var f_dot = separation.dot(desired_dir)
@@ -874,10 +886,12 @@ func find_new_target():
 
 func _spawn_ranged_attack_fx(p_target: Node3D):
 	if not is_instance_valid(p_target): return
+	var u_name = self.name
+	if not ("Crossbowman" in u_name or "ShortBow" in u_name or "RockThrower" in u_name):
+		return # Only primitive ranged units need custom procedural projectile FX here
 	var scene_root = get_tree().current_scene if (is_inside_tree() and get_tree() and get_tree().current_scene) else get_parent()
 	if not scene_root: return
 	
-	var u_name = self.name
 	var start_pos = global_position + Vector3(0, 1.2, 0)
 	var end_pos = p_target.global_position + Vector3(0, 0.9, 0)
 	var dist = start_pos.distance_to(end_pos)
@@ -907,8 +921,6 @@ func _spawn_ranged_attack_fx(p_target: Node3D):
 		mat.albedo_color = Color(0.48, 0.44, 0.40)
 		mat.roughness = 0.95
 		flight_duration = clampf(dist / 20.0, 0.12, 0.60)
-	else:
-		return # Only primitive ranged units need custom procedural projectile FX here
 		
 	proj_mesh.material_override = mat
 	scene_root.add_child(proj_mesh)

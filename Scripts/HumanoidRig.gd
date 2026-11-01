@@ -66,7 +66,28 @@ func setup(p_unit: CharacterBody3D):
 			child.visible = false
 			
 	_build_humanoid_anatomy(visual_root)
+	_apply_rig_lod_and_shadow_culling(rig_root)
 	is_active = true
+
+func _apply_rig_lod_and_shadow_culling(node: Node) -> void:
+	if node == null:
+		return
+	if node is MeshInstance3D:
+		var mi := node as MeshInstance3D
+		if mi.mesh:
+			var aabb := mi.mesh.get_aabb()
+			var max_dim := maxf(aabb.size.x, maxf(aabb.size.y, aabb.size.z))
+			if max_dim < 0.16:
+				mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+				mi.visibility_range_end = 85.0
+				mi.visibility_range_end_margin = 10.0
+				mi.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
+			else:
+				mi.visibility_range_end = 175.0
+				mi.visibility_range_end_margin = 16.0
+				mi.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
+	for ch in node.get_children():
+		_apply_rig_lod_and_shadow_culling(ch)
 
 func _build_humanoid_anatomy(parent: Node3D):
 	rig_root = Node3D.new()
@@ -1276,7 +1297,7 @@ func animate(delta: float, is_moving: bool, is_critically_wounded: bool, move_sp
 		torso.position.z = lerp(torso.position.z, base_torso_pos.z, 10.0 * delta)
 		head.rotation.x = lerp(head.rotation.x, 0.0, 10.0 * delta)
 		var u_name_stance: String = str(unit.name) if unit else ""
-		var has_buckler: bool = "ShieldInfantry" in u_name_stance or ("Commander" in u_name_stance and "Reach" in u_name_stance)
+		var has_buckler: bool = "ShieldInfantry" in u_name_stance or "Knight" in u_name_stance or "Squire" in u_name_stance or "Spearman" in u_name_stance or ("Commander" in u_name_stance and ("Reach" in u_name_stance or "Primitive" in u_name_stance))
 		
 		if is_moving:
 			# Authentic alternating two-legged stride
@@ -1343,7 +1364,19 @@ func animate(delta: float, is_moving: bool, is_critically_wounded: bool, move_sp
 		var p: float = 1.0 - (attack_anim_timer / max(0.01, attack_anim_duration))
 		var swing: float = sin(p * PI)
 		var u_name: String = str(unit.name) if unit else ""
-		if "Melee" in u_name or "Commander" in u_name or "Hero" in u_name or "Assassin" in u_name or "GreatBeastSpeaker" in u_name or "Grunt" in u_name or "Runner" in u_name or "ShieldInfantry" in u_name or "ArmoredInfantry" in u_name:
+		if "Spearman" in u_name:
+			# Sharp forward spear thrust with shield guard braced
+			right_arm_pivot.rotation.x = deg_to_rad(-82.0 * swing)
+			right_arm_pivot.position.z = base_right_arm_pos.z + 0.28 * swing
+			torso.rotation.y = -0.24 * swing
+			torso.position.z = base_torso_pos.z + 0.18 * swing
+		elif "Clubber" in u_name or "Chieftain" in u_name or "Builder" in u_name:
+			# Heavy overhead club / cleaver / stone mallet smash
+			var smash_angle: float = lerpf(-2.15, 0.78, p)
+			right_arm_pivot.rotation.x = smash_angle * swing + right_arm_pivot.rotation.x * (1.0 - swing)
+			torso.rotation.x = deg_to_rad(22.0 * swing)
+			torso.position.z = base_torso_pos.z + 0.16 * swing
+		elif "Melee" in u_name or "Commander" in u_name or "Hero" in u_name or "Assassin" in u_name or "GreatBeastSpeaker" in u_name or "Grunt" in u_name or "Runner" in u_name or "ShieldInfantry" in u_name or "ArmoredInfantry" in u_name or "Knight" in u_name or "Squire" in u_name:
 			# Dynamic melee weapon slash / staff slam
 			var slash_angle: float = lerpf(-1.55, 0.65, p)
 			right_arm_pivot.rotation.x = slash_angle * swing + right_arm_pivot.rotation.x * (1.0 - swing)
@@ -1351,18 +1384,31 @@ func animate(delta: float, is_moving: bool, is_critically_wounded: bool, move_sp
 			torso.rotation.y = sin(p * PI) * 0.36
 			torso.rotation.x = deg_to_rad(14.0 * swing)
 			torso.position.z = base_torso_pos.z + 0.14 * swing
+		elif "ShortBow" in u_name:
+			# Bow draw & loose
+			left_arm_pivot.rotation.x = deg_to_rad(-86.0)
+			right_arm_pivot.rotation.x = deg_to_rad(-78.0 + 38.0 * swing)
+			torso.rotation.y = deg_to_rad(-18.0 * swing)
+		elif "RockThrower" in u_name:
+			# Overhand stone pitch
+			var pitch_angle: float = lerpf(-2.05, 0.60, p)
+			right_arm_pivot.rotation.x = pitch_angle * swing + right_arm_pivot.rotation.x * (1.0 - swing)
+			torso.rotation.y = sin(p * PI) * 0.32
+			torso.rotation.x = deg_to_rad(16.0 * swing)
 		elif "Medic" in u_name or "Repair" in u_name:
 			# Extend medical injector / repair welder forward
 			right_arm_pivot.rotation.x = deg_to_rad(-65.0 * swing)
 			left_arm_pivot.rotation.x = deg_to_rad(-35.0 * swing)
 			torso.rotation.x = deg_to_rad(10.0 * swing)
 		else:
-			# Crisp firearm / sniper / rocket recoil kick
+			# Crisp firearm / sniper / crossbow / rocket recoil kick
 			right_arm_pivot.rotation.x = deg_to_rad(-32.0 - 24.0 * swing)
 			left_arm_pivot.rotation.x = deg_to_rad(-28.0 - 14.0 * swing)
 			torso.rotation.x = deg_to_rad(-8.0 * swing)
 			if weapon_node:
 				weapon_node.position.z = 0.08 - 0.08 * swing
-	elif weapon_node:
-		weapon_node.position.z = lerpf(weapon_node.position.z, 0.08, 12.0 * delta)
+	else:
+		right_arm_pivot.position.z = lerpf(right_arm_pivot.position.z, base_right_arm_pos.z, 12.0 * delta)
+		if weapon_node:
+			weapon_node.position.z = lerpf(weapon_node.position.z, 0.08, 12.0 * delta)
 

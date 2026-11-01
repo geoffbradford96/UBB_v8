@@ -1371,15 +1371,25 @@ func _build_structure_mesh(node, faction: String, is_tower: bool):
             # Stock & Tiller
             var b_stock = MeshInstance3D.new(); b_stock.mesh = BoxMesh.new(); b_stock.mesh.size = Vector3(0.5, 0.45, 3.0)
             b_stock.material_override = dark_timber_mat; b_stock.position = Vector3(0, 0.1, 0.3); ballista_carriage.add_child(b_stock)
-            # Composite Bow Limbs (Prods)
+            # Composite Bow Limbs (Prods) & Iron Torsion Skein Housings
             var b_limbs = MeshInstance3D.new(); b_limbs.mesh = BoxMesh.new(); b_limbs.mesh.size = Vector3(2.6, 0.28, 0.22)
             b_limbs.material_override = dark_timber_mat; b_limbs.position = Vector3(0, 0.2, 1.4); ballista_carriage.add_child(b_limbs)
+            for s_side in [-1.0, 1.0]:
+                var skein = MeshInstance3D.new(); skein.mesh = CylinderMesh.new(); skein.mesh.height = 0.65; skein.mesh.bottom_radius = 0.16; skein.mesh.top_radius = 0.16
+                skein.material_override = iron_mat; skein.position = Vector3(s_side * 0.42, 0.2, 1.4); ballista_carriage.add_child(skein)
+                var b_str = MeshInstance3D.new(); b_str.mesh = CylinderMesh.new(); b_str.mesh.height = 1.95; b_str.mesh.bottom_radius = 0.025; b_str.mesh.top_radius = 0.025
+                b_str.material_override = gold_trim_mat
+                b_str.position = Vector3(s_side * 0.62, 0.22, 0.55)
+                b_str.rotation_degrees = Vector3(90.0, s_side * -36.0, 0.0)
+                ballista_carriage.add_child(b_str)
             # Winch Spool at rear
             var winch = MeshInstance3D.new(); winch.mesh = CylinderMesh.new(); winch.mesh.height = 0.6; winch.mesh.bottom_radius = 0.25; winch.mesh.top_radius = 0.25
             winch.material_override = iron_mat; winch.rotation_degrees.z = 90; winch.position = Vector3(0, 0.2, -0.9); ballista_carriage.add_child(winch)
             # Massive Spear Bolt loaded in flight channel ready to fire
             var bolt = MeshInstance3D.new(); bolt.mesh = CylinderMesh.new(); bolt.mesh.height = 2.2; bolt.mesh.bottom_radius = 0.08; bolt.mesh.top_radius = 0.04
             bolt.material_override = iron_mat; bolt.rotation_degrees.x = 90; bolt.position = Vector3(0, 0.4, 0.7); ballista_carriage.add_child(bolt)
+            var bolt_tip = MeshInstance3D.new(); bolt_tip.mesh = CylinderMesh.new(); bolt_tip.mesh.height = 0.45; bolt_tip.mesh.bottom_radius = 0.14; bolt_tip.mesh.top_radius = 0.01
+            bolt_tip.material_override = iron_mat; bolt_tip.rotation_degrees.x = -90; bolt_tip.position = Vector3(0, 0.4, 1.95); ballista_carriage.add_child(bolt_tip)
         else:
             # Massive Feudal Castle Keep Stronghold
             var keep = MeshInstance3D.new(); keep.mesh = BoxMesh.new(); keep.mesh.size = Vector3(6.4, 4.6, 6.4)
@@ -1425,8 +1435,20 @@ func _build_structure_mesh(node, faction: String, is_tower: bool):
                 leaf.material_override = canopy_mat; leaf.position = Vector3(cos(ang) * 1.6, 4.2, sin(ang) * 1.6)
                 mesh_node.add_child(leaf)
             var turret_nest = Node3D.new(); turret_nest.position.y = 4.9; mesh_node.add_child(turret_nest)
-            var boulder = MeshInstance3D.new(); boulder.mesh = SphereMesh.new(); boulder.mesh.radius = 0.85
-            boulder.material_override = moss_rock_mat; turret_nest.add_child(boulder)
+            # Sculpted Giant Guardian Eagle perched in the Eyrie Nest
+            var feather_mat = StandardMaterial3D.new(); feather_mat.albedo_color = Color(0.28, 0.18, 0.10); feather_mat.roughness = 0.78
+            var crest_mat = StandardMaterial3D.new(); crest_mat.albedo_color = Color(0.95, 0.94, 0.90); crest_mat.roughness = 0.65
+            var beak_mat = StandardMaterial3D.new(); beak_mat.albedo_color = Color(0.95, 0.75, 0.15); beak_mat.roughness = 0.35
+            var eagle_body = MeshInstance3D.new(); eagle_body.mesh = SphereMesh.new(); eagle_body.mesh.radius = 0.68; eagle_body.mesh.height = 1.45
+            eagle_body.material_override = feather_mat; eagle_body.position = Vector3(0, 0.35, -0.1); eagle_body.rotation_degrees.x = 24.0; turret_nest.add_child(eagle_body)
+            var eagle_head = MeshInstance3D.new(); eagle_head.mesh = SphereMesh.new(); eagle_head.mesh.radius = 0.42; eagle_head.mesh.height = 0.82
+            eagle_head.material_override = crest_mat; eagle_head.position = Vector3(0, 1.05, 0.35); turret_nest.add_child(eagle_head)
+            var eagle_beak = MeshInstance3D.new(); eagle_beak.mesh = CylinderMesh.new(); eagle_beak.mesh.bottom_radius = 0.20; eagle_beak.mesh.top_radius = 0.02; eagle_beak.mesh.height = 0.58
+            eagle_beak.material_override = beak_mat; eagle_beak.position = Vector3(0, 0.98, 0.82); eagle_beak.rotation_degrees.x = -76.0; turret_nest.add_child(eagle_beak)
+            for w_s in [-1.0, 1.0]:
+                var e_wing = MeshInstance3D.new(); e_wing.mesh = BoxMesh.new(); e_wing.mesh.size = Vector3(1.35, 0.16, 0.85)
+                e_wing.material_override = feather_mat; e_wing.position = Vector3(w_s * 0.95, 0.55, -0.05); e_wing.rotation_degrees = Vector3(15.0, w_s * -12.0, w_s * 22.0)
+                turret_nest.add_child(e_wing)
             mesh_node.set_meta("dominion_turret", turret_nest)
         else:
             var world_trunk = MeshInstance3D.new(); world_trunk.mesh = CylinderMesh.new(); world_trunk.mesh.height = 5.4; world_trunk.mesh.bottom_radius = 4.6; world_trunk.mesh.top_radius = 3.1
@@ -3359,8 +3381,8 @@ func _generate_space_vacuum(parent: Node3D) -> void:
         var c_pos = Vector3(randf_range(-span, span), 0.0, randf_range(-span, span))
         if _is_pos_clear(c_pos, 4.0, 11.0, 3.8):
             var r_out = randf_range(2.6, 4.2)
-            var rim_basis := Basis.IDENTITY.scaled(Vector3(r_out, 1.0, r_out))
-            crater_tfs.append(Transform3D(rim_basis, c_pos + Vector3(0.0, 0.15, 0.0)))
+            var rim_basis := Basis.IDENTITY.scaled(Vector3(r_out, 0.28, r_out))
+            crater_tfs.append(Transform3D(rim_basis, c_pos + Vector3(0.0, 0.08, 0.0)))
 
             var shard_h = randf_range(2.2, 4.0)
             var s_rot := Vector3(deg_to_rad(randf_range(-14.0, 14.0)), randf() * TAU, deg_to_rad(randf_range(-14.0, 14.0)))
@@ -3875,7 +3897,7 @@ func _create_procedural_jungle_tree(parent: Node3D, pos: Vector3):
         
         for p in range(7):
             var p_ang = float(p) * (TAU / 7.0)
-            var f_basis := Basis.from_euler(Vector3(-0.35, p_ang + PI * 0.5, 0.0))
+            var f_basis := Basis(Vector3.UP, p_ang) * Basis(Vector3.RIGHT, -0.35)
             _pending_jungle_frond_tfs.append(tree_tf * Transform3D(f_basis, Vector3(cos(p_ang) * 1.1 + 0.25, 4.7, sin(p_ang) * 1.1)))
             
         for c_i in range(3):
@@ -3883,7 +3905,7 @@ func _create_procedural_jungle_tree(parent: Node3D, pos: Vector3):
             _pending_jungle_coco_tfs.append(tree_tf * Transform3D(Basis.IDENTITY, Vector3(cos(c_ang) * 0.22 + 0.25, 4.45, sin(c_ang) * 0.22)))
             
     else:
-        # Buttress Root Banyan Tree
+        # Buttress Root Banyan Tree with sprawling layered canopy & aerial roots
         var b_basis := Basis.IDENTITY.scaled(Vector3(0.70, 3.8, 0.70))
         _pending_jungle_trunk_tfs.append(tree_tf * Transform3D(b_basis, Vector3(0.0, 1.9, 0.0)))
         
@@ -3891,10 +3913,17 @@ func _create_procedural_jungle_tree(parent: Node3D, pos: Vector3):
             var b_ang = float(b) * PI * 0.5
             var r_basis := Basis(Vector3.UP, b_ang)
             _pending_jungle_buttress_tfs.append(tree_tf * Transform3D(r_basis, Vector3(cos(b_ang) * 0.8, 0.6, sin(b_ang) * 0.8)))
+            var aerial_h := randf_range(2.2, 3.0)
+            var a_basis := Basis.IDENTITY.scaled(Vector3(1.4, aerial_h, 1.4))
+            _pending_jungle_vine_tfs.append(tree_tf * Transform3D(a_basis, Vector3(cos(b_ang + 0.4) * 1.45, 2.1, sin(b_ang + 0.4) * 1.45)))
             
         var bc_basis := Basis.IDENTITY.scaled(Vector3(1.75, 0.92, 1.75))
         _pending_jungle_crown_tfs.append(tree_tf * Transform3D(bc_basis, Vector3(0.0, 3.8, 0.0)))
         _pending_jungle_crown_cols.append(leaf_col)
+        var sub_basis := Basis.IDENTITY.scaled(Vector3(1.15, 0.72, 1.15))
+        for b_sub in [Vector3(1.3, 3.5, 0.9), Vector3(-1.3, 3.6, -0.8), Vector3(-0.9, 3.5, 1.2)]:
+            _pending_jungle_crown_tfs.append(tree_tf * Transform3D(sub_basis, b_sub))
+            _pending_jungle_crown_cols.append(leaf_col.darkened(0.08))
 
 func _flush_jungle_tree_multimeshes(parent: Node3D) -> void:
     var bark_mat := StandardMaterial3D.new()

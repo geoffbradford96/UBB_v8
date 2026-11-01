@@ -8,12 +8,14 @@ extends RefCounted
 # =============================================================================
 
 const GpuAcceleratorScript = preload("res://Scripts/GpuAccelerator.gd")
+const WildlifeModelBuilderScript = preload("res://Scripts/WildlifeModelBuilder.gd")
 
 static var _texture_cache: Dictionary = {}
 
 static func clear_caches() -> void:
 	_texture_cache.clear()
 	GpuAcceleratorScript.clear_caches()
+	WildlifeModelBuilderScript.clear_caches()
 
 static func get_cached_biome_texture(biome_name: String) -> ImageTexture:
 	var key := biome_name.to_upper()

@@ -107,12 +107,13 @@ func _ready():
 	print("VERIFICATION SUMMARY: %d PASSED, %d FAILED" % [total_passed, total_failed])
 	print("==================================================")
 
-	var pre_script = load("res://Scripts/EnvironmentPreRenderer.gd")
-	if pre_script and pre_script.has_method("clear_caches"):
-		pre_script.clear_caches()
 	for child in get_children():
 		child.queue_free()
 	await get_tree().process_frame
+	await get_tree().process_frame
+	var pre_script = load("res://Scripts/EnvironmentPreRenderer.gd")
+	if pre_script and pre_script.has_method("clear_caches"):
+		pre_script.clear_caches()
 
 	if total_failed == 0:
 		print("ALL SYSTEMS GREEN! Exiting cleanly with code 0.")
