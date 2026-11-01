@@ -1,0 +1,97 @@
+[gd_scene load_steps=16 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Unit.gd" id="1_script"]
+[ext_resource type="Script" path="res://Scripts/HealthComponent.gd" id="2_health"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_2ng4n"]
+radius = 1.5
+height = 2.0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_nhg3j"]
+albedo_color = Color(0.20, 0.28, 0.16, 1)
+roughness = 0.55
+metallic = 0.2
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_carapace"]
+albedo_color = Color(0.14, 0.22, 0.12, 1)
+roughness = 0.4
+metallic = 0.35
+
+[sub_resource type="SphereMesh" id="SphereMesh_body"]
+radius = 1.3
+height = 2.2
+
+[sub_resource type="BoxMesh" id="BoxMesh_carapace"]
+material = SubResource("StandardMaterial3D_carapace")
+size = Vector3(1.6, 0.45, 1.8)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wing"]
+transparency = 1
+albedo_color = Color(0.35, 0.48, 0.28, 0.65)
+roughness = 0.3
+
+[sub_resource type="BoxMesh" id="BoxMesh_wing"]
+material = SubResource("StandardMaterial3D_wing")
+size = Vector3(2.2, 0.08, 1.1)
+
+[sub_resource type="Animation" id="Animation_c8cop"]
+length = 0.5
+
+[sub_resource type="Animation" id="Animation_gxux8"]
+loop_mode = 1
+
+[sub_resource type="Animation" id="Animation_tm26f"]
+loop_mode = 1
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_w5wxn"]
+_data = {
+&"attack": SubResource("Animation_c8cop"),
+&"idle": SubResource("Animation_gxux8"),
+&"walk": SubResource("Animation_tm26f")
+}
+
+[node name="ArmoredSkyBeetle" type="CharacterBody3D" groups=["Flyer"]]
+script = ExtResource("1_script")
+max_health = 420.0
+max_armor = 280.0
+armor_style = "CHITIN"
+armor_color = Color(0.28, 0.38, 0.22, 1.0)
+attack_damage = 36.0
+speed = 4.8
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("2_health")
+max_health = 420.0
+max_armor = 280.0
+armor_style = "CHITIN"
+armor_color = Color(0.28, 0.38, 0.22, 1.0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("CylinderShape3D_2ng4n")
+
+[node name="VisualPivot" type="Node3D" parent="."]
+
+[node name="BeetleBody" type="MeshInstance3D" parent="VisualPivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)
+material_override = SubResource("StandardMaterial3D_nhg3j")
+mesh = SubResource("SphereMesh_body")
+
+[node name="RightWing" type="MeshInstance3D" parent="VisualPivot"]
+transform = Transform3D(0.9659258, 0, -0.25881904, 0, 1, 0, 0.25881904, 0, 0.9659258, -1.3, 1.5, 0)
+mesh = SubResource("BoxMesh_wing")
+
+[node name="LeftWing" type="MeshInstance3D" parent="VisualPivot"]
+transform = Transform3D(0.9659258, 0, 0.25881904, 0, 1, 0, -0.25881904, 0, 0.9659258, 1.3, 1.5, 0)
+mesh = SubResource("BoxMesh_wing")
+
+[node name="HardenedCarapace" type="MeshInstance3D" parent="VisualPivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
+mesh = SubResource("BoxMesh_carapace")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+&"": SubResource("AnimationLibrary_w5wxn")
+}
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="."]

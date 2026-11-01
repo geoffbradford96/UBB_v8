@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/CardData.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://Scenes/Units/VoidSwarm/VoidOverlord.tscn" id="2_scene"]
+
+[resource]
+script = ExtResource("1_script")
+card_name = "VoidOverlord"
+card_type = "Commander"
+max_hp = 850.0
+cost = 0.0
+description = "The supreme entity of the Void Swarm. Cloaked in an impenetrable 360-degree nether energy sphere while decimating foes with raw void energy."
+unit_scene = ExtResource("2_scene")

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/CardData.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://Scenes/Units/WildlifeGiantCentipede.tscn" id="2_scene"]
+
+[resource]
+script = ExtResource("1_script")
+card_name = "WildlifeGiantCentipede"
+card_type = "Beast"
+cost = 2.0
+is_spell = false
+spawn_count = 3
+max_hp = 85.0
+is_melee = true
+description = "3 foot-long multi-legged Scolopendra Centipedes that coil around prey with venomous forcipules."
+unit_scene = ExtResource("2_scene")

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/CardData.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://Scenes/Units/PlagueArmoredTank.tscn" id="2_scene"]
+
+[resource]
+script = ExtResource("1_script")
+card_name = "PlagueArmoredTank"
+card_type = "Vehicle"
+cost = 8.5
+spawn_count = 1
+max_hp = 420.0
+is_melee = false
+description = "Plague bio-tank covered in calcified ossified plates that shatter under heavy sustained fire."
+unit_scene = ExtResource("2_scene")

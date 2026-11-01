@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/CardData.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://Scenes/Units/PrimitiveBuilder.tscn" id="2_scene"]
+
+[resource]
+script = ExtResource("1_script")
+card_name = "PrimitiveBuilder"
+card_type = "Unit"
+cost = 3.0
+is_spell = false
+spawn_count = 3
+max_hp = 85.0
+is_melee = true
+description = "Squad of 3 Medieval Construction Workers. Armed with utility knives, they actively repair damaged friendly structures and units."
+unit_scene = ExtResource("2_scene")

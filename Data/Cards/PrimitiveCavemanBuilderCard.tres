@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/CardData.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://Scenes/Units/PrimitiveCavemanBuilder.tscn" id="2_scene"]
+
+[resource]
+script = ExtResource("1_script")
+card_name = "PrimitiveCavemanBuilder"
+card_type = "Unit"
+cost = 3.5
+is_spell = false
+spawn_count = 1
+max_hp = 110.0
+is_melee = true
+description = "Stone Age Crafter. Carries a stone mallet and can construct new Wood Watchtowers on the battlefield."
+unit_scene = ExtResource("2_scene")

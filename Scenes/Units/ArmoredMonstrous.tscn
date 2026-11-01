@@ -1,0 +1,87 @@
+[gd_scene load_steps=14 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Unit.gd" id="1_script"]
+[ext_resource type="Script" path="res://Scripts/HealthComponent.gd" id="2_health"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_65xwo"]
+radius = 1.6
+height = 2.8
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hide"]
+albedo_color = Color(0.35, 0.25, 0.16, 1)
+roughness = 0.85
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bone"]
+albedo_color = Color(0.86, 0.82, 0.72, 1)
+roughness = 0.65
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_torso"]
+radius = 0.9
+height = 2.6
+
+[sub_resource type="SphereMesh" id="SphereMesh_head"]
+radius = 0.45
+height = 0.9
+
+[sub_resource type="BoxMesh" id="BoxMesh_bone_ribs"]
+material = SubResource("StandardMaterial3D_bone")
+size = Vector3(1.3, 0.9, 0.65)
+
+[sub_resource type="Animation" id="Animation_wb8no"]
+length = 0.5
+
+[sub_resource type="Animation" id="Animation_r0ne1"]
+loop_mode = 1
+
+[sub_resource type="Animation" id="Animation_epskk"]
+loop_mode = 1
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_4sqbl"]
+_data = {
+&"attack": SubResource("Animation_wb8no"),
+&"idle": SubResource("Animation_r0ne1"),
+&"walk": SubResource("Animation_epskk")
+}
+
+[node name="ArmoredMonstrous" type="CharacterBody3D"]
+script = ExtResource("1_script")
+max_health = 500.0
+max_armor = 380.0
+armor_style = "BONE"
+armor_color = Color(0.85, 0.82, 0.72, 1.0)
+attack_damage = 55.0
+speed = 4.2
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("2_health")
+max_health = 500.0
+max_armor = 380.0
+armor_style = "BONE"
+armor_color = Color(0.85, 0.82, 0.72, 1.0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4, 0)
+shape = SubResource("CylinderShape3D_65xwo")
+
+[node name="MeshInstance3D" type="Node3D" parent="."]
+
+[node name="Torso" type="MeshInstance3D" parent="MeshInstance3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.3, 0)
+material_override = SubResource("StandardMaterial3D_hide")
+mesh = SubResource("CapsuleMesh_torso")
+
+[node name="Head" type="MeshInstance3D" parent="MeshInstance3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.8, 0)
+material_override = SubResource("StandardMaterial3D_hide")
+mesh = SubResource("SphereMesh_head")
+
+[node name="BoneArmorRibs" type="MeshInstance3D" parent="MeshInstance3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -0.3)
+mesh = SubResource("BoxMesh_bone_ribs")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+&"": SubResource("AnimationLibrary_4sqbl")
+}
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="."]

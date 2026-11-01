@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/CardData.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://Scenes/Units/PrimitiveShortBow.tscn" id="2_scene"]
+
+[resource]
+script = ExtResource("1_script")
+card_name = "PrimitiveShortBow"
+card_type = "Unit"
+cost = 2.5
+is_spell = false
+spawn_count = 3
+max_hp = 65.0
+is_melee = false
+description = "Squad of 3 primitive hunters with recurve short bows, unleashing a rapid hail of flint-tipped arrows."
+unit_scene = ExtResource("2_scene")

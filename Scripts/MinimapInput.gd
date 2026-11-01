@@ -1,0 +1,24 @@
+extends SubViewportContainer
+
+var main_camera: Camera3D
+
+func _ready():
+	await get_tree().process_frame
+	if not is_inside_tree() or not get_tree() or not get_tree().current_scene: return
+	main_camera = get_tree().current_scene.get_node_or_null("ArenaCamera")
+	if not main_camera:
+		main_camera = get_tree().current_scene.get_node_or_null("Camera3D")
+
+func _gui_input(event):
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		if not is_instance_valid(main_camera):
+			if get_tree() and get_tree().current_scene:
+				main_camera = get_tree().current_scene.get_node_or_null("ArenaCamera")
+		if main_camera and main_camera.has_method("snap_to"):
+			if size.x <= 0 or size.y <= 0: return
+			var x_percent = event.position.x / size.x
+			var y_percent = event.position.y / size.y
+			var map_range = maxf(GameState.current_map_radius, 90.0) if ("current_map_radius" in GameState and GameState.current_map_radius > 0.0) else (150.0 if GameState.map_selected == "Arena_6P.tscn" else (110.0 if GameState.map_selected == "Arena_4P.tscn" else 90.0))
+			var world_x = (x_percent * (map_range * 2.0)) - map_range
+			var world_z = ((1.0 - y_percent) * (map_range * 2.0)) - map_range
+			main_camera.snap_to(Vector3(world_x, 0, world_z))

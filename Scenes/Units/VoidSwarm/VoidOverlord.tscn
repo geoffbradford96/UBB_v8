@@ -1,0 +1,75 @@
+[gd_scene load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Hero.gd" id="1_script"]
+[ext_resource type="Script" path="res://Scripts/HealthComponent.gd" id="2_health"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wakaq"]
+albedo_color = Color(0.16, 0.04, 0.24, 1)
+roughness = 0.25
+metallic = 0.4
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_32ivv"]
+radius = 2.0
+height = 6.0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_4oyiy"]
+albedo_color = Color(0.8, 0.1, 0.9, 1)
+emission_enabled = true
+emission = Color(0.8, 0.1, 0.9, 1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_81mcm"]
+radius = 1.0
+height = 2.0
+
+[sub_resource type="BoxMesh" id="BoxMesh_xwvb2"]
+size = Vector3(3, 0.5, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_y85fm"]
+size = Vector3(3, 0.5, 1)
+
+[node name="VoidOverlord" type="CharacterBody3D"]
+script = ExtResource("1_script")
+max_health = 850.0
+max_shield = 400.0
+shield_type = "360"
+shield_color = Color(0.65, 0.15, 0.95, 0.5)
+shield_recharge_rate = 25.0
+attack_damage = 95.0
+attack_range = 3.5
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("2_health")
+max_health = 850.0
+max_shield = 400.0
+shield_type = "360"
+shield_color = Color(0.65, 0.15, 0.95, 0.5)
+shield_recharge_rate = 25.0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("CapsuleShape3D_1")
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="."]
+
+[node name="VisualPivot" type="Node3D" parent="."]
+
+[node name="@MeshInstance3D@13" type="MeshInstance3D" parent="VisualPivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, 0)
+material_override = SubResource("StandardMaterial3D_wakaq")
+mesh = SubResource("CapsuleMesh_32ivv")
+
+[node name="@MeshInstance3D@14" type="MeshInstance3D" parent="VisualPivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6, 1.5)
+material_override = SubResource("StandardMaterial3D_4oyiy")
+mesh = SubResource("SphereMesh_81mcm")
+
+[node name="@MeshInstance3D@15" type="MeshInstance3D" parent="VisualPivot"]
+transform = Transform3D(0.70710677, -0.70710677, 0, 0.70710677, 0.70710677, 0, 0, 0, 1, 2.5, 4, 0)
+material_override = SubResource("StandardMaterial3D_wakaq")
+mesh = SubResource("BoxMesh_xwvb2")
+
+[node name="@MeshInstance3D@16" type="MeshInstance3D" parent="VisualPivot"]
+transform = Transform3D(0.70710677, 0.70710677, 0, -0.70710677, 0.70710677, 0, 0, 0, 1, -2.5, 4, 0)
+material_override = SubResource("StandardMaterial3D_wakaq")
+mesh = SubResource("BoxMesh_y85fm")

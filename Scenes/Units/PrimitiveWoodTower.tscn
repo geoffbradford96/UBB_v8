@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/PrimitiveWoodTower.gd" id="1_script"]
+[ext_resource type="Script" path="res://Scripts/HealthComponent.gd" id="2_health"]
+
+[node name="PrimitiveWoodTower" type="StaticBody3D"]
+script = ExtResource("1_script")
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("2_health")
+max_health = 420.0
+current_health = 420.0
+
+[node name="VisualPivot" type="Node3D" parent="."]

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/CardData.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://Scenes/Units/DominionMech.tscn" id="2_scene"]
+
+[resource]
+script = ExtResource("1_script")
+card_name = "PlagueEnlightenedBig"
+card_type = "Vehicle"
+cost = 7.5
+spawn_count = 1
+max_hp = 620.0
+is_melee = true
+description = "Enlightened Behemoth: Random dice roll for 1 Big Unit, Mech, Beast, or Monster Husk from all factions!"
+unit_scene = ExtResource("2_scene")

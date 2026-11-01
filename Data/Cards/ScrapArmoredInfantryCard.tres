@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/CardData.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://Scenes/Units/ScrapArmoredInfantry.tscn" id="2_scene"]
+
+[resource]
+script = ExtResource("1_script")
+card_name = "ScrapArmoredInfantry"
+card_type = "Unit"
+cost = 4.0
+spawn_count = 1
+max_hp = 160.0
+is_melee = true
+description = "Frontline pirate raider strapped with heavy welded scrap plates that deflect incoming fire until shattered."
+unit_scene = ExtResource("2_scene")

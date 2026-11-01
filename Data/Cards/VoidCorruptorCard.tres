@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/CardData.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://Scenes/Units/VoidSwarm/VoidCorruptor.tscn" id="2_scene"]
+
+[resource]
+script = ExtResource("1_script")
+card_name = "VoidCorruptor"
+description = "A spectral entity that mends other Void units."
+unit_scene = ExtResource("2_scene")

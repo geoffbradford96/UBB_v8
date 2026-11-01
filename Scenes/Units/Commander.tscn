@@ -1,0 +1,117 @@
+[gd_scene load_steps=17 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Hero.gd" id="1_script"]
+[ext_resource type="Script" path="res://Scripts/HealthComponent.gd" id="2_health"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1"]
+
+[sub_resource type="Animation" id="Animation_ynycx"]
+length = 0.5
+
+[sub_resource type="Animation" id="Animation_fnfdt"]
+length = 0.5
+
+[sub_resource type="Animation" id="Animation_6dkwv"]
+loop_mode = 1
+
+[sub_resource type="Animation" id="Animation_pqlaq"]
+length = 0.5
+
+[sub_resource type="Animation" id="Animation_kf35i"]
+loop_mode = 1
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_l07j6"]
+_data = {
+&"attack": SubResource("Animation_ynycx"),
+&"heal": SubResource("Animation_fnfdt"),
+&"idle": SubResource("Animation_6dkwv"),
+&"repair": SubResource("Animation_pqlaq"),
+&"walk": SubResource("Animation_kf35i")
+}
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6dkwv"]
+albedo_color = Color(0.18, 0.22, 0.28, 1)
+metallic = 0.5
+roughness = 0.4
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_kf35i"]
+radius = 0.8
+height = 2.5
+
+[sub_resource type="BoxMesh" id="BoxMesh_ynycx"]
+size = Vector3(0.8, 0.8, 0.8)
+
+[sub_resource type="BoxMesh" id="BoxMesh_fnfdt"]
+size = Vector3(0.8, 0.8, 0.8)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pqlaq"]
+albedo_color = Color(0.9, 0.75, 0.2, 1)
+metallic = 0.9
+roughness = 0.2
+
+[sub_resource type="SphereMesh" id="SphereMesh_l07j6"]
+radius = 0.6
+height = 1.2
+
+[sub_resource type="BoxMesh" id="BoxMesh_mkjwt"]
+size = Vector3(0.2, 2, 0.2)
+
+[node name="Commander" type="CharacterBody3D"]
+script = ExtResource("1_script")
+max_health = 750.0
+max_shield = 200.0
+shield_type = "360"
+shield_color = Color(0.18, 0.55, 1.0, 0.45)
+shield_recharge_rate = 20.0
+max_armor = 250.0
+armor_style = "REACTIVE"
+armor_color = Color(0.3, 0.35, 0.42, 1.0)
+attack_damage = 80.0
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("2_health")
+max_health = 750.0
+max_shield = 200.0
+shield_type = "360"
+shield_color = Color(0.18, 0.55, 1.0, 0.45)
+shield_recharge_rate = 20.0
+max_armor = 250.0
+armor_style = "REACTIVE"
+armor_color = Color(0.3, 0.35, 0.42, 1.0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("CapsuleShape3D_1")
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="."]
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+&"": SubResource("AnimationLibrary_l07j6")
+}
+
+[node name="VisualPivot" type="Node3D" parent="."]
+
+[node name="@MeshInstance3D@51" type="MeshInstance3D" parent="VisualPivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+material_override = SubResource("StandardMaterial3D_6dkwv")
+mesh = SubResource("CapsuleMesh_kf35i")
+
+[node name="@MeshInstance3D@52" type="MeshInstance3D" parent="VisualPivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 2.2, 0)
+material_override = SubResource("StandardMaterial3D_6dkwv")
+mesh = SubResource("BoxMesh_ynycx")
+
+[node name="@MeshInstance3D@53" type="MeshInstance3D" parent="VisualPivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 2.2, 0)
+material_override = SubResource("StandardMaterial3D_6dkwv")
+mesh = SubResource("BoxMesh_fnfdt")
+
+[node name="@MeshInstance3D@54" type="MeshInstance3D" parent="VisualPivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.2, 0)
+material_override = SubResource("StandardMaterial3D_pqlaq")
+mesh = SubResource("SphereMesh_l07j6")
+
+[node name="@MeshInstance3D@55" type="MeshInstance3D" parent="VisualPivot"]
+transform = Transform3D(1, 0, 0, 0, 0.70710677, -0.70710677, 0, 0.70710677, 0.70710677, 1.2, 1.5, 1)
+material_override = SubResource("StandardMaterial3D_6dkwv")
+mesh = SubResource("BoxMesh_mkjwt")

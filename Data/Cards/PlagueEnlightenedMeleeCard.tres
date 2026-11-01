@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/CardData.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://Scenes/Units/CheapGrunt.tscn" id="2_scene"]
+
+[resource]
+script = ExtResource("1_script")
+card_name = "PlagueEnlightenedMelee"
+card_type = "Unit"
+cost = 4.0
+spawn_count = 4
+max_hp = 160.0
+is_melee = true
+description = "Enlightened Melee: Random dice roll every time for 4 Melee Husk units from all factions!"
+unit_scene = ExtResource("2_scene")

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/CardData.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://Scenes/Units/WildlifeGreatWhiteShark.tscn" id="2_scene"]
+
+[resource]
+script = ExtResource("1_script")
+card_name = "WildlifeGreatWhiteShark"
+card_type = "Beast"
+cost = 3.0
+is_spell = false
+spawn_count = 1
+max_hp = 270.0
+is_melee = true
+description = "Apex Great White Shark propelling across the battlefield with 300 serrated triangular teeth!"
+unit_scene = ExtResource("2_scene")

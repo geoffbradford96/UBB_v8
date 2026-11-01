@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/CardData.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://Scenes/Units/WildlifeGreatHornedOwl.tscn" id="2_scene"]
+
+[resource]
+script = ExtResource("1_script")
+card_name = "WildlifeGreatHornedOwl"
+card_type = "Beast"
+cost = 2.0
+is_spell = false
+spawn_count = 3
+max_hp = 72.0
+is_melee = true
+description = "3 silent-winged Great Horned Owls that swoop down on unsuspecting backline units."
+unit_scene = ExtResource("2_scene")

@@ -1,0 +1,111 @@
+[gd_scene load_steps=16 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Unit.gd" id="1_4juct"]
+[ext_resource type="Script" path="res://Scripts/HealthComponent.gd" id="2_a62o0"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_hemc4"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vmk7y"]
+transparency = 1
+albedo_color = Color(0.85, 0.65, 0.15, 0.9)
+emission_enabled = true
+emission = Color(0.85, 0.65, 0.15, 1)
+emission_energy_multiplier = 2.5
+
+[sub_resource type="SphereMesh" id="SphereMesh_m6cqn"]
+radius = 1.0
+
+[sub_resource type="Animation" id="Animation_unadw"]
+length = 0.5
+
+[sub_resource type="Animation" id="Animation_r2eaq"]
+loop_mode = 1
+
+[sub_resource type="Animation" id="Animation_i5yf7"]
+loop_mode = 1
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_gljtw"]
+_data = {
+&"attack": SubResource("Animation_unadw"),
+&"idle": SubResource("Animation_r2eaq"),
+&"walk": SubResource("Animation_i5yf7")
+}
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_4juct"]
+transparency = 1
+albedo_color = Color(0.28, 0.40, 0.22, 0.65)
+roughness = 0.4
+
+[sub_resource type="SphereMesh" id="SphereMesh_a62o0"]
+radius = 2.0
+height = 4.0
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_hemc4"]
+radius = 0.2
+height = 3.0
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_vmk7y"]
+radius = 0.2
+height = 3.0
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_m6cqn"]
+radius = 0.2
+height = 3.0
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_r2eaq"]
+radius = 0.2
+height = 3.0
+
+[node name="SkyJellyfish" type="CharacterBody3D"]
+script = ExtResource("1_4juct")
+attack_damage = 5.0
+attack_range = 10.0
+attack_speed = 0.5
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("2_a62o0")
+
+[node name="@CollisionShape3D@16" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("CylinderShape3D_hemc4")
+
+[node name="MeshInstance3D" type="Node3D" parent="."]
+
+[node name="@MeshInstance3D@17" type="MeshInstance3D" parent="MeshInstance3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0)
+material_override = SubResource("StandardMaterial3D_vmk7y")
+mesh = SubResource("SphereMesh_m6cqn")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+&"": SubResource("AnimationLibrary_gljtw")
+}
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="."]
+
+[node name="VisualPivot" type="Node3D" parent="."]
+
+[node name="@MeshInstance3D@27" type="MeshInstance3D" parent="VisualPivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, 0)
+material_override = SubResource("StandardMaterial3D_4juct")
+mesh = SubResource("SphereMesh_a62o0")
+
+[node name="@MeshInstance3D@28" type="MeshInstance3D" parent="VisualPivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 2.5, 0)
+material_override = SubResource("StandardMaterial3D_4juct")
+mesh = SubResource("CapsuleMesh_hemc4")
+
+[node name="@MeshInstance3D@29" type="MeshInstance3D" parent="VisualPivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.123032e-17, 2.5, 1)
+material_override = SubResource("StandardMaterial3D_4juct")
+mesh = SubResource("CapsuleMesh_vmk7y")
+
+[node name="@MeshInstance3D@30" type="MeshInstance3D" parent="VisualPivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 2.5, 1.2246064e-16)
+material_override = SubResource("StandardMaterial3D_4juct")
+mesh = SubResource("CapsuleMesh_m6cqn")
+
+[node name="@MeshInstance3D@31" type="MeshInstance3D" parent="VisualPivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.8369095e-16, 2.5, -1)
+material_override = SubResource("StandardMaterial3D_4juct")
+mesh = SubResource("CapsuleMesh_r2eaq")

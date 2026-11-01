@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/CardData.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://Scenes/Units/PrimitiveChieftain.tscn" id="2_scene"]
+
+[resource]
+script = ExtResource("1_script")
+card_name = "PrimitiveChieftain"
+card_type = "Commander"
+cost = 5.0
+is_spell = false
+spawn_count = 1
+max_hp = 480.0
+is_melee = true
+description = "Primal Caveman Chieftain. Mammoth skull helm and heavy bone warclub. Inspires +20% move speed to all primitive swarms."
+unit_scene = ExtResource("2_scene")

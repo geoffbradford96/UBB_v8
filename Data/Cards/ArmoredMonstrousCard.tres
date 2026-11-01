@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/CardData.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://Scenes/Units/ArmoredMonstrous.tscn" id="2_scene"]
+
+[resource]
+script = ExtResource("1_script")
+card_name = "ArmoredMonstrous"
+card_type = "Rimworlder"
+cost = 7.5
+spawn_count = 1
+max_hp = 500.0
+is_melee = true
+description = "A massive overgrown Rimworlder brute clad in thick ossified bone armor plates that shatter under heavy assault."
+unit_scene = ExtResource("2_scene")

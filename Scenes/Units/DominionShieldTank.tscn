@@ -1,0 +1,105 @@
+[gd_scene load_steps=15 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Tank.gd" id="1_script"]
+[ext_resource type="Script" path="res://Scripts/HealthComponent.gd" id="2_health"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_1"]
+size = Vector3(2.5, 1.5, 3.5)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hull"]
+albedo_color = Color(0.18, 0.28, 0.40, 1)
+roughness = 0.45
+metallic = 0.65
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gunmetal"]
+albedo_color = Color(0.12, 0.14, 0.18, 1)
+metallic = 0.85
+roughness = 0.35
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_shield_emitter"]
+albedo_color = Color(0.15, 0.75, 1.0, 1)
+emission_enabled = true
+emission = Color(0.15, 0.75, 1.0, 1)
+emission_energy_multiplier = 3.5
+
+[sub_resource type="BoxMesh" id="BoxMesh_1"]
+material = SubResource("StandardMaterial3D_hull")
+size = Vector3(2.5, 1.5, 3.5)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_1"]
+material = SubResource("StandardMaterial3D_hull")
+top_radius = 0.85
+bottom_radius = 1.05
+height = 1.0
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_2"]
+material = SubResource("StandardMaterial3D_gunmetal")
+top_radius = 0.2
+bottom_radius = 0.2
+height = 3.0
+
+[sub_resource type="TorusMesh" id="TorusMesh_emitter"]
+material = SubResource("StandardMaterial3D_shield_emitter")
+inner_radius = 0.35
+outer_radius = 0.55
+
+[sub_resource type="Animation" id="Animation_qketc"]
+loop_mode = 1
+
+[sub_resource type="Animation" id="Animation_t0d1q"]
+loop_mode = 1
+
+[sub_resource type="Animation" id="Animation_u4bx1"]
+length = 0.5
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_ic60w"]
+_data = {
+&"attack": SubResource("Animation_u4bx1"),
+&"idle": SubResource("Animation_qketc"),
+&"walk": SubResource("Animation_t0d1q")
+}
+
+[node name="DominionShieldTank" type="CharacterBody3D"]
+script = ExtResource("1_script")
+max_health = 450.0
+max_shield = 350.0
+shield_type = "360"
+shield_color = Color(0.2, 0.65, 1.0, 0.5)
+shield_recharge_rate = 22.0
+damage = 55.0
+speed = 3.5
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("2_health")
+max_health = 450.0
+max_shield = 350.0
+shield_type = "360"
+shield_color = Color(0.2, 0.65, 1.0, 0.5)
+shield_recharge_rate = 22.0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
+shape = SubResource("BoxShape3D_1")
+
+[node name="Body" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
+mesh = SubResource("BoxMesh_1")
+
+[node name="Turret" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+mesh = SubResource("CylinderMesh_1")
+
+[node name="Barrel" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 2, -2)
+mesh = SubResource("CylinderMesh_2")
+
+[node name="ShieldEmitterPylon" type="MeshInstance3D" parent="Turret"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
+mesh = SubResource("TorusMesh_emitter")
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="."]
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+&"": SubResource("AnimationLibrary_ic60w")
+}

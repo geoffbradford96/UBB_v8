@@ -1,0 +1,101 @@
+[gd_scene load_steps=16 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Tank.gd" id="1_script"]
+[ext_resource type="Script" path="res://Scripts/HealthComponent.gd" id="2_health"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_1"]
+size = Vector3(2.6, 1.6, 3.6)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_flesh_hull"]
+albedo_color = Color(0.32, 0.22, 0.18, 1)
+roughness = 0.8
+metallic = 0.15
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bile"]
+albedo_color = Color(0.25, 0.65, 0.12, 1)
+emission_enabled = true
+emission = Color(0.25, 0.65, 0.12, 1)
+emission_energy_multiplier = 2.5
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bone_armor"]
+albedo_color = Color(0.85, 0.82, 0.72, 1)
+roughness = 0.6
+
+[sub_resource type="BoxMesh" id="BoxMesh_hull"]
+material = SubResource("StandardMaterial3D_flesh_hull")
+size = Vector3(2.5, 1.4, 3.4)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_turret"]
+material = SubResource("StandardMaterial3D_flesh_hull")
+top_radius = 0.85
+bottom_radius = 1.05
+height = 0.9
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_cannon"]
+material = SubResource("StandardMaterial3D_bile")
+top_radius = 0.25
+bottom_radius = 0.35
+height = 2.8
+
+[sub_resource type="BoxMesh" id="BoxMesh_bone_shell"]
+material = SubResource("StandardMaterial3D_bone_armor")
+size = Vector3(2.7, 0.5, 3.2)
+
+[sub_resource type="Animation" id="Animation_qketc"]
+loop_mode = 1
+
+[sub_resource type="Animation" id="Animation_t0d1q"]
+loop_mode = 1
+
+[sub_resource type="Animation" id="Animation_u4bx1"]
+length = 0.5
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_ic60w"]
+_data = {
+&"attack": SubResource("Animation_u4bx1"),
+&"idle": SubResource("Animation_qketc"),
+&"walk": SubResource("Animation_t0d1q")
+}
+
+[node name="PlagueArmoredTank" type="CharacterBody3D"]
+script = ExtResource("1_script")
+max_health = 420.0
+max_armor = 320.0
+armor_style = "BONE"
+armor_color = Color(0.85, 0.82, 0.72, 1.0)
+damage = 50.0
+speed = 3.3
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("2_health")
+max_health = 420.0
+max_armor = 320.0
+armor_style = "BONE"
+armor_color = Color(0.85, 0.82, 0.72, 1.0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+shape = SubResource("BoxShape3D_1")
+
+[node name="Body" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
+mesh = SubResource("BoxMesh_hull")
+
+[node name="BoneArmorShell" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.35, 0)
+mesh = SubResource("BoxMesh_bone_shell")
+
+[node name="Turret" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.95, 0)
+mesh = SubResource("CylinderMesh_turret")
+
+[node name="Barrel" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 1.95, -1.8)
+mesh = SubResource("CylinderMesh_cannon")
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="."]
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+&"": SubResource("AnimationLibrary_ic60w")
+}

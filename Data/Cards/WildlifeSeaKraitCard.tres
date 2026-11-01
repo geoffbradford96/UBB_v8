@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/CardData.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://Scenes/Units/WildlifeSeaKrait.tscn" id="2_scene"]
+
+[resource]
+script = ExtResource("1_script")
+card_name = "WildlifeSeaKrait"
+card_type = "Beast"
+cost = 1.0
+is_spell = false
+spawn_count = 5
+max_hp = 42.0
+is_melee = true
+description = "5 blue-and-black striped venomous Sea Kraits. Cheap, fast slithering poison pack."
+unit_scene = ExtResource("2_scene")

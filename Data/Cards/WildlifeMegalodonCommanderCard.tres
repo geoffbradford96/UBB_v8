@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/CardData.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://Scenes/Units/WildlifeMegalodonCommander.tscn" id="2_scene"]
+
+[resource]
+script = ExtResource("1_script")
+card_name = "WildlifeMegalodonCommander"
+card_type = "Commander"
+cost = 4.0
+is_spell = false
+spawn_count = 1
+max_hp = 540.0
+is_melee = true
+description = "Colossal Land-Striding Apex Shark. Serrated jaws tear targets apart while Blood Frenzy aura hastens allies."
+unit_scene = ExtResource("2_scene")

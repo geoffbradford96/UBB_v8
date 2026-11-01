@@ -1,0 +1,97 @@
+[gd_scene load_steps=17 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Tank.gd" id="1_yu12h"]
+[ext_resource type="Script" path="res://Scripts/HealthComponent.gd" id="2_vh3pk"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ftr6g"]
+size = Vector3(2, 2, 2)
+
+[sub_resource type="Animation" id="Animation_78q0l"]
+
+[sub_resource type="Animation" id="Animation_enba2"]
+
+[sub_resource type="Animation" id="Animation_oqxi4"]
+loop_mode = 1
+
+[sub_resource type="Animation" id="Animation_1u0uo"]
+
+[sub_resource type="Animation" id="Animation_kmcqv"]
+loop_mode = 1
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_p7vb6"]
+_data = {
+&"attack": SubResource("Animation_78q0l"),
+&"heal": SubResource("Animation_enba2"),
+&"idle": SubResource("Animation_oqxi4"),
+&"repair": SubResource("Animation_1u0uo"),
+&"walk": SubResource("Animation_kmcqv")
+}
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_yu12h"]
+albedo_color = Color(0.94, 0.96, 1.0, 1)
+roughness = 0.15
+metallic = 0.1
+
+[sub_resource type="BoxMesh" id="BoxMesh_vh3pk"]
+size = Vector3(3, 1, 4)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ftr6g"]
+albedo_color = Color(0.1, 0.1, 0.1, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_tbfvh"]
+size = Vector3(0.5, 1.2, 4.5)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ne1av"]
+size = Vector3(0.5, 1.2, 4.5)
+
+[sub_resource type="SphereMesh" id="SphereMesh_gm7ei"]
+radius = 1.2
+height = 2.4
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_v3rid"]
+top_radius = 0.2
+bottom_radius = 0.2
+height = 3.0
+
+[node name="ReachTank" type="CharacterBody3D"]
+script = ExtResource("1_yu12h")
+max_health = 650.0
+
+[node name="@CollisionShape3D@34" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("BoxShape3D_ftr6g")
+
+[node name="HealthComponent" type="Node3D" parent="."]
+script = ExtResource("2_vh3pk")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+&"": SubResource("AnimationLibrary_p7vb6")
+}
+
+[node name="VisualPivot" type="Node3D" parent="."]
+
+[node name="@MeshInstance3D@19" type="MeshInstance3D" parent="VisualPivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+material_override = SubResource("StandardMaterial3D_yu12h")
+mesh = SubResource("BoxMesh_vh3pk")
+
+[node name="@MeshInstance3D@20" type="MeshInstance3D" parent="VisualPivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.6, 0.5, 0)
+material_override = SubResource("StandardMaterial3D_ftr6g")
+mesh = SubResource("BoxMesh_tbfvh")
+
+[node name="@MeshInstance3D@21" type="MeshInstance3D" parent="VisualPivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.6, 0.5, 0)
+material_override = SubResource("StandardMaterial3D_ftr6g")
+mesh = SubResource("BoxMesh_ne1av")
+
+[node name="@MeshInstance3D@22" type="MeshInstance3D" parent="VisualPivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+material_override = SubResource("StandardMaterial3D_yu12h")
+mesh = SubResource("SphereMesh_gm7ei")
+
+[node name="@MeshInstance3D@23" type="MeshInstance3D" parent="VisualPivot"]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 1.5, -1.5)
+material_override = SubResource("StandardMaterial3D_ftr6g")
+mesh = SubResource("CylinderMesh_v3rid")

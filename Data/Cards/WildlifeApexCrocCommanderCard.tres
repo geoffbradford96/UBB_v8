@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/CardData.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://Scenes/Units/WildlifeApexCrocCommander.tscn" id="2_scene"]
+
+[resource]
+script = ExtResource("1_script")
+card_name = "WildlifeApexCrocCommander"
+card_type = "Commander"
+cost = 4.0
+is_spell = false
+spawn_count = 1
+max_hp = 560.0
+is_melee = true
+description = "Prehistoric Giant Crocodile King with heavy osteoderm scale armor, crushing jaws, and reptile pack aura."
+unit_scene = ExtResource("2_scene")

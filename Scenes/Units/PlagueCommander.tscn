@@ -1,0 +1,25 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://Scripts/BeastOfHarmony.gd" id="1_script"]
+[ext_resource type="Script" path="res://Scripts/HealthComponent.gd" id="2_health"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_col"]
+radius = 1.25
+
+[node name="PlagueCommander" type="CharacterBody3D" groups=["Targetable", "Units"]]
+script = ExtResource("1_script")
+beast_variant = "RANGED"
+max_hp = 750.0
+attack_damage = 80.0
+attack_range = 20.0
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("2_health")
+max_health = 750.0
+max_armor = 250.0
+armor_style = "CHITIN"
+armor_color = Color(0.28, 0.36, 0.22, 1.0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.3, 0)
+shape = SubResource("SphereShape3D_col")

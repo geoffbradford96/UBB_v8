@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/CardData.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://Scenes/Units/GildedGeneticTank.tscn" id="2_scene"]
+
+[resource]
+script = ExtResource("1_script")
+card_name = "GildedGeneticTank"
+card_type = "Vehicle"
+cost = 6.5
+spawn_count = 1
+max_hp = 520.0
+is_melee = false
+description = "Gilded Genetic Tank: 1 Tank genetic monster. Regens HP, divides at full HP, and splits 2x into 2 smaller ones on death!"
+unit_scene = ExtResource("2_scene")

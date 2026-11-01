@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/CardData.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://Scenes/Units/CheapGrunt.tscn" id="2_scene"]
+
+[resource]
+script = ExtResource("1_script")
+card_name = "GildedHuskMelee"
+card_type = "Unit"
+cost = 2.5
+spawn_count = 1
+max_hp = 180.0
+is_melee = true
+description = "Gilded Melee Husk: 1 random Melee Husk from any faction. Regens, divides at full HP, and splits 2x on death!"
+unit_scene = ExtResource("2_scene")

@@ -1,0 +1,71 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Assassin.gd" id="1_script"]
+[ext_resource type="Script" path="res://Scripts/HealthComponent.gd" id="2_health"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1"]
+radius = 0.65
+height = 3.0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_void_carapace"]
+albedo_color = Color(0.12, 0.03, 0.18, 1)
+roughness = 0.25
+metallic = 0.55
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_void_glow"]
+albedo_color = Color(0.85, 0.12, 0.95, 1)
+emission_enabled = true
+emission = Color(0.85, 0.12, 0.95, 1)
+emission_energy_multiplier = 3.0
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_body"]
+radius = 0.55
+height = 2.8
+
+[sub_resource type="SphereMesh" id="SphereMesh_head"]
+radius = 0.4
+height = 0.8
+
+[sub_resource type="TorusMesh" id="TorusMesh_ring"]
+material = SubResource("StandardMaterial3D_void_glow")
+inner_radius = 0.6
+outer_radius = 0.8
+
+[node name="VoidShieldStalker" type="CharacterBody3D"]
+script = ExtResource("1_script")
+max_health = 220.0
+max_shield = 220.0
+shield_type = "360"
+shield_color = Color(0.65, 0.15, 0.95, 0.5)
+shield_recharge_rate = 18.0
+damage = 36.0
+speed = 5.8
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("2_health")
+max_health = 220.0
+max_shield = 220.0
+shield_type = "360"
+shield_color = Color(0.65, 0.15, 0.95, 0.5)
+shield_recharge_rate = 18.0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("CapsuleShape3D_1")
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="."]
+
+[node name="VisualPivot" type="Node3D" parent="."]
+
+[node name="Body" type="MeshInstance3D" parent="VisualPivot"]
+transform = Transform3D(1, 0, 0, 0, 0.70710677, -0.70710677, 0, 0.70710677, 0.70710677, 0, 1.4, 0)
+material_override = SubResource("StandardMaterial3D_void_carapace")
+mesh = SubResource("CapsuleMesh_body")
+
+[node name="EyeCluster" type="MeshInstance3D" parent="VisualPivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.4, 0.8)
+material_override = SubResource("StandardMaterial3D_void_glow")
+mesh = SubResource("SphereMesh_head")
+
+[node name="VoidShieldFocusRing" type="MeshInstance3D" parent="VisualPivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4, 0)
+mesh = SubResource("TorusMesh_ring")

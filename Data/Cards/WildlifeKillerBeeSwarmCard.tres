@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/CardData.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://Scenes/Units/WildlifeKillerBeeSwarm.tscn" id="2_scene"]
+
+[resource]
+script = ExtResource("1_script")
+card_name = "WildlifeKillerBeeSwarm"
+card_type = "Beast"
+cost = 1.0
+is_spell = false
+spawn_count = 8
+max_hp = 20.0
+is_melee = true
+description = "Cloud of 8 aggressive Killer Bees that chase down and blanket enemy squads in stings."
+unit_scene = ExtResource("2_scene")

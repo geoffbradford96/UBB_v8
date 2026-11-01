@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/CardData.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://Scenes/Units/VoidSwarm/VoidShieldStalker.tscn" id="2_scene"]
+
+[resource]
+script = ExtResource("1_script")
+card_name = "VoidShieldStalker"
+cost = 5.5
+spawn_count = 1
+max_hp = 220.0
+is_melee = true
+description = "A lethal Void infiltrator wrapped in a protective 360-degree nether energy shield that absorbs counter-attacks."
+unit_scene = ExtResource("2_scene")

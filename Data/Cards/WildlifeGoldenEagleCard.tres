@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/CardData.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://Scenes/Units/WildlifeGoldenEagle.tscn" id="2_scene"]
+
+[resource]
+script = ExtResource("1_script")
+card_name = "WildlifeGoldenEagle"
+card_type = "Beast"
+cost = 3.0
+is_spell = false
+spawn_count = 2
+max_hp = 115.0
+is_melee = true
+description = "2 apex Golden Eagles capable of tackling heavy wolves and infantry from the air."
+unit_scene = ExtResource("2_scene")

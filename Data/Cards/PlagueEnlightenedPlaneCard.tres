@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/CardData.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://Scenes/Units/Plane.tscn" id="2_scene"]
+
+[resource]
+script = ExtResource("1_script")
+card_name = "PlagueEnlightenedPlane"
+card_type = "Vehicle"
+cost = 5.0
+spawn_count = 1
+max_hp = 260.0
+is_melee = false
+description = "Enlightened Plane: Random dice roll every time for 1 Plane or Flyer Husk from all factions!"
+unit_scene = ExtResource("2_scene")

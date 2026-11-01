@@ -1,0 +1,116 @@
+[gd_scene load_steps=18 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Unit.gd" id="1_script"]
+[ext_resource type="Script" path="res://Scripts/HealthComponent.gd" id="2_health"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ak1ws"]
+size = Vector3(1.1, 2.1, 1.1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_suit"]
+albedo_color = Color(0.92, 0.95, 0.98, 1)
+roughness = 0.2
+metallic = 0.3
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_cyan_glow"]
+albedo_color = Color(0.0, 0.88, 1.0, 1)
+emission_enabled = true
+emission = Color(0.0, 0.85, 1.0, 1)
+emission_energy_multiplier = 3.0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_dark_trim"]
+albedo_color = Color(0.12, 0.15, 0.20, 1)
+metallic = 0.8
+roughness = 0.3
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_body"]
+radius = 0.45
+height = 1.9
+
+[sub_resource type="BoxMesh" id="BoxMesh_visor"]
+size = Vector3(0.5, 0.2, 0.3)
+
+[sub_resource type="BoxMesh" id="BoxMesh_projector"]
+size = Vector3(0.15, 0.8, 0.45)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_emitter"]
+top_radius = 0.08
+bottom_radius = 0.08
+height = 0.9
+
+[sub_resource type="Animation" id="Animation_x2ahr"]
+loop_mode = 1
+
+[sub_resource type="Animation" id="Animation_o4i0s"]
+loop_mode = 1
+
+[sub_resource type="Animation" id="Animation_l76su"]
+length = 0.5
+
+[sub_resource type="Animation" id="Animation_j1dm5"]
+length = 0.5
+
+[sub_resource type="Animation" id="Animation_i6jik"]
+length = 0.5
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_ckuhl"]
+_data = {
+&"attack": SubResource("Animation_l76su"),
+&"heal": SubResource("Animation_j1dm5"),
+&"idle": SubResource("Animation_x2ahr"),
+&"repair": SubResource("Animation_i6jik"),
+&"walk": SubResource("Animation_o4i0s")
+}
+
+[node name="ReachShieldInfantry" type="CharacterBody3D"]
+script = ExtResource("1_script")
+max_health = 180.0
+max_shield = 220.0
+shield_type = "FRONT"
+shield_arc_deg = 150.0
+shield_color = Color(0.0, 0.88, 1.0, 0.5)
+shield_recharge_rate = 18.0
+attack_damage = 28.0
+attack_range = 10.0
+speed = 4.8
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("2_health")
+max_health = 180.0
+max_shield = 220.0
+shield_type = "FRONT"
+shield_arc_deg = 150.0
+shield_color = Color(0.0, 0.88, 1.0, 0.5)
+shield_recharge_rate = 18.0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.05, 0)
+shape = SubResource("BoxShape3D_ak1ws")
+
+[node name="VisualPivot" type="Node3D" parent="."]
+
+[node name="BodyMesh" type="MeshInstance3D" parent="VisualPivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0, 0)
+material_override = SubResource("StandardMaterial3D_suit")
+mesh = SubResource("CapsuleMesh_body")
+
+[node name="Visor" type="MeshInstance3D" parent="VisualPivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, -0.35)
+material_override = SubResource("StandardMaterial3D_cyan_glow")
+mesh = SubResource("BoxMesh_visor")
+
+[node name="ShieldProjectorArm" type="MeshInstance3D" parent="VisualPivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.55, 1.0, -0.3)
+material_override = SubResource("StandardMaterial3D_dark_trim")
+mesh = SubResource("BoxMesh_projector")
+
+[node name="EmitterPoles" type="MeshInstance3D" parent="VisualPivot/ShieldProjectorArm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.15)
+material_override = SubResource("StandardMaterial3D_cyan_glow")
+mesh = SubResource("CylinderMesh_emitter")
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="."]
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+&"": SubResource("AnimationLibrary_ckuhl")
+}

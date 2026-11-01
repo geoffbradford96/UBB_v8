@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/CardData.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://Scenes/Units/SupportingFire.tscn" id="2_scene"]
+
+[resource]
+script = ExtResource("1_script")
+card_name = "PlagueEnlightenedRanged"
+card_type = "Unit"
+cost = 4.0
+spawn_count = 2
+max_hp = 140.0
+is_melee = false
+description = "Enlightened Ranged: Random dice roll every time for 2 Ranged Husk units from all factions!"
+unit_scene = ExtResource("2_scene")

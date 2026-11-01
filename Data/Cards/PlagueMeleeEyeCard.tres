@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/CardData.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://Scenes/Units/PlagueMeleeEye.tscn" id="2_scene"]
+
+[resource]
+script = ExtResource("1_script")
+card_name = "PlagueMeleeEye"
+card_type = "Unit"
+cost = 9.0
+spawn_count = 1
+max_hp = 560.0
+is_melee = true
+description = "Strongest Plague Eye Creature: Central eye surrounded by many smaller biting eyes that eat things!"
+unit_scene = ExtResource("2_scene")

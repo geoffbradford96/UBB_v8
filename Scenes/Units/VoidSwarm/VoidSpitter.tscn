@@ -1,0 +1,49 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://Scripts/SupportingFire.gd" id="1_script"]
+[ext_resource type="Script" path="res://Scripts/HealthComponent.gd" id="2_health"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_h4utm"]
+albedo_color = Color(0.14, 0.03, 0.2, 1)
+roughness = 0.3
+metallic = 0.3
+
+[sub_resource type="SphereMesh" id="SphereMesh_0vd0b"]
+radius = 1.2
+height = 2.4
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_irplj"]
+albedo_color = Color(0.95, 0.0, 0.85, 1)
+roughness = 0.2
+emission_enabled = true
+emission = Color(0.8, 0.1, 0.9, 1)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_n4ik1"]
+top_radius = 0.2
+bottom_radius = 0.4
+height = 1.5
+
+[node name="VoidSpitter" type="CharacterBody3D" ]
+script = ExtResource("1_script")
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("2_health")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("CapsuleShape3D_1")
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="."]
+
+[node name="VisualPivot" type="Node3D" parent="."]
+
+[node name="@MeshInstance3D@11" type="MeshInstance3D" parent="VisualPivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+material_override = SubResource("StandardMaterial3D_h4utm")
+mesh = SubResource("SphereMesh_0vd0b")
+
+[node name="@MeshInstance3D@12" type="MeshInstance3D" parent="VisualPivot"]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 1.5, -1.5)
+material_override = SubResource("StandardMaterial3D_irplj")
+mesh = SubResource("CylinderMesh_n4ik1")
