@@ -231,7 +231,7 @@ func setup_match():
         return # Do not spawn AIs in online PvP matches!
         
     var profiles_for_slots = ["Player1", "Guest1", "Guest2", "Guest3", "Guest4", "Guest5"]
-    var ai_pool = ["Dominion", "The Reach", "Pirates", "Rimworlders", "Void", "Plague of Harmony", "Gilded Harmony", "Planetary Primitives", "Galactic Wildlife", "The Nightmare Court", "The Winter Court", "Chaos"]
+    var ai_pool = ["Dominion", "The Reach", "Pirates", "Rimworlders", "Void", "Plague of Harmony", "Gilded Harmony", "Planetary Primitives", "Galactic Wildlife", "The Nightmare Court", "The Winter Court", "The Magma Born", "Chaos"]
     var interval_scale: float = 1.0 + maxf(0.0, float(total_slots - 6) * 0.055)
     for i in range(start_bot_idx, total_slots):
         var bot = BotAI.new()
@@ -845,7 +845,7 @@ func _get_slot_faction(slot: int) -> String:
                 if deck != null and not deck.is_empty():
                     return _detect_faction_from_deck(deck)
                     
-    var opts = ["Dominion", "Void", "Rimworlders", "Pirates", "The Reach", "Plague of Harmony", "Gilded Harmony", "Planetary Primitives", "Galactic Wildlife", "The Nightmare Court", "The Winter Court", "Chaos"]
+    var opts = ["Dominion", "Void", "Rimworlders", "Pirates", "The Reach", "Plague of Harmony", "Gilded Harmony", "Planetary Primitives", "Galactic Wildlife", "The Nightmare Court", "The Winter Court", "The Magma Born", "Chaos"]
     return opts[randi() % opts.size()]
 
 func _get_team_faction(team: String) -> String:
@@ -869,13 +869,14 @@ func _get_team_faction(team: String) -> String:
                 if p_name != null and GameState.player_decks.has(p_name):
                     return _detect_faction_from_deck(GameState.player_decks[p_name])
                     
-    var opts = ["Dominion", "Void", "Rimworlders", "Pirates", "The Reach", "Plague of Harmony", "Gilded Harmony", "Planetary Primitives", "Galactic Wildlife", "The Nightmare Court", "The Winter Court", "Chaos"]
+    var opts = ["Dominion", "Void", "Rimworlders", "Pirates", "The Reach", "Plague of Harmony", "Gilded Harmony", "Planetary Primitives", "Galactic Wildlife", "The Nightmare Court", "The Winter Court", "The Magma Born", "Chaos"]
     return opts[randi() % opts.size()]
 
 func _detect_faction_from_deck(deck: Array) -> String:
-    var v = 0; var r = 0; var d = 0; var pi = 0; var reach = 0; var plague = 0; var gilded = 0; var prim = 0; var wild = 0; var night = 0; var winter = 0
+    var v = 0; var r = 0; var d = 0; var pi = 0; var reach = 0; var plague = 0; var gilded = 0; var prim = 0; var wild = 0; var night = 0; var winter = 0; var magma = 0
     for c in deck:
-        if "Nightmare" in c or "Halloween" in c: night += 1
+        if "Magma" in c or "Lava" in c: magma += 1
+        elif "Nightmare" in c or "Halloween" in c: night += 1
         elif "Winter" in c or "Yuletide" in c or "Yule" in c: winter += 1
         elif "Wildlife" in c: wild += 1
         elif "Primitive" in c: prim += 1
@@ -886,8 +887,9 @@ func _detect_faction_from_deck(deck: Array) -> String:
         elif "Scrap" in c: pi += 1
         elif "Reach" in c: reach += 1
         else: d += 1
-    var mx = max(d, max(v, max(r, max(pi, max(reach, max(plague, max(gilded, max(prim, max(wild, max(night, winter))))))))))
+    var mx = max(d, max(v, max(r, max(pi, max(reach, max(plague, max(gilded, max(prim, max(wild, max(night, max(winter, magma)))))))))))
     if mx < 3 and deck.size() >= 5: return "Chaos"
+    if mx == magma and magma > 0: return "The Magma Born"
     if mx == night and night > 0: return "The Nightmare Court"
     if mx == winter and winter > 0: return "The Winter Court"
     if mx == wild and wild > 0: return "Galactic Wildlife"
@@ -955,7 +957,9 @@ func _build_structure_mesh(node, faction: String, is_tower: bool):
     # Resolve faction type (supports substring matching, and Chaos/Random independent dice rolls per tower/base)
     var f = faction
     var f_type = "Dominion"
-    if "Nightmare" in f or "Halloween" in f:
+    if "Magma" in f or "Lava" in f:
+        f_type = "The Magma Born"
+    elif "Nightmare" in f or "Halloween" in f:
         f_type = "The Nightmare Court"
     elif "Winter" in f or "Yuletide" in f or "Yule" in f or "Frost" in f:
         f_type = "The Winter Court"
@@ -979,7 +983,7 @@ func _build_structure_mesh(node, faction: String, is_tower: bool):
         var all_factions = [
             "Dominion", "Void", "Rimworlders", "Pirates", "The Reach", 
             "Plague of Harmony", "Gilded Harmony", "Planetary Primitives", 
-            "Galactic Wildlife", "The Nightmare Court", "The Winter Court"
+            "Galactic Wildlife", "The Nightmare Court", "The Winter Court", "The Magma Born"
         ]
         f_type = all_factions[randi() % all_factions.size()]
     node.set_meta("resolved_faction", f_type)
@@ -1610,6 +1614,39 @@ func _build_structure_mesh(node, faction: String, is_tower: bool):
             var win_front = MeshInstance3D.new(); win_front.mesh = BoxMesh.new(); win_front.mesh.size = Vector3(2.4, 1.8, 0.15)
             win_front.material_override = amber_mat; win_front.position = Vector3(0, 2.5, 3.35); mesh_node.add_child(win_front)
 
+    # ==========================================
+    # 12. THE MAGMA BORN (VOLCANIC CITADEL & CRUCIBLE FOUNDRY)
+    # ==========================================
+    elif f_type == "The Magma Born":
+        var basalt_mat = StandardMaterial3D.new(); basalt_mat.albedo_color = Color(0.14, 0.11, 0.12); basalt_mat.roughness = 0.92
+        var obsidian_mat = StandardMaterial3D.new(); obsidian_mat.albedo_color = Color(0.06, 0.05, 0.07); obsidian_mat.roughness = 0.35; obsidian_mat.metallic = 0.7
+        var magma_mat = StandardMaterial3D.new(); magma_mat.albedo_color = Color(1.0, 0.42, 0.05); magma_mat.emission_enabled = true; magma_mat.emission = Color(1.0, 0.42, 0.05); magma_mat.emission_energy_multiplier = 3.8
+
+        if is_bay:
+            # Volcanic Magma Foundry Outpost
+            var foundry = MeshInstance3D.new(); foundry.mesh = BoxMesh.new(); foundry.mesh.size = Vector3(4.0, 2.4, 3.8)
+            foundry.material_override = basalt_mat; foundry.position.y = 1.2; mesh_node.add_child(foundry)
+            var crucible = MeshInstance3D.new(); crucible.mesh = CylinderMesh.new(); crucible.mesh.height = 1.2; crucible.mesh.bottom_radius = 1.5; crucible.mesh.top_radius = 1.6
+            crucible.material_override = magma_mat; crucible.position = Vector3(0, 2.0, 0); mesh_node.add_child(crucible)
+        elif is_tower:
+            # Molten Basalt Citadel Spire with Magma Cannon
+            var spire = MeshInstance3D.new(); spire.mesh = CylinderMesh.new(); spire.mesh.height = 5.2; spire.mesh.bottom_radius = 2.0; spire.mesh.top_radius = 1.4; spire.mesh.radial_segments = 8
+            spire.material_override = basalt_mat; spire.position.y = 2.6; mesh_node.add_child(spire)
+            var m_core = MeshInstance3D.new(); m_core.mesh = CylinderMesh.new(); m_core.mesh.height = 0.4; m_core.mesh.bottom_radius = 1.6; m_core.mesh.top_radius = 1.6
+            m_core.material_override = magma_mat; m_core.position.y = 5.3; mesh_node.add_child(m_core)
+            var cannon = Node3D.new(); cannon.position.y = 5.6; mesh_node.add_child(cannon)
+            var c_barrel = MeshInstance3D.new(); c_barrel.mesh = CylinderMesh.new(); c_barrel.mesh.height = 2.2; c_barrel.mesh.bottom_radius = 0.22; c_barrel.mesh.top_radius = 0.18
+            c_barrel.material_override = obsidian_mat; c_barrel.position = Vector3(0, 0, -1.0); c_barrel.rotation_degrees = Vector3(90, 0, 0)
+            cannon.add_child(c_barrel)
+            mesh_node.set_meta("magma_turret", cannon)
+        else:
+            # Grand Obsidian Caldera Fortress with Pulsing Magma Heart
+            var caldera = MeshInstance3D.new(); caldera.mesh = CylinderMesh.new(); caldera.mesh.height = 3.6; caldera.mesh.bottom_radius = 5.2; caldera.mesh.top_radius = 4.2; caldera.mesh.radial_segments = 10
+            caldera.material_override = basalt_mat; caldera.position.y = 1.8; mesh_node.add_child(caldera)
+            var heart = MeshInstance3D.new(); heart.mesh = SphereMesh.new(); heart.mesh.radius = 1.8; heart.mesh.height = 3.2
+            heart.material_override = magma_mat; heart.position.y = 3.8; mesh_node.add_child(heart)
+            mesh_node.set_meta("magma_heart", heart)
+
 func _update_timer_ui():
     for p in players:
         var ui = p.ui
@@ -2141,6 +2178,21 @@ func _animate_faction_structures(delta):
                     var pulse = 1.0 + sin(t * 2.8) * 0.08
                     node.scale = Vector3(pulse, pulse, pulse)
                     node.rotation.y -= delta * 0.9
+            if f_mesh.has_meta("winter_star"):
+                var node = f_mesh.get_meta("winter_star")
+                if is_instance_valid(node):
+                    node.rotation.y += delta * 1.8
+                    var scale_star = 1.0 + sin(t * 3.0) * 0.12
+                    node.scale = Vector3(scale_star, scale_star, scale_star)
+            if f_mesh.has_meta("magma_heart"):
+                var node = f_mesh.get_meta("magma_heart")
+                if is_instance_valid(node):
+                    var beat = 1.0 + abs(sin(t * 3.0)) * 0.16
+                    node.scale = Vector3(beat, beat, beat)
+            if f_mesh.has_meta("magma_turret"):
+                var node = f_mesh.get_meta("magma_turret")
+                if is_instance_valid(node):
+                    node.rotation.y = sin(t * 0.7) * 0.4
 
 # =========================================================================
 # MAP BIOME & PROCEDURAL ENVIRONMENT GENERATION
@@ -3482,8 +3534,24 @@ func _generate_frozen_tundra(parent: Node3D):
 # --- Volcanic Brimstone Generation (Chequered Stone, Off-path Fire Geysers) ---
 func _generate_volcanic_brimstone(parent: Node3D):
     placed_feature_records.clear()
-    var vfh_script = load("res://Scripts/VolcanicFireHazard.gd")
     var span = maxf(72.0, GameState.current_map_radius * 0.65)
+
+    # 0. Active Volcanoes shooting Magma Rocks off-path
+    var volcano_script = load("res://Scripts/Volcano.gd")
+    var volcano_count = randi_range(2, 4)
+    var v_attempts = 0
+    var placed_volcanoes = 0
+    while placed_volcanoes < volcano_count and v_attempts < 200:
+        v_attempts += 1
+        var v_cand = Vector3(randf_range(-span, span), 0.0, randf_range(-span, span))
+        if _is_pos_clear(v_cand, 8.0, 16.0, 7.0):
+            var v_node = volcano_script.new()
+            v_node.position = v_cand
+            parent.add_child(v_node)
+            placed_feature_records.append({"pos": v_cand, "radius": 7.0, "type": "volcano"})
+            placed_volcanoes += 1
+
+    var vfh_script = load("res://Scripts/VolcanicFireHazard.gd")
     
     # 1. Volcanic Fire Hazards popping up off-path
     var hazard_count = randi_range(16, 22)

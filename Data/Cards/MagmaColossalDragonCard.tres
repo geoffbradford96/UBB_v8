@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/CardData.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://Scenes/Units/MagmaColossalDragon.tscn" id="2_scene"]
+
+[resource]
+script = ExtResource("1_script")
+card_name = "MagmaColossalDragon"
+card_type = "Flying"
+cost = 9.5
+is_spell = false
+spawn_count = 1
+max_hp = 750.0
+is_melee = true
+description = "Titanic stone and magma dragon. The apex titan of the Magma Born, sweeping colossal molten wings and incinerating whole waves."
+unit_scene = ExtResource("2_scene")

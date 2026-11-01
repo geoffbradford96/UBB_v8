@@ -117,6 +117,9 @@ func _ready():
 	var w_script = load("res://Scripts/WinterModelBuilder.gd")
 	if w_script and w_script.has_method("clear_caches"):
 		w_script.clear_caches()
+	var m_script = load("res://Scripts/MagmaBornModelBuilder.gd")
+	if m_script and m_script.has_method("clear_caches"):
+		m_script.clear_caches()
 	var n_script = load("res://Scripts/NightmareModelBuilder.gd")
 	if n_script and n_script.has_method("clear_caches"):
 		n_script.clear_caches()
@@ -165,7 +168,7 @@ func test_cards() -> bool:
 	# Test CardUI rendering with unit thumbnails and stats
 	var card_ui_ps = ResourceLoader.load("res://Scenes/CardUI.tscn") as PackedScene
 	if card_ui_ps:
-		var test_sample_cards = ["CommanderCard.tres", "WildlifeAfricanLionCard.tres", "NightmareGrandVampireCard.tres", "WinterYuletideKingCard.tres", "ReachTankCard.tres", "ScrapTankCard.tres"]
+		var test_sample_cards = ["CommanderCard.tres", "WildlifeAfricanLionCard.tres", "NightmareGrandVampireCard.tres", "WinterYuletideKingCard.tres", "ReachTankCard.tres", "ScrapTankCard.tres", "MagmaOverlordCard.tres", "MagmaColossalDragonCard.tres"]
 		for sample_name in test_sample_cards:
 			var sample_card = ResourceLoader.load("res://Data/Cards/" + sample_name)
 			if sample_card:
@@ -474,6 +477,22 @@ func test_maps_and_biomes() -> bool:
 	fs_melee.queue_free()
 	fs_ranged.queue_free()
 	gfm.queue_free()
+
+	# Test Volcano & MagmaRockProjectile mechanics
+	var volcano_script = load("res://Scripts/Volcano.gd")
+	var volcano = volcano_script.new()
+	add_child(volcano)
+	if not volcano.is_in_group("Volcano"):
+		printerr("Volcano missing Volcano group!")
+		return false
+	var mr_proj_script = load("res://Scripts/MagmaRockProjectile.gd")
+	var mr_proj = mr_proj_script.new()
+	add_child(mr_proj)
+	if mr_proj.blast_damage <= 0.0:
+		printerr("MagmaRockProjectile blast_damage invalid!")
+		return false
+	volcano.queue_free()
+	mr_proj.queue_free()
 
 	# --- Test Deep Jungle Biome Mechanics: Quicksand Sinkholes, Gorilla Dens & Monkey Burrows ---
 	var qs_script = load("res://Scripts/QuicksandSinkhole.gd")
@@ -1088,8 +1107,8 @@ func test_ai_systems() -> bool:
 				for c in ai_opt.get_children():
 					if c is OptionButton: opt_btn = c
 			if opt_btn:
-				if opt_btn.item_count < 13:
-					printerr("MatchSetup ai_faction_option item_count is less than 13! Got: ", opt_btn.item_count)
+				if opt_btn.item_count < 14:
+					printerr("MatchSetup ai_faction_option item_count is less than 14! Got: ", opt_btn.item_count)
 					success = false
 				var item_8 = opt_btn.get_item_text(8)
 				if not ("Planetary Primitives" in item_8):
@@ -1103,6 +1122,10 @@ func test_ai_systems() -> bool:
 				if not ("Winter Court" in item_11):
 					printerr("MatchSetup item 11 is not The Winter Court! Got: ", item_11)
 					success = false
+				var item_12 = opt_btn.get_item_text(12)
+				if not ("Magma Born" in item_12):
+					printerr("MatchSetup item 12 is not The Magma Born! Got: ", item_12)
+					success = false
 		ms_inst.queue_free()
 
 	# 7b. Test Galactic Wildlife Faction (>100 Animals, Poison Snake, Rock-Dropping Crow, Pecking Bird, Bug Swarms)
@@ -1112,7 +1135,7 @@ func test_ai_systems() -> bool:
 		success = false
 	print("  Verified %d distinct Galactic Wildlife species in SPECIES_CATALOG." % wildlife_count)
 
-	var all_archetypes = ["Dominion", "The Reach", "Pirates", "Rimworlders", "Void", "Plague of Harmony", "Gilded Harmony", "Planetary Primitives", "Galactic Wildlife", "The Nightmare Court", "The Winter Court", "Chaos"]
+	var all_archetypes = ["Dominion", "The Reach", "Pirates", "Rimworlders", "Void", "Plague of Harmony", "Gilded Harmony", "Planetary Primitives", "Galactic Wildlife", "The Nightmare Court", "The Winter Court", "The Magma Born", "Chaos"]
 	var audit_sandbox = Node3D.new()
 	audit_sandbox.name = "AuditBotSandbox"
 	add_child(audit_sandbox)
@@ -1329,7 +1352,7 @@ func test_ai_systems() -> bool:
 				success = false
 			wu_inst.queue_free()
 
-	# 11. Test Custom Structure Architecture for Nightmare Court & Winter Court in ArenaManager
+	# 11. Test Custom Structure Architecture for Nightmare Court, Winter Court & Magma Born in ArenaManager
 	var struct_arena = ArenaManager.new()
 	add_child(struct_arena)
 
@@ -1368,11 +1391,65 @@ func test_ai_systems() -> bool:
 		printerr("Failed to build Winter Ice Palace with winter_star for The Winter Court!")
 		success = false
 
+	# Magma Tower & Base
+	var m_tower = StaticBody3D.new()
+	m_tower.name = "SideC_Tower_Magma"
+	struct_arena.add_child(m_tower)
+	struct_arena._build_structure_mesh(m_tower, "The Magma Born", true)
+	var m_t_mesh = m_tower.get_meta("faction_mesh") if m_tower.has_meta("faction_mesh") else null
+	if not m_t_mesh or not m_t_mesh.has_meta("magma_turret"):
+		printerr("Failed to build Molten Citadel Spire with magma_turret for The Magma Born!")
+		success = false
+
+	var m_base = StaticBody3D.new()
+	m_base.name = "SideC_Base_Magma"
+	struct_arena.add_child(m_base)
+	struct_arena._build_structure_mesh(m_base, "The Magma Born", false)
+	var m_b_mesh = m_base.get_meta("faction_mesh") if m_base.has_meta("faction_mesh") else null
+	if not m_b_mesh or not m_b_mesh.has_meta("magma_heart"):
+		printerr("Failed to build Obsidian Caldera Fortress with magma_heart for The Magma Born!")
+		success = false
+
 	n_tower.queue_free()
 	n_base.queue_free()
 	w_tower.queue_free()
 	w_base.queue_free()
+	m_tower.queue_free()
+	m_base.queue_free()
 	struct_arena.queue_free()
 
-	print("  Verified HeroHunter closest commander targeting, Medic structure exclusion, Territorial Creature nest radius, Nightmare & Winter BotAI, Chaos dice roll, Planetary Primitives Empire Ages, and Holiday procedural models & architecture.")
+	# 12. Test The Magma Born: Decks & Procedural Models
+	var magma_bot = BotAI.new()
+	var magma_deck = magma_bot.generate_themed_deck("The Magma Born")
+	if magma_deck.size() != 6:
+		printerr("The Magma Born deck size is not 6! Got: ", magma_deck.size())
+		success = false
+	for cname in magma_deck:
+		if not ("Magma" in cname):
+			printerr("Magma Born deck contains invalid card: ", cname)
+			success = false
+	magma_bot.free()
+
+	var test_magma_units = [
+		"MagmaOverlord",
+		"MagmaLavaGrunt",
+		"MagmaTentacleLavaDog",
+		"MagmaSpitter",
+		"MagmaGolem",
+		"MagmaPyrodactyl",
+		"MagmaTurretSpire",
+		"MagmaColossalDragon"
+	]
+	for mu_name in test_magma_units:
+		var mu_scene = load("res://Scenes/Units/" + mu_name + ".tscn")
+		if mu_scene:
+			var mu_inst = mu_scene.instantiate()
+			add_child(mu_inst)
+			var m_rig = mu_inst.find_child("MagmaBornRigRoot", true, false)
+			if not m_rig:
+				printerr(mu_name + " missing MagmaBornRigRoot procedural model!")
+				success = false
+			mu_inst.queue_free()
+
+	print("  Verified HeroHunter closest commander targeting, Medic structure exclusion, Territorial Creature nest radius, Nightmare & Winter & Magma Born BotAI, Chaos dice roll, Planetary Primitives Empire Ages, and Holiday/Volcanic procedural models & architecture.")
 	return success

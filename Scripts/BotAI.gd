@@ -33,7 +33,7 @@ func _get_game_state():
 
 func _ready():
 	var gs = _get_game_state()
-	var ai_pool = ["Dominion", "The Reach", "Pirates", "Rimworlders", "Void", "Plague of Harmony", "Gilded Harmony", "Planetary Primitives", "Galactic Wildlife", "The Nightmare Court", "The Winter Court", "Chaos"]
+	var ai_pool = ["Dominion", "The Reach", "Pirates", "Rimworlders", "Void", "Plague of Harmony", "Gilded Harmony", "Planetary Primitives", "Galactic Wildlife", "The Nightmare Court", "The Winter Court", "The Magma Born", "Chaos"]
 	if archetype != "":
 		deck = generate_themed_deck(archetype)
 		print(my_team + " BotAI generated deck for archetype: " + archetype + " -> " + str(deck))
@@ -546,6 +546,30 @@ func evaluate_moves():
 				elif "SkeletonArcher" in b.card_name or "FireImp" in b.card_name: b_prio += (17 if friendly_screens >= 1 else 10)
 				else: b_prio += 12
 
+				if a_prio != b_prio:
+					return a_prio > b_prio
+				return a.cost < b.cost
+			)
+		elif archetype == "The Magma Born" or archetype == "Magma Born" or archetype == "Magma":
+			var has_dragon = false
+			for mc in valid_hand:
+				if "Dragon" in mc.card_name:
+					has_dragon = true
+					break
+			if has_dragon and threat_info.threat_score < 14.0 and current_requisition < 9.5 and current_requisition >= (5.0 * bank_scale):
+				return
+			var magma_bank = 3.6 * bank_scale
+			if threat_info.threat_score < 8.0 and current_requisition < magma_bank:
+				return
+			valid_hand.sort_custom(func(a, b):
+				var a_prio = 0
+				var b_prio = 0
+				if a.card_type == "Commander": a_prio += 30
+				if "Grunt" in a.card_name or "Dog" in a.card_name: a_prio += 20
+				if "Dragon" in a.card_name: a_prio += 25
+				if b.card_type == "Commander": b_prio += 30
+				if "Grunt" in b.card_name or "Dog" in b.card_name: b_prio += 20
+				if "Dragon" in b.card_name: b_prio += 25
 				if a_prio != b_prio:
 					return a_prio > b_prio
 				return a.cost < b.cost
@@ -1148,7 +1172,8 @@ func generate_themed_deck(theme: String) -> Array:
 		while file_name != "":
 			if not dir.current_is_dir() and (file_name.ends_with(".tres") or file_name.ends_with(".tres.remap")):
 				var clean_name = file_name.trim_suffix(".remap")
-				var is_nightmare = "Nightmare" in clean_name or "Halloween" in clean_name
+				var is_magma = "Magma" in clean_name
+				var is_nightmare = not is_magma and ("Nightmare" in clean_name or "Halloween" in clean_name)
 				var is_winter = not is_nightmare and ("Winter" in clean_name or "Yuletide" in clean_name or "Yule" in clean_name)
 				var is_wildlife = not is_nightmare and not is_winter and ("Wildlife" in clean_name)
 				var is_void = not is_nightmare and not is_winter and not is_wildlife and ("Void" in clean_name)
@@ -1172,6 +1197,7 @@ func generate_themed_deck(theme: String) -> Array:
 				elif (theme == "Galactic Wildlife" or theme == "Wildlife") and is_wildlife: valid = true
 				elif (theme == "The Nightmare Court" or theme == "Nightmare" or theme == "Halloween") and is_nightmare: valid = true
 				elif (theme == "The Winter Court" or theme == "Winter" or theme == "Yuletide") and is_winter: valid = true
+				elif (theme == "The Magma Born" or theme == "Magma Born" or theme == "Magma") and is_magma: valid = true
 				
 				if valid:
 					var res = load("res://Data/Cards/" + clean_name)

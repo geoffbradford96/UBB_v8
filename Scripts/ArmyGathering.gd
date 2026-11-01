@@ -100,6 +100,7 @@ func build_ui():
 	tab_bar.add_tab("Galactic Wildlife")
 	tab_bar.add_tab("The Nightmare Court")
 	tab_bar.add_tab("The Winter Court")
+	tab_bar.add_tab("The Magma Born")
 	tab_bar.add_tab("Chaos (All Factions)")
 	tab_bar.connect("tab_changed", Callable(self, "_on_tab_changed"))
 	left_vbox.add_child(tab_bar)
@@ -256,6 +257,7 @@ func _on_tab_changed(tab_idx: int):
 		"Galactic Wildlife",
 		"The Nightmare Court",
 		"The Winter Court",
+		"The Magma Born",
 		"Chaos (Cross-Faction)"
 	]
 	var faction_doctrines = [
@@ -270,6 +272,7 @@ func _on_tab_changed(tab_idx: int):
 		"Doctrine: Untamed Biosphere (108 Earth & Galactic fauna species! Venomous snakes, rock-dropping corvids, pecking birds, bug swarms, sharks, apes & megafauna).",
 		"Doctrine: The Nightmare Court (Supreme Necromancer raises skeleton swarms, Grand Vampire leads leaping werewolves with blood lifesteal, Demon Knights unleash hellfire, and carved Jack-o'-Lanterns burst into noxious poison gas!).",
 		"Doctrine: The Winter Court (Yuletide King grants festive armor resilience, Krampus slows and burns with chilling terror, Frost Queen pierces with freezing lances, backed by clockwork toy soldiers, chomping nutcrackers, and abominable yetis!).",
+		"Doctrine: The Magma Born (Forged in volcanic depths. Imbued with thick basalt armor, fire immunity, writhing tentacle lava dogs, and the cataclysmic Magma Colossal Dragon!).",
 		"Doctrine: Chaos Unleashed (Mix and match commanders and units freely across all factions in the galaxy)."
 	]
 	if tab_idx >= 0 and tab_idx < faction_names.size():
@@ -321,7 +324,11 @@ func _on_tab_changed(tab_idx: int):
 			bg.color = Color(0.06, 0.16, 0.28)
 			trim_top.color = Color(0.45, 0.90, 1.0)
 			trim_bot.color = Color(0.92, 0.96, 1.0)
-		elif tab_idx == 11: # Chaos (All)
+		elif tab_idx == 11: # The Magma Born
+			bg.color = Color(0.20, 0.05, 0.03)
+			trim_top.color = Color(1.0, 0.45, 0.10)
+			trim_bot.color = Color(1.0, 0.75, 0.20)
+		elif tab_idx == 12: # Chaos (All)
 			bg.color = Color(0.16, 0.04, 0.22)
 			trim_top.color = Color(0.92, 0.78, 0.22)
 			trim_bot.color = Color(0.25, 0.88, 0.95)
@@ -336,7 +343,8 @@ func _on_tab_changed(tab_idx: int):
 		restricted_card_names = GameState.player_decks["Player1"]
 
 	for card_data in all_cards:
-		var is_nightmare = ("Nightmare" in card_data.card_name) or ("Halloween" in card_data.card_name)
+		var is_magma = ("Magma" in card_data.card_name)
+		var is_nightmare = not is_magma and (("Nightmare" in card_data.card_name) or ("Halloween" in card_data.card_name))
 		var is_winter = not is_nightmare and ("Winter" in card_data.card_name or "Yuletide" in card_data.card_name or "Yule" in card_data.card_name)
 		var is_wildlife = not is_nightmare and not is_winter and ("Wildlife" in card_data.card_name)
 		var is_void = not is_nightmare and not is_winter and not is_wildlife and ("Void" in card_data.card_name)
@@ -348,7 +356,7 @@ func _on_tab_changed(tab_idx: int):
 		var is_primitive = not is_nightmare and not is_winter and not is_wildlife and ("Primitive" in card_data.card_name)
 		var is_dominion = not is_nightmare and not is_winter and not is_void and not is_rimworlder and not is_pirate and not is_reach and not is_plague and not is_gilded and not is_primitive and not is_wildlife
 		
-		var is_valid = (tab_idx == 11) or (tab_idx == 0 and is_dominion) or (tab_idx == 1 and is_void) or (tab_idx == 2 and is_rimworlder) or (tab_idx == 3 and is_pirate) or (tab_idx == 4 and is_reach) or (tab_idx == 5 and is_plague) or (tab_idx == 6 and is_gilded) or (tab_idx == 7 and is_primitive) or (tab_idx == 8 and is_wildlife) or (tab_idx == 9 and is_nightmare) or (tab_idx == 10 and is_winter)
+		var is_valid = (tab_idx == 12) or (tab_idx == 0 and is_dominion) or (tab_idx == 1 and is_void) or (tab_idx == 2 and is_rimworlder) or (tab_idx == 3 and is_pirate) or (tab_idx == 4 and is_reach) or (tab_idx == 5 and is_plague) or (tab_idx == 6 and is_gilded) or (tab_idx == 7 and is_primitive) or (tab_idx == 8 and is_wildlife) or (tab_idx == 9 and is_nightmare) or (tab_idx == 10 and is_winter) or (tab_idx == 11 and is_magma)
 		if is_valid:
 
 			# If this is a Guest profile, block cards that Player1 is using

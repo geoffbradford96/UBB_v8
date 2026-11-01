@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/CardData.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://Scenes/Units/MagmaTurretSpire.tscn" id="2_scene"]
+
+[resource]
+script = ExtResource("1_script")
+card_name = "MagmaTurretSpire"
+card_type = "Structure"
+cost = 3.5
+is_spell = false
+spawn_count = 1
+max_hp = 380.0
+is_melee = false
+description = "Erupting volcanic turret spire that fires continuous pressurized magma bolts at approaching enemy forces."
+unit_scene = ExtResource("2_scene")

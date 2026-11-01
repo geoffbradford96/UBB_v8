@@ -121,6 +121,10 @@ func _ready():
 		var w_builder = load("res://Scripts/WinterModelBuilder.gd")
 		if w_builder:
 			w_builder.build_model(self, name)
+	elif "Magma" in name:
+		var m_builder = load("res://Scripts/MagmaBornModelBuilder.gd")
+		if m_builder:
+			m_builder.build_model(self, name)
 	elif is_humanoid():
 		var rig_script = load("res://Scripts/HumanoidRig.gd")
 		if rig_script:
@@ -952,6 +956,10 @@ func _animate_mesh(delta: float, moving: bool):
 	if w_root:
 		_animate_winter_court(w_root, u_name, phase, atk_swing, moving, delta)
 
+	var mb_root = v_piv.get_node_or_null("MagmaBornRigRoot") if v_piv else null
+	if mb_root:
+		_animate_magma_born(mb_root, u_name, phase, atk_swing, moving, delta)
+
 
 func _animate_nightmare_court(root: Node3D, u_name: String, phase: float, atk_swing: float, moving: bool, _delta: float) -> void:
 	var leg_l = root.get_node_or_null("LeftLeg")
@@ -1327,3 +1335,83 @@ func _spawn_ranged_attack_fx(p_target: Node3D):
 		tw.chain().tween_callback(proj_mesh.queue_free)
 	else:
 		proj_mesh.queue_free()
+
+
+func _animate_magma_born(root: Node3D, u_name: String, phase: float, atk_swing: float, moving: bool, delta: float) -> void:
+	var leg_l = root.get_node_or_null("LeftLeg")
+	var leg_r = root.get_node_or_null("RightLeg")
+	var arm_l = root.get_node_or_null("LeftArm")
+	var arm_r = root.get_node_or_null("RightArm")
+	var weap = root.get_node_or_null("Weapon")
+	var head = root.get_node_or_null("Head")
+	var tail = root.get_node_or_null("Tail")
+	var wing_l = root.get_node_or_null("WingL")
+	var wing_r = root.get_node_or_null("WingR")
+
+	var stride: float = (0.42 if moving else 0.03) * sin(phase)
+
+	if "MagmaOverlord" in u_name:
+		if leg_l: leg_l.rotation.x = stride
+		if leg_r: leg_r.rotation.x = -stride
+		if weap:
+			weap.rotation_degrees.x = 65.0 - atk_swing * 110.0
+		var vent = root.get_node_or_null("Torso/MoltenCore")
+		if vent:
+			vent.scale = Vector3.ONE * (1.0 + sin(Time.get_ticks_msec() * 0.008) * 0.18 + atk_swing * 0.45)
+	elif "MagmaLavaGrunt" in u_name:
+		var squat_stride = (0.55 if moving else 0.04) * sin(phase * 1.35)
+		if leg_l: leg_l.rotation.x = squat_stride
+		if leg_r: leg_r.rotation.x = -squat_stride
+		if weap:
+			weap.rotation_degrees.x = 45.0 - atk_swing * 95.0
+	elif "MagmaTentacleLavaDog" in u_name:
+		var gallop = (0.60 if moving else 0.04) * sin(phase * 1.45)
+		var fl = root.get_node_or_null("Leg_FL")
+		var fr = root.get_node_or_null("Leg_FR")
+		var bl = root.get_node_or_null("Leg_BL")
+		var br = root.get_node_or_null("Leg_BR")
+		if fl: fl.rotation.x = gallop
+		if br: br.rotation.x = gallop
+		if fr: fr.rotation.x = -gallop
+		if bl: bl.rotation.x = -gallop
+		if head: head.rotation.x = atk_swing * 0.45
+		if tail: tail.rotation.y = sin(phase * 2.0) * 0.40
+		var t0 = root.get_node_or_null("Torso/Tentacle_0")
+		var t1 = root.get_node_or_null("Torso/Tentacle_1")
+		var t_wave = sin(Time.get_ticks_msec() * 0.012) * 0.4
+		if t0: t0.rotation.z = deg_to_rad(35.0) + t_wave + atk_swing * 0.8
+		if t1: t1.rotation.z = -deg_to_rad(35.0) - t_wave - atk_swing * 0.8
+	elif "MagmaSpitter" in u_name:
+		for i in range(4):
+			var leg = root.get_node_or_null("Leg_" + str(i))
+			if leg:
+				leg.rotation.z = deg_to_rad(35.0) + sin(phase * 1.5 + float(i) * 1.57) * (0.22 if moving else 0.03)
+		root.position.z = atk_swing * 0.28
+	elif "MagmaGolem" in u_name:
+		var golem_stride = (0.35 if moving else 0.02) * sin(phase * 0.75)
+		if leg_l: leg_l.rotation.x = golem_stride
+		if leg_r: leg_r.rotation.x = -golem_stride
+		var fist_l = root.get_node_or_null("LeftFist")
+		var fist_r = root.get_node_or_null("RightFist")
+		if fist_l: fist_l.position.z = -0.25 - atk_swing * 0.75
+		if fist_r: fist_r.position.z = -0.25 - atk_swing * 0.75
+	elif "MagmaPyrodactyl" in u_name:
+		root.position.y = sin(phase * 2.0) * 0.22
+		root.position.z = -atk_swing * 0.55
+		var flap = sin(Time.get_ticks_msec() * 0.008) * 0.35
+		if wing_l: wing_l.rotation.z = flap
+		if wing_r: wing_r.rotation.z = -flap
+	elif "MagmaTurretSpire" in u_name:
+		var core = root.get_node_or_null("Torso/LavaCore")
+		if core: core.scale = Vector3.ONE * (1.0 + sin(Time.get_ticks_msec() * 0.006) * 0.15 + atk_swing * 0.3)
+		var tur = root.get_node_or_null("Torso/Turret")
+		if tur: tur.position.z = -0.35 + atk_swing * 0.22
+	elif "MagmaColossalDragon" in u_name:
+		root.position.y = sin(phase * 1.1) * 0.18
+		var wing_sweep = sin(Time.get_ticks_msec() * 0.005) * 0.45
+		if wing_l: wing_l.rotation.z = deg_to_rad(-20.0) + wing_sweep
+		if wing_r: wing_r.rotation.z = deg_to_rad(20.0) - wing_sweep
+		if tail: tail.rotation.y = sin(phase * 1.4) * 0.35
+		if head: head.rotation.x = -atk_swing * 0.35
+		var mouth = root.get_node_or_null("Torso/Head/Mouth")
+		if mouth: mouth.scale.y = 1.0 + atk_swing * 1.5
