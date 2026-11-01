@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/CardData.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://Scenes/Units/WinterNutcracker.tscn" id="2_scene"]
+
+[resource]
+script = ExtResource("1_script")
+card_name = "WinterNutcracker"
+card_type = "Heavy Melee"
+cost = 3.0
+is_spell = false
+spawn_count = 1
+max_hp = 280.0
+is_melee = true
+description = "Heavy Nutcracker Guard. Carved wooden sentinel with chomping jaws and a razor ceremonial halberd."
+unit_scene = ExtResource("2_scene")

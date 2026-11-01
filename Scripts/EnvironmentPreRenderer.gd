@@ -93,6 +93,33 @@ static func get_cached_biome_texture(biome_name: String) -> ImageTexture:
 		_texture_cache[key] = stone_tex
 		return stone_tex
 
+	elif key == "FROZEN_WONDERLAND" or key == "WINTER" or key == "YULETIDE":
+		var winter_img := Image.create(32, 32, false, Image.FORMAT_RGBA8)
+		for py in range(32):
+			for px in range(32):
+				var tile_x := px % 8
+				var tile_y := py % 8
+				var is_seam := (tile_x == 0 or tile_y == 0)
+				if is_seam:
+					# Frosted crevice with crystalline ice blue highlight
+					var is_ice_sparkle := ((px * 4 + py * 6) % 9 == 0)
+					if is_ice_sparkle:
+						winter_img.set_pixel(px, py, Color(0.65, 0.92, 1.0)) # Icy frost sparkle
+					else:
+						winter_img.set_pixel(px, py, Color(0.40, 0.55, 0.70)) # Frosted blue shadow
+				else:
+					# Sparkling packed snow cobblestone with holly berry accents
+					var is_holly := (px % 16 == 8 and py % 16 == 8)
+					if is_holly:
+						winter_img.set_pixel(px, py, Color(0.85, 0.12, 0.16)) # Festive holly berry
+					else:
+						var noise_val := sin(float(px) * 0.9 + float(py) * 0.7) * 0.05
+						var snow_col := Color(0.88 + noise_val, 0.92 + noise_val, 0.98)
+						winter_img.set_pixel(px, py, snow_col)
+		var winter_tex := ImageTexture.create_from_image(winter_img)
+		_texture_cache[key] = winter_tex
+		return winter_tex
+
 	return null
 
 static func pre_render_and_bake_environment(arena: Node3D, env_root: Node3D, biome_name: String) -> Dictionary:
@@ -112,6 +139,7 @@ static func pre_render_and_bake_environment(arena: Node3D, env_root: Node3D, bio
 	get_cached_biome_texture("VOLCANIC_BRIMSTONE")
 	get_cached_biome_texture("DEEP_JUNGLE")
 	get_cached_biome_texture("HAUNTED_HALLOW")
+	get_cached_biome_texture("FROZEN_WONDERLAND")
 	stats["compiled_gpu_shaders"] = GpuAcceleratorScript.get_cached_shader_count()
 
 	# 2. Apply Hardware 3D LOD & GPU distance culling to Ground and EnvironmentFeatures

@@ -231,7 +231,7 @@ func setup_match():
         return # Do not spawn AIs in online PvP matches!
         
     var profiles_for_slots = ["Player1", "Guest1", "Guest2", "Guest3", "Guest4", "Guest5"]
-    var ai_pool = ["Dominion", "The Reach", "Pirates", "Rimworlders", "Void", "Plague of Harmony", "Gilded Harmony", "Planetary Primitives", "Galactic Wildlife", "Chaos"]
+    var ai_pool = ["Dominion", "The Reach", "Pirates", "Rimworlders", "Void", "Plague of Harmony", "Gilded Harmony", "Planetary Primitives", "Galactic Wildlife", "The Nightmare Court", "The Winter Court", "Chaos"]
     var interval_scale: float = 1.0 + maxf(0.0, float(total_slots - 6) * 0.055)
     for i in range(start_bot_idx, total_slots):
         var bot = BotAI.new()
@@ -294,7 +294,7 @@ func setup_match():
         
     var chosen_biome = GameState.map_biome if ("map_biome" in GameState and GameState.map_biome != "") else "SUNNY_PLAINS"
     if chosen_biome == "RANDOM":
-        var biome_pool = ["SUNNY_PLAINS", "SCORCHING_DUNES", "REALM_OF_HARMONY", "FROZEN_TUNDRA", "VOLCANIC_BRIMSTONE", "SPACE_VACUUM", "DEEP_JUNGLE", "HAUNTED_HALLOW"]
+        var biome_pool = ["SUNNY_PLAINS", "SCORCHING_DUNES", "REALM_OF_HARMONY", "FROZEN_TUNDRA", "VOLCANIC_BRIMSTONE", "SPACE_VACUUM", "DEEP_JUNGLE", "HAUNTED_HALLOW", "FROZEN_WONDERLAND"]
         chosen_biome = biome_pool[randi() % biome_pool.size()]
     var map_seed = randi()
     if multiplayer.has_multiplayer_peer() and multiplayer.multiplayer_peer.get_connection_status() == MultiplayerPeer.CONNECTION_CONNECTED:
@@ -845,7 +845,7 @@ func _get_slot_faction(slot: int) -> String:
                 if deck != null and not deck.is_empty():
                     return _detect_faction_from_deck(deck)
                     
-    var opts = ["Dominion", "Void", "Rimworlders", "Pirates", "The Reach", "Plague of Harmony", "Gilded Harmony", "Chaos"]
+    var opts = ["Dominion", "Void", "Rimworlders", "Pirates", "The Reach", "Plague of Harmony", "Gilded Harmony", "Planetary Primitives", "Galactic Wildlife", "The Nightmare Court", "The Winter Court", "Chaos"]
     return opts[randi() % opts.size()]
 
 func _get_team_faction(team: String) -> String:
@@ -869,13 +869,15 @@ func _get_team_faction(team: String) -> String:
                 if p_name != null and GameState.player_decks.has(p_name):
                     return _detect_faction_from_deck(GameState.player_decks[p_name])
                     
-    var opts = ["Dominion", "Void", "Rimworlders", "Pirates", "The Reach", "Plague of Harmony", "Gilded Harmony", "Planetary Primitives", "Galactic Wildlife", "Chaos"]
+    var opts = ["Dominion", "Void", "Rimworlders", "Pirates", "The Reach", "Plague of Harmony", "Gilded Harmony", "Planetary Primitives", "Galactic Wildlife", "The Nightmare Court", "The Winter Court", "Chaos"]
     return opts[randi() % opts.size()]
 
 func _detect_faction_from_deck(deck: Array) -> String:
-    var v = 0; var r = 0; var d = 0; var pi = 0; var reach = 0; var plague = 0; var gilded = 0; var prim = 0; var wild = 0
+    var v = 0; var r = 0; var d = 0; var pi = 0; var reach = 0; var plague = 0; var gilded = 0; var prim = 0; var wild = 0; var night = 0; var winter = 0
     for c in deck:
-        if "Wildlife" in c: wild += 1
+        if "Nightmare" in c or "Halloween" in c: night += 1
+        elif "Winter" in c or "Yuletide" in c or "Yule" in c: winter += 1
+        elif "Wildlife" in c: wild += 1
         elif "Primitive" in c: prim += 1
         elif "Plague" in c: plague += 1
         elif "Gilded" in c: gilded += 1
@@ -884,8 +886,10 @@ func _detect_faction_from_deck(deck: Array) -> String:
         elif "Scrap" in c: pi += 1
         elif "Reach" in c: reach += 1
         else: d += 1
-    var mx = max(d, max(v, max(r, max(pi, max(reach, max(plague, max(gilded, max(prim, wild))))))))
+    var mx = max(d, max(v, max(r, max(pi, max(reach, max(plague, max(gilded, max(prim, max(wild, max(night, winter))))))))))
     if mx < 3 and deck.size() >= 5: return "Chaos"
+    if mx == night and night > 0: return "The Nightmare Court"
+    if mx == winter and winter > 0: return "The Winter Court"
     if mx == wild and wild > 0: return "Galactic Wildlife"
     if mx == prim and prim > 0: return "Planetary Primitives"
     if mx == plague and plague > 0: return "Plague of Harmony"
@@ -951,7 +955,11 @@ func _build_structure_mesh(node, faction: String, is_tower: bool):
     # Resolve faction type (supports substring matching, and Chaos/Random independent dice rolls per tower/base)
     var f = faction
     var f_type = "Dominion"
-    if "Wildlife" in f:
+    if "Nightmare" in f or "Halloween" in f:
+        f_type = "The Nightmare Court"
+    elif "Winter" in f or "Yuletide" in f or "Yule" in f or "Frost" in f:
+        f_type = "The Winter Court"
+    elif "Wildlife" in f:
         f_type = "Galactic Wildlife"
     elif "Primitive" in f:
         f_type = "Planetary Primitives"
@@ -968,7 +976,11 @@ func _build_structure_mesh(node, faction: String, is_tower: bool):
     elif "Reach" in f:
         f_type = "The Reach"
     elif f == "Chaos" or f == "Random":
-        var all_factions = ["Dominion", "Void", "Rimworlders", "Pirates", "The Reach", "Plague of Harmony", "Gilded Harmony", "Planetary Primitives", "Galactic Wildlife"]
+        var all_factions = [
+            "Dominion", "Void", "Rimworlders", "Pirates", "The Reach", 
+            "Plague of Harmony", "Gilded Harmony", "Planetary Primitives", 
+            "Galactic Wildlife", "The Nightmare Court", "The Winter Court"
+        ]
         f_type = all_factions[randi() % all_factions.size()]
     node.set_meta("resolved_faction", f_type)
     
@@ -1464,6 +1476,139 @@ func _build_structure_mesh(node, faction: String, is_tower: bool):
             crown_main.material_override = canopy_mat; crown_main.position.y = 6.2; mesh_node.add_child(crown_main)
             var heart_bloom = MeshInstance3D.new(); heart_bloom.mesh = SphereMesh.new(); heart_bloom.mesh.radius = 1.2
             heart_bloom.material_override = bio_glow_mat; heart_bloom.position = Vector3(0, 3.2, 3.3); mesh_node.add_child(heart_bloom)
+
+    # ==========================================
+    # 10. THE NIGHTMARE COURT (GOTHIC CRYPT & GARGOYLE SPIRE)
+    # ==========================================
+    elif f_type == "The Nightmare Court":
+        var stone_mat = StandardMaterial3D.new(); stone_mat.albedo_color = Color(0.18, 0.16, 0.20); stone_mat.roughness = 0.92
+        var slate_mat = StandardMaterial3D.new(); slate_mat.albedo_color = Color(0.10, 0.08, 0.12); slate_mat.roughness = 0.85
+        var iron_mat = StandardMaterial3D.new(); iron_mat.albedo_color = Color(0.24, 0.24, 0.26); iron_mat.metallic = 0.85; iron_mat.roughness = 0.35
+        var soul_mat = StandardMaterial3D.new(); soul_mat.albedo_color = Color(0.25, 0.95, 0.45); soul_mat.emission_enabled = true; soul_mat.emission = Color(0.20, 0.90, 0.40); soul_mat.emission_energy_multiplier = 3.5
+        var blood_mat = StandardMaterial3D.new(); blood_mat.albedo_color = Color(0.95, 0.12, 0.22); blood_mat.emission_enabled = true; blood_mat.emission = Color(0.90, 0.08, 0.15); blood_mat.emission_energy_multiplier = 3.0
+        var pumpkin_mat = StandardMaterial3D.new(); pumpkin_mat.albedo_color = Color(1.0, 0.52, 0.10); pumpkin_mat.emission_enabled = true; pumpkin_mat.emission = Color(1.0, 0.48, 0.08); pumpkin_mat.emission_energy_multiplier = 3.2
+
+        if is_bay:
+            # Graveyard Crypt Pavilion with Jack-o'-Lantern Lantern
+            var crypt = MeshInstance3D.new(); crypt.mesh = BoxMesh.new(); crypt.mesh.size = Vector3(3.8, 2.4, 3.8)
+            crypt.material_override = stone_mat; crypt.position.y = 1.2; mesh_node.add_child(crypt)
+            var roof = MeshInstance3D.new(); roof.mesh = BoxMesh.new(); roof.mesh.size = Vector3(4.2, 0.6, 4.2)
+            roof.material_override = slate_mat; roof.position.y = 2.6; mesh_node.add_child(roof)
+            # Iron Gate
+            var gate = MeshInstance3D.new(); gate.mesh = BoxMesh.new(); gate.mesh.size = Vector3(1.6, 2.0, 0.15)
+            gate.material_override = iron_mat; gate.position = Vector3(0, 1.0, 1.92); mesh_node.add_child(gate)
+            # Hanging Jack-o'-Lantern
+            var lantern = MeshInstance3D.new(); lantern.mesh = SphereMesh.new(); lantern.mesh.radius = 0.32; lantern.mesh.height = 0.58
+            lantern.material_override = pumpkin_mat; lantern.position = Vector3(1.4, 2.0, 1.95); mesh_node.add_child(lantern)
+        elif is_tower:
+            # Gothic Gargoyle Spire with Swiveling Gargoyle Aim Turret
+            var column = MeshInstance3D.new(); column.mesh = CylinderMesh.new(); column.mesh.height = 4.8; column.mesh.bottom_radius = 1.9; column.mesh.top_radius = 1.5; column.mesh.radial_segments = 8
+            column.material_override = stone_mat; column.position.y = 2.4; mesh_node.add_child(column)
+            # Spiked Iron Parapet Platform
+            var platform = MeshInstance3D.new(); platform.mesh = CylinderMesh.new(); platform.mesh.height = 0.5; platform.mesh.bottom_radius = 2.1; platform.mesh.top_radius = 2.1; platform.mesh.radial_segments = 8
+            platform.material_override = slate_mat; platform.position.y = 4.9; mesh_node.add_child(platform)
+            for i in range(8):
+                var spike = MeshInstance3D.new(); spike.mesh = CylinderMesh.new(); spike.mesh.height = 0.9; spike.mesh.bottom_radius = 0.08; spike.mesh.top_radius = 0.01
+                spike.material_override = iron_mat
+                var a = i * (TAU / 8.0)
+                spike.position = Vector3(cos(a) * 2.0, 5.5, sin(a) * 2.0); mesh_node.add_child(spike)
+            # Swiveling Gargoyle Turret
+            var gargoyle_turret = Node3D.new(); gargoyle_turret.position.y = 5.2; mesh_node.add_child(gargoyle_turret)
+            var g_body = MeshInstance3D.new(); g_body.mesh = BoxMesh.new(); g_body.mesh.size = Vector3(0.85, 0.95, 1.2)
+            g_body.material_override = stone_mat; g_body.position = Vector3(0, 0.45, 0.1); gargoyle_turret.add_child(g_body)
+            var g_head = MeshInstance3D.new(); g_head.mesh = BoxMesh.new(); g_head.mesh.size = Vector3(0.55, 0.55, 0.65)
+            g_head.material_override = stone_mat; g_head.position = Vector3(0, 0.95, 0.65); gargoyle_turret.add_child(g_head)
+            for s in [-1.0, 1.0]:
+                var g_eye = MeshInstance3D.new(); g_eye.mesh = SphereMesh.new(); g_eye.mesh.radius = 0.08
+                g_eye.material_override = soul_mat; g_eye.position = Vector3(s * 0.18, 1.05, 0.96); gargoyle_turret.add_child(g_eye)
+                var g_wing = MeshInstance3D.new(); g_wing.mesh = BoxMesh.new(); g_wing.mesh.size = Vector3(1.1, 0.15, 0.75)
+                g_wing.material_override = stone_mat; g_wing.position = Vector3(s * 0.85, 0.75, -0.15); g_wing.rotation_degrees = Vector3(20, s * -15, s * 25); gargoyle_turret.add_child(g_wing)
+            mesh_node.set_meta("dominion_turret", gargoyle_turret)
+        else:
+            # Massive Gothic Mausoleum / Vampire Cathedral HQ
+            var keep = MeshInstance3D.new(); keep.mesh = BoxMesh.new(); keep.mesh.size = Vector3(6.5, 4.8, 6.5)
+            keep.material_override = stone_mat; keep.position.y = 2.4; mesh_node.add_child(keep)
+            var roof = MeshInstance3D.new(); roof.mesh = BoxMesh.new(); roof.mesh.size = Vector3(5.8, 2.2, 5.8)
+            roof.material_override = slate_mat; roof.position.y = 5.6; mesh_node.add_child(roof)
+            # 4 Ribbed Corner Spires with Gargoyle Perches
+            for xs in [-1.0, 1.0]:
+                for zs in [-1.0, 1.0]:
+                    var spire = MeshInstance3D.new(); spire.mesh = CylinderMesh.new(); spire.mesh.height = 7.0; spire.mesh.bottom_radius = 0.95; spire.mesh.top_radius = 0.15
+                    spire.material_override = slate_mat; spire.position = Vector3(xs * 3.2, 5.5, zs * 3.2); mesh_node.add_child(spire)
+            # Glowing Stained Glass Windows (Blood & Soul)
+            var blood_win = MeshInstance3D.new(); blood_win.mesh = BoxMesh.new(); blood_win.mesh.size = Vector3(1.4, 2.4, 0.15)
+            blood_win.material_override = blood_mat; blood_win.position = Vector3(0, 3.4, 3.3); mesh_node.add_child(blood_win)
+            for s in [-1.0, 1.0]:
+                var soul_win = MeshInstance3D.new(); soul_win.mesh = BoxMesh.new(); soul_win.mesh.size = Vector3(0.15, 2.0, 1.2)
+                soul_win.material_override = soul_mat; soul_win.position = Vector3(s * 3.3, 3.2, 0); mesh_node.add_child(soul_win)
+                # Flanking Soul Fire Braziers
+                var brazier = MeshInstance3D.new(); brazier.mesh = SphereMesh.new(); brazier.mesh.radius = 0.45
+                brazier.material_override = soul_mat; brazier.position = Vector3(s * 2.2, 1.2, 3.4); mesh_node.add_child(brazier)
+
+    # ==========================================
+    # 11. THE WINTER COURT (FROST PALACE & TOY CITADEL)
+    # ==========================================
+    elif f_type == "The Winter Court":
+        var stone_mat = StandardMaterial3D.new(); stone_mat.albedo_color = Color(0.42, 0.48, 0.58); stone_mat.roughness = 0.80
+        var slate_mat = StandardMaterial3D.new(); slate_mat.albedo_color = Color(0.15, 0.25, 0.48); slate_mat.roughness = 0.70
+        var snow_mat = StandardMaterial3D.new(); snow_mat.albedo_color = Color(0.94, 0.96, 1.0); snow_mat.roughness = 0.60
+        var amber_mat = StandardMaterial3D.new(); amber_mat.albedo_color = Color(1.0, 0.80, 0.25); amber_mat.emission_enabled = true; amber_mat.emission = Color(1.0, 0.72, 0.18); amber_mat.emission_energy_multiplier = 3.0
+        var ice_mat = StandardMaterial3D.new(); ice_mat.albedo_color = Color(0.55, 0.90, 1.0, 0.85); ice_mat.metallic = 0.2; ice_mat.roughness = 0.15; ice_mat.emission_enabled = true; ice_mat.emission = Color(0.45, 0.85, 1.0); ice_mat.emission_energy_multiplier = 2.5
+        var gold_mat = StandardMaterial3D.new(); gold_mat.albedo_color = Color(1.0, 0.85, 0.20); gold_mat.metallic = 0.85; gold_mat.roughness = 0.25; gold_mat.emission_enabled = true; gold_mat.emission = Color(1.0, 0.80, 0.15); gold_mat.emission_energy_multiplier = 3.5
+
+        if is_bay:
+            # Toymaker's Workshop Outpost with Brick Chimney
+            var cabin = MeshInstance3D.new(); cabin.mesh = BoxMesh.new(); cabin.mesh.size = Vector3(3.8, 2.2, 3.6)
+            cabin.material_override = stone_mat; cabin.position.y = 1.1; mesh_node.add_child(cabin)
+            var roof = MeshInstance3D.new(); roof.mesh = BoxMesh.new(); roof.mesh.size = Vector3(4.2, 0.6, 4.0)
+            roof.material_override = slate_mat; roof.position.y = 2.4; mesh_node.add_child(roof)
+            var snow_roof = MeshInstance3D.new(); snow_roof.mesh = BoxMesh.new(); snow_roof.mesh.size = Vector3(4.3, 0.25, 4.1)
+            snow_roof.material_override = snow_mat; snow_roof.position.y = 2.8; mesh_node.add_child(snow_roof)
+            # Brick Chimney
+            var chim = MeshInstance3D.new(); chim.mesh = BoxMesh.new(); chim.mesh.size = Vector3(0.65, 1.8, 0.65)
+            chim.material_override = slate_mat; chim.position = Vector3(1.2, 3.0, -1.0); mesh_node.add_child(chim)
+            # Warm glowing window
+            var win = MeshInstance3D.new(); win.mesh = BoxMesh.new(); win.mesh.size = Vector3(1.2, 0.9, 0.15)
+            win.material_override = amber_mat; win.position = Vector3(0, 1.2, 1.85); mesh_node.add_child(win)
+        elif is_tower:
+            # Glacial Ice Watchtower Spire with Swiveling Snow-Cannon Turret
+            var spire = MeshInstance3D.new(); spire.mesh = CylinderMesh.new(); spire.mesh.height = 4.8; spire.mesh.bottom_radius = 1.8; spire.mesh.top_radius = 1.3; spire.mesh.radial_segments = 8
+            spire.material_override = ice_mat; spire.position.y = 2.4; mesh_node.add_child(spire)
+            var platform = MeshInstance3D.new(); platform.mesh = CylinderMesh.new(); platform.mesh.height = 0.5; platform.mesh.bottom_radius = 2.0; platform.mesh.top_radius = 2.0
+            platform.material_override = stone_mat; platform.position.y = 4.9; mesh_node.add_child(platform)
+            var snow_rim = MeshInstance3D.new(); snow_rim.mesh = TorusMesh.new(); snow_rim.mesh.inner_radius = 1.7; snow_rim.mesh.outer_radius = 2.1
+            snow_rim.material_override = snow_mat; snow_rim.position.y = 5.2; mesh_node.add_child(snow_rim)
+            # Swiveling Snow Cannon Turret
+            var cannon_turret = Node3D.new(); cannon_turret.position.y = 5.3; mesh_node.add_child(cannon_turret)
+            var c_base = MeshInstance3D.new(); c_base.mesh = BoxMesh.new(); c_base.mesh.size = Vector3(1.0, 0.8, 1.2)
+            c_base.material_override = stone_mat; c_base.position.y = 0.4; cannon_turret.add_child(c_base)
+            for s in [-1.0, 1.0]:
+                var barrel = MeshInstance3D.new(); barrel.mesh = CylinderMesh.new(); barrel.mesh.height = 2.2; barrel.mesh.bottom_radius = 0.16; barrel.mesh.top_radius = 0.14
+                barrel.material_override = gold_mat; barrel.position = Vector3(s * 0.32, 0.45, 1.2); barrel.rotation_degrees.x = 90
+                cannon_turret.add_child(barrel)
+            mesh_node.set_meta("dominion_turret", cannon_turret)
+        else:
+            # Majestic Winter Ice Palace / Santa's Grand Fortress HQ
+            var palace = MeshInstance3D.new(); palace.mesh = BoxMesh.new(); palace.mesh.size = Vector3(6.6, 4.6, 6.6)
+            palace.material_override = stone_mat; palace.position.y = 2.3; mesh_node.add_child(palace)
+            var palace_roof = MeshInstance3D.new(); palace_roof.mesh = BoxMesh.new(); palace_roof.mesh.size = Vector3(6.0, 1.8, 6.0)
+            palace_roof.material_override = slate_mat; palace_roof.position.y = 5.4; mesh_node.add_child(palace_roof)
+            var snow_cover = MeshInstance3D.new(); snow_cover.mesh = BoxMesh.new(); snow_cover.mesh.size = Vector3(6.2, 0.35, 6.2)
+            snow_cover.material_override = snow_mat; snow_cover.position.y = 6.4; mesh_node.add_child(snow_cover)
+            # 4 Corner Towers
+            for xs in [-1.0, 1.0]:
+                for zs in [-1.0, 1.0]:
+                    var tower = MeshInstance3D.new(); tower.mesh = CylinderMesh.new(); tower.mesh.height = 6.8; tower.mesh.bottom_radius = 1.2; tower.mesh.top_radius = 0.85
+                    tower.material_override = stone_mat; tower.position = Vector3(xs * 3.3, 3.4, zs * 3.3); mesh_node.add_child(tower)
+                    var t_cone = MeshInstance3D.new(); t_cone.mesh = CylinderMesh.new(); t_cone.mesh.height = 2.2; t_cone.mesh.bottom_radius = 1.0; t_cone.mesh.top_radius = 0.05
+                    t_cone.material_override = ice_mat; t_cone.position = Vector3(xs * 3.3, 7.8, zs * 3.3); mesh_node.add_child(t_cone)
+            # Radiant Golden Holiday Star atop Central Peak
+            var star = MeshInstance3D.new(); star.mesh = SphereMesh.new(); star.mesh.radius = 0.65; star.mesh.height = 1.3
+            star.material_override = gold_mat; star.position.y = 8.2; mesh_node.add_child(star)
+            mesh_node.set_meta("winter_star", star)
+            # Warm Glowing Amber Windows
+            var win_front = MeshInstance3D.new(); win_front.mesh = BoxMesh.new(); win_front.mesh.size = Vector3(2.4, 1.8, 0.15)
+            win_front.material_override = amber_mat; win_front.position = Vector3(0, 2.5, 3.35); mesh_node.add_child(win_front)
 
 func _update_timer_ui():
     for p in players:
@@ -2036,6 +2181,8 @@ func _apply_map_environment(biome_name: String, seed_val: int):
         _generate_jungle(env_root)
     elif active_biome == "HAUNTED_HALLOW" or active_biome == "HALLOWEEN":
         _generate_haunted_hallow(env_root)
+    elif active_biome == "FROZEN_WONDERLAND" or active_biome == "WINTER" or active_biome == "YULETIDE":
+        _generate_frozen_wonderland(env_root)
 
     # Pre-render and bake static environment (GPU MultiMesh LODs, UPDATE_ONCE ReflectionProbe, static prop freeze)
     var bake_stats: Dictionary = EnvironmentPreRendererScript.pre_render_and_bake_environment(self, env_root, active_biome)
@@ -2295,6 +2442,39 @@ func _apply_biome_visuals(biome_name: String):
                 sky_mat.sky_horizon_color = Color(0.72, 0.30, 0.06) # Pumpkin orange horizon
                 sky_mat.ground_bottom_color = Color(0.08, 0.06, 0.09)
                 sky_mat.ground_horizon_color = Color(0.35, 0.15, 0.04)
+
+    elif biome_name == "FROZEN_WONDERLAND" or biome_name == "WINTER" or biome_name == "YULETIDE":
+        if ground:
+            var g_mesh = ground.get_node_or_null("MeshInstance3D")
+            if g_mesh:
+                var g_mat = StandardMaterial3D.new()
+                g_mat.albedo_color = Color(0.92, 0.95, 1.0) # Sparkling icy snow
+                g_mat.roughness = 0.55
+                g_mat.metallic = 0.15
+                g_mesh.material_override = g_mat
+
+            # Cached GPU Frosted Stone & Snow Path Texture
+            var snow_tex = EnvironmentPreRendererScript.get_cached_biome_texture("FROZEN_WONDERLAND")
+
+            for child in ground.get_children():
+                if child is MeshInstance3D and child.name.begins_with("Path"):
+                    var p_mat = StandardMaterial3D.new()
+                    p_mat.albedo_texture = snow_tex
+                    p_mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
+                    p_mat.roughness = 0.70
+                    p_mat.uv1_scale = Vector3(14.0, 14.0, 14.0)
+                    child.material_override = p_mat
+        if dir_light:
+            dir_light.light_color = Color(0.85, 0.92, 1.0) # Crisp winter twilight
+            dir_light.light_energy = 1.25
+            dir_light.shadow_enabled = true
+        if world_env and world_env.environment and world_env.environment.sky:
+            var sky_mat = world_env.environment.sky.sky_material
+            if sky_mat is ProceduralSkyMaterial:
+                sky_mat.sky_top_color = Color(0.04, 0.08, 0.20) # Deep Arctic night navy
+                sky_mat.sky_horizon_color = Color(0.25, 0.75, 0.85) # Shimmering cyan aurora borealis
+                sky_mat.ground_bottom_color = Color(0.08, 0.14, 0.22)
+                sky_mat.ground_horizon_color = Color(0.20, 0.55, 0.70)
 
 func _get_clear_hazard_pos(map_size: float) -> Vector3:
     var attempts = 0
@@ -4159,4 +4339,137 @@ func _generate_haunted_hallow(parent: Node3D) -> void:
             "pos": t_pos,
             "radius": 2.2
         })
+
+# =========================================================================
+# FROZEN WONDERLAND / YULETIDE BIOME GENERATION
+# Frosted paths, Evergreen Yuletide Trees with glowing fairy lights,
+# Breakable Holiday Presents, Alpine Pine Forests & Slippery Ice
+# =========================================================================
+func _generate_frozen_wonderland(parent: Node3D) -> void:
+    placed_feature_records.clear()
+    var map_size: float = maxf(42.0, GameState.current_map_radius * 0.62)
+
+    var tree_script = load("res://Scripts/EvergreenYuletideTree.gd")
+    var present_script = load("res://Scripts/BreakableHolidayPresent.gd")
+    var ice_patch_script = load("res://Scripts/BreakableIcePatch.gd")
+
+    # 1. Spawn Majestic Evergreen Yuletide Tree(s)
+    var num_yule_trees: int = 2 if map_size >= 65.0 else 1
+    for i in range(num_yule_trees):
+        var yt_pos = _get_clear_hazard_pos(map_size * 0.70)
+        if tree_script:
+            var y_tree = tree_script.new()
+            parent.add_child(y_tree)
+            y_tree.global_position = yt_pos
+            placed_feature_records.append({
+                "type": "tree",
+                "pos": yt_pos,
+                "radius": 4.5
+            })
+            # Place 2-3 holiday presents right under the majestic tree!
+            for p_i in range(randi_range(2, 3)):
+                if present_script:
+                    var present = present_script.new()
+                    parent.add_child(present)
+                    var p_offset = Vector3(randf_range(-2.4, 2.4), 0, randf_range(-2.4, 2.4))
+                    if p_offset.length() < 1.0: p_offset = p_offset.normalized() * 1.5
+                    present.global_position = yt_pos + p_offset
+                    placed_feature_records.append({
+                        "type": "obstacle",
+                        "pos": present.global_position,
+                        "radius": 1.2
+                    })
+
+    # 2. Spawn Breakable Holiday Presents Scattered Across Snow
+    var num_presents: int = int(clampf(map_size * 0.25, 8.0, 20.0))
+    for i in range(num_presents):
+        var p_pos = _get_clear_hazard_pos(map_size * 0.85)
+        if present_script:
+            var present = present_script.new()
+            parent.add_child(present)
+            present.global_position = p_pos
+            placed_feature_records.append({
+                "type": "obstacle",
+                "pos": p_pos,
+                "radius": 1.2
+            })
+
+    # 3. Spawn Slippery Ice Patches
+    var num_ice_patches: int = int(clampf(map_size * 0.12, 3.0, 7.0))
+    for i in range(num_ice_patches):
+        var ip_pos = _get_clear_hazard_pos(map_size * 0.80)
+        if ice_patch_script:
+            var ip = ice_patch_script.new()
+            ip.patch_size = "SMALL" if randf() < 0.6 else "LARGE"
+            parent.add_child(ip)
+            ip.global_position = ip_pos
+            placed_feature_records.append({
+                "type": "ice_patch",
+                "pos": ip_pos,
+                "radius": 5.0 if ip.patch_size == "LARGE" else 3.2
+            })
+
+    # 4. Spawn Alpine Snow-Covered Pine Trees
+    var pine_count: int = int(clampf(map_size * 0.40, 16.0, 36.0))
+    var bark_mat = StandardMaterial3D.new()
+    bark_mat.albedo_color = Color(0.24, 0.16, 0.10)
+    bark_mat.roughness = 0.90
+
+    var pine_green = StandardMaterial3D.new()
+    pine_green.albedo_color = Color(0.12, 0.32, 0.18)
+    pine_green.roughness = 0.80
+
+    var snow_mat = StandardMaterial3D.new()
+    snow_mat.albedo_color = Color(0.92, 0.96, 1.0)
+    snow_mat.roughness = 0.60
+
+    for i in range(pine_count):
+        var t_pos = _get_clear_hazard_pos(map_size * 0.90)
+        var tree_node = Node3D.new()
+        tree_node.position = t_pos
+        parent.add_child(tree_node)
+
+        # Trunk
+        var trunk = MeshInstance3D.new()
+        var t_cyl = CylinderMesh.new()
+        t_cyl.top_radius = 0.22
+        t_cyl.bottom_radius = 0.55
+        t_cyl.height = 3.6
+        trunk.mesh = t_cyl
+        trunk.material_override = bark_mat
+        trunk.position.y = 1.8
+        tree_node.add_child(trunk)
+
+        # Conical Pine Canopy Tiers with Snow Caps
+        for tier in range(3):
+            var tier_rad = 2.2 - (tier * 0.55)
+            var tier_h = 2.0 - (tier * 0.3)
+            var tier_y = 2.6 + (tier * 1.3)
+
+            var pine_mesh = MeshInstance3D.new()
+            var p_cone = CylinderMesh.new()
+            p_cone.top_radius = 0.05
+            p_cone.bottom_radius = tier_rad
+            p_cone.height = tier_h
+            pine_mesh.mesh = p_cone
+            pine_mesh.material_override = pine_green
+            pine_mesh.position.y = tier_y
+            tree_node.add_child(pine_mesh)
+
+            var snow_mesh = MeshInstance3D.new()
+            var s_cone = CylinderMesh.new()
+            s_cone.top_radius = 0.06
+            s_cone.bottom_radius = tier_rad * 0.95
+            s_cone.height = tier_h * 0.4
+            snow_mesh.mesh = s_cone
+            snow_mesh.material_override = snow_mat
+            snow_mesh.position.y = tier_y + tier_h * 0.28
+            tree_node.add_child(snow_mesh)
+
+        placed_feature_records.append({
+            "type": "tree",
+            "pos": t_pos,
+            "radius": 2.2
+        })
+
 

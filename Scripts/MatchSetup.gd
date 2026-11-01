@@ -37,8 +37,9 @@ func _ready():
 	biome_option.add_item("Deep Space Vacuum")
 	biome_option.add_item("Verdant Deep Jungle")
 	biome_option.add_item("Haunted Hallow (Halloween)")
+	biome_option.add_item("Frozen Wonderland (Yuletide)")
 	biome_option.add_item("Random Biome")
-	biome_option.select(8) # Default to Random Biome
+	biome_option.select(9) # Default to Random Biome
 	
 	mode_option.add_item("Domination (Destroy Every Base)")
 	mode_option.add_item("King of the Hill")
@@ -66,7 +67,7 @@ func _ready():
 		ai_faction_option = OptionButton.new()
 		ai_faction_option.custom_minimum_size = Vector2(250, 0)
 		ai_faction_option.add_theme_font_size_override("font_size", 24)
-		ai_faction_option.add_item("🎲 Random Dice Roll (All 10 + Chaos)") # 0
+		ai_faction_option.add_item("🎲 Random Dice Roll (All 11 + Chaos)") # 0
 		ai_faction_option.add_item("Dominion of Sol")                     # 1
 		ai_faction_option.add_item("The Reach")                           # 2
 		ai_faction_option.add_item("Pirates")                             # 3
@@ -77,7 +78,8 @@ func _ready():
 		ai_faction_option.add_item("Planetary Primitives")                # 8
 		ai_faction_option.add_item("Galactic Wildlife")                   # 9
 		ai_faction_option.add_item("The Nightmare Court (Halloween)")     # 10
-		ai_faction_option.add_item("Chaos (Completely Random Deck)")      # 11
+		ai_faction_option.add_item("The Winter Court (Holiday)")          # 11
+		ai_faction_option.add_item("Chaos (Completely Random Deck)")      # 12
 		ai_faction_option.select(0) # Default to Random Dice Roll
 		faction_box.add_child(ai_faction_option)
 
@@ -293,6 +295,8 @@ func _on_start_pressed():
 		GameState.map_biome = "DEEP_JUNGLE"
 	elif biome_option.selected == 7:
 		GameState.map_biome = "HAUNTED_HALLOW"
+	elif biome_option.selected == 8:
+		GameState.map_biome = "FROZEN_WONDERLAND"
 	else:
 		GameState.map_biome = "RANDOM"
 		
@@ -332,7 +336,8 @@ func _on_start_pressed():
 		elif sel_f == 8: GameState.ai_faction_override = "Planetary Primitives"
 		elif sel_f == 9: GameState.ai_faction_override = "Galactic Wildlife"
 		elif sel_f == 10: GameState.ai_faction_override = "The Nightmare Court"
-		elif sel_f == 11: GameState.ai_faction_override = "Chaos"
+		elif sel_f == 11: GameState.ai_faction_override = "The Winter Court"
+		elif sel_f == 12: GameState.ai_faction_override = "Chaos"
 	else:
 		GameState.ai_faction_override = "RANDOM"
 	

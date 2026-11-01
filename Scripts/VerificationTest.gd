@@ -114,6 +114,15 @@ func _ready():
 	var pre_script = load("res://Scripts/EnvironmentPreRenderer.gd")
 	if pre_script and pre_script.has_method("clear_caches"):
 		pre_script.clear_caches()
+	var w_script = load("res://Scripts/WinterModelBuilder.gd")
+	if w_script and w_script.has_method("clear_caches"):
+		w_script.clear_caches()
+	var n_script = load("res://Scripts/NightmareModelBuilder.gd")
+	if n_script and n_script.has_method("clear_caches"):
+		n_script.clear_caches()
+	var wild_script = load("res://Scripts/WildlifeModelBuilder.gd")
+	if wild_script and wild_script.has_method("clear_caches"):
+		wild_script.clear_caches()
 
 	if total_failed == 0:
 		print("ALL SYSTEMS GREEN! Exiting cleanly with code 0.")
@@ -262,7 +271,7 @@ func test_maps_and_biomes() -> bool:
 
 	dummy_arena.queue_free()
 
-	var biomes = ["SUNNY_PLAINS", "SCORCHING_DUNES", "REALM_OF_HARMONY", "FROZEN_TUNDRA", "VOLCANIC_BRIMSTONE", "SPACE_VACUUM", "DEEP_JUNGLE", "HAUNTED_HALLOW"]
+	var biomes = ["SUNNY_PLAINS", "SCORCHING_DUNES", "REALM_OF_HARMONY", "FROZEN_TUNDRA", "VOLCANIC_BRIMSTONE", "SPACE_VACUUM", "DEEP_JUNGLE", "HAUNTED_HALLOW", "FROZEN_WONDERLAND"]
 
 	# --- Test Deep Space Vacuum Biome Decompression Mechanics ---
 	var vac_arena = ArenaManager.new()
@@ -625,6 +634,45 @@ func test_maps_and_biomes() -> bool:
 	h_grave.queue_free()
 	h_gas.queue_free()
 	h_arena.queue_free()
+
+	# --- Test Frozen Wonderland (Yuletide) Biome: Evergreen Yuletide Tree & Breakable Holiday Presents ---
+	var yule_tree_script = load("res://Scripts/EvergreenYuletideTree.gd")
+	var yule_tree = yule_tree_script.new()
+	add_child(yule_tree)
+	if not yule_tree.is_in_group("HolidayTree") or not yule_tree.is_in_group("Obstacle"):
+		printerr("EvergreenYuletideTree failed to join HolidayTree / Obstacle groups!")
+		return false
+
+	var yule_present_script = load("res://Scripts/BreakableHolidayPresent.gd")
+	var yule_present = yule_present_script.new()
+	add_child(yule_present)
+	if not yule_present.is_in_group("HolidayPresent") or not yule_present.is_in_group("Targetable"):
+		printerr("BreakableHolidayPresent failed to join HolidayPresent / Targetable groups!")
+		return false
+
+	var yw_arena = ArenaManager.new()
+	yw_arena.active_biome = "FROZEN_WONDERLAND"
+	add_child(yw_arena)
+	var yw_env = Node3D.new()
+	yw_env.name = "EnvironmentFeatures"
+	yw_arena.add_child(yw_env)
+	yw_arena._generate_frozen_wonderland(yw_env)
+
+	var found_yule_tree = false
+	var found_presents = 0
+	for child in yw_env.get_children():
+		if child.is_in_group("HolidayTree") or "EvergreenYuletideTree" in child.name:
+			found_yule_tree = true
+		elif child.is_in_group("HolidayPresent") or "BreakableHolidayPresent" in child.name:
+			found_presents += 1
+
+	if not found_yule_tree or found_presents < 5:
+		printerr("Frozen Wonderland biome failed to spawn EvergreenYuletideTree or BreakableHolidayPresents! Found tree=%s presents=%d" % [str(found_yule_tree), found_presents])
+		return false
+
+	yule_tree.queue_free()
+	yule_present.queue_free()
+	yw_arena.queue_free()
 
 	print("  Verified %d map catalog layouts across %d total team comps and %d biomes." % [tested_count, tested_comps, biomes.size()])
 	print("  [PASS] Breakable ice patches, Sea Lion organic predation, Volcanic hazards, Space vacuum, Deep Jungle & v8 GPU Pre-Rendering verified.")
@@ -1017,8 +1065,8 @@ func test_ai_systems() -> bool:
 				for c in ai_opt.get_children():
 					if c is OptionButton: opt_btn = c
 			if opt_btn:
-				if opt_btn.item_count < 11:
-					printerr("MatchSetup ai_faction_option item_count is less than 11! Got: ", opt_btn.item_count)
+				if opt_btn.item_count < 13:
+					printerr("MatchSetup ai_faction_option item_count is less than 13! Got: ", opt_btn.item_count)
 					success = false
 				var item_8 = opt_btn.get_item_text(8)
 				if not ("Planetary Primitives" in item_8):
@@ -1027,6 +1075,10 @@ func test_ai_systems() -> bool:
 				var item_9 = opt_btn.get_item_text(9)
 				if not ("Galactic Wildlife" in item_9):
 					printerr("MatchSetup item 9 is not Galactic Wildlife! Got: ", item_9)
+					success = false
+				var item_11 = opt_btn.get_item_text(11)
+				if not ("Winter Court" in item_11):
+					printerr("MatchSetup item 11 is not The Winter Court! Got: ", item_11)
 					success = false
 		ms_inst.queue_free()
 
@@ -1037,7 +1089,7 @@ func test_ai_systems() -> bool:
 		success = false
 	print("  Verified %d distinct Galactic Wildlife species in SPECIES_CATALOG." % wildlife_count)
 
-	var all_archetypes = ["Dominion", "The Reach", "Pirates", "Rimworlders", "Void", "Plague of Harmony", "Gilded Harmony", "Planetary Primitives", "Galactic Wildlife", "Chaos"]
+	var all_archetypes = ["Dominion", "The Reach", "Pirates", "Rimworlders", "Void", "Plague of Harmony", "Gilded Harmony", "Planetary Primitives", "Galactic Wildlife", "The Nightmare Court", "The Winter Court", "Chaos"]
 	var audit_sandbox = Node3D.new()
 	audit_sandbox.name = "AuditBotSandbox"
 	add_child(audit_sandbox)
@@ -1220,5 +1272,84 @@ func test_ai_systems() -> bool:
 				success = false
 			nu_inst.queue_free()
 
-	print("  Verified HeroHunter closest commander targeting, Medic structure exclusion, Territorial Creature nest radius, Nightmare BotAI, Chaos dice roll, Planetary Primitives Empire Ages, and The Nightmare Court Halloween models & decks.")
+	# 10. Test The Winter Court (Holiday): Decks, Procedural Models & Structure Architecture
+	var winter_bot = BotAI.new()
+	var winter_deck = winter_bot.generate_themed_deck("The Winter Court")
+	if winter_deck.size() != 6:
+		printerr("The Winter Court deck size is not 6! Got: ", winter_deck.size())
+		success = false
+	for cname in winter_deck:
+		if not ("Winter" in cname or "Yuletide" in cname or "Yule" in cname):
+			printerr("Winter Court deck contains invalid card: ", cname)
+			success = false
+	winter_bot.free()
+
+	var test_winter_units = [
+		"WinterYuletideKing",
+		"WinterKrampusLord",
+		"WinterFrostQueen",
+		"WinterToySoldier",
+		"WinterNutcracker",
+		"WinterToyGolem",
+		"WinterWarReindeer",
+		"WinterAbominableYeti",
+		"WinterYuleLog"
+	]
+	for wu_name in test_winter_units:
+		var wu_scene = load("res://Scenes/Units/" + wu_name + ".tscn")
+		if wu_scene:
+			var wu_inst = wu_scene.instantiate()
+			add_child(wu_inst)
+			var w_rig = wu_inst.find_child("WinterRigRoot", true, false)
+			if not w_rig:
+				printerr(wu_name + " missing WinterRigRoot procedural model!")
+				success = false
+			wu_inst.queue_free()
+
+	# 11. Test Custom Structure Architecture for Nightmare Court & Winter Court in ArenaManager
+	var struct_arena = ArenaManager.new()
+	add_child(struct_arena)
+
+	# Nightmare Tower & Base
+	var n_tower = StaticBody3D.new()
+	n_tower.name = "SideA_Tower_Nightmare"
+	struct_arena.add_child(n_tower)
+	struct_arena._build_structure_mesh(n_tower, "The Nightmare Court", true)
+	if not n_tower.has_meta("faction_mesh"):
+		printerr("Failed to build Gothic Gargoyle Spire for The Nightmare Court!")
+		success = false
+
+	var n_base = StaticBody3D.new()
+	n_base.name = "SideA_Base_Nightmare"
+	struct_arena.add_child(n_base)
+	struct_arena._build_structure_mesh(n_base, "The Nightmare Court", false)
+	if not n_base.has_meta("faction_mesh"):
+		printerr("Failed to build Gothic Mausoleum Base for The Nightmare Court!")
+		success = false
+
+	# Winter Tower & Base
+	var w_tower = StaticBody3D.new()
+	w_tower.name = "SideB_Tower_Winter"
+	struct_arena.add_child(w_tower)
+	struct_arena._build_structure_mesh(w_tower, "The Winter Court", true)
+	if not w_tower.has_meta("faction_mesh"):
+		printerr("Failed to build Glacial Watchtower Spire for The Winter Court!")
+		success = false
+
+	var w_base = StaticBody3D.new()
+	w_base.name = "SideB_Base_Winter"
+	struct_arena.add_child(w_base)
+	struct_arena._build_structure_mesh(w_base, "The Winter Court", false)
+	var w_b_mesh = w_base.get_meta("faction_mesh") if w_base.has_meta("faction_mesh") else null
+	if not w_b_mesh or not w_b_mesh.has_meta("winter_star"):
+		printerr("Failed to build Winter Ice Palace with winter_star for The Winter Court!")
+		success = false
+
+	n_tower.queue_free()
+	n_base.queue_free()
+	w_tower.queue_free()
+	w_base.queue_free()
+	struct_arena.queue_free()
+
+	print("  Verified HeroHunter closest commander targeting, Medic structure exclusion, Territorial Creature nest radius, Nightmare & Winter BotAI, Chaos dice roll, Planetary Primitives Empire Ages, and Holiday procedural models & architecture.")
 	return success

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/CardData.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://Scenes/Units/WinterFrostElf.tscn" id="2_scene"]
+
+[resource]
+script = ExtResource("1_script")
+card_name = "WinterFrostElf"
+card_type = "Ranged"
+cost = 2.5
+is_spell = false
+spawn_count = 2
+max_hp = 115.0
+is_melee = false
+description = "Frost Elf Archers. Master marksmen wielding silver recurve bows enchanted with glacial frost."
+unit_scene = ExtResource("2_scene")

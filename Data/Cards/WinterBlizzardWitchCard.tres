@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/CardData.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://Scenes/Units/WinterBlizzardWitch.tscn" id="2_scene"]
+
+[resource]
+script = ExtResource("1_script")
+card_name = "WinterBlizzardWitch"
+card_type = "Support"
+cost = 4.0
+is_spell = false
+spawn_count = 1
+max_hp = 230.0
+is_melee = false
+description = "Blizzard Witch. Channels howling arctic whirlwinds that damage and slow enemy assault waves."
+unit_scene = ExtResource("2_scene")

@@ -117,6 +117,10 @@ func _ready():
 		var n_builder = load("res://Scripts/NightmareModelBuilder.gd")
 		if n_builder:
 			n_builder.build_model(self, name)
+	elif "Winter" in name or "Yuletide" in name or "Yule" in name:
+		var w_builder = load("res://Scripts/WinterModelBuilder.gd")
+		if w_builder:
+			w_builder.build_model(self, name)
 	elif is_humanoid():
 		var rig_script = load("res://Scripts/HumanoidRig.gd")
 		if rig_script:
@@ -156,6 +160,71 @@ func _physics_process(delta):
 				sk.global_position = global_position + Vector3(randf_range(-1.8, 1.8), 0.2, randf_range(-1.8, 1.8))
 		else:
 			set_meta("necro_summon_timer", n_timer)
+
+	# Winter Yuletide King: Festive Bounty Passive Aura (+20% resilience / armor replenishment)
+	if "YuletideKing" in name:
+		if not has_meta("yuletide_bounty_timer"):
+			set_meta("yuletide_bounty_timer", 2.0)
+		var y_timer = get_meta("yuletide_bounty_timer", 2.0) - delta
+		if y_timer <= 0.0:
+			set_meta("yuletide_bounty_timer", 2.5)
+			var my_team = ""
+			for g in get_groups():
+				if g.begins_with("Side"): my_team = g; break
+			if is_inside_tree() and get_tree():
+				for ally in get_tree().get_nodes_in_group(my_team):
+					if is_instance_valid(ally) and ally != self and ally is CharacterBody3D:
+						if global_position.distance_to(ally.global_position) <= 12.0:
+							var ahc = ally.get_node_or_null("HealthComponent")
+							if ahc and not ahc.is_dead and ahc.max_armor > 0.0:
+								ahc.current_armor = min(ahc.max_armor, ahc.current_armor + 15.0)
+								ahc._refresh_hp_visuals()
+		else:
+			set_meta("yuletide_bounty_timer", y_timer)
+
+	# Winter Krampus Lord: Terror of Yule Passive Aura (25% slow + 10 DPS frostburn)
+	if "KrampusLord" in name:
+		if not has_meta("krampus_terror_timer"):
+			set_meta("krampus_terror_timer", 1.0)
+		var k_timer = get_meta("krampus_terror_timer", 1.0) - delta
+		if k_timer <= 0.0:
+			set_meta("krampus_terror_timer", 1.0)
+			var my_team = ""
+			for g in get_groups():
+				if g.begins_with("Side"): my_team = g; break
+			if is_inside_tree() and get_tree():
+				for enemy in get_tree().get_nodes_in_group("Targetable"):
+					if is_instance_valid(enemy) and not enemy.is_in_group(my_team) and enemy is CharacterBody3D:
+						if global_position.distance_to(enemy.global_position) <= 10.0:
+							var ehc = enemy.get_node_or_null("HealthComponent")
+							if ehc and not ehc.is_dead:
+								ehc.take_damage(10.0, global_position)
+							enemy.velocity *= 0.75
+		else:
+			set_meta("krampus_terror_timer", k_timer)
+
+	# Winter Yule Log: Charging Festive Munition Detonation
+	if "YuleLog" in name:
+		var should_detonate = false
+		if is_instance_valid(current_target) and global_position.distance_to(current_target.global_position) <= 2.2:
+			should_detonate = true
+		if should_detonate:
+			var my_team = ""
+			for g in get_groups():
+				if g.begins_with("Side"): my_team = g; break
+			if is_inside_tree() and get_tree():
+				for node in get_tree().get_nodes_in_group("Targetable"):
+					if is_instance_valid(node) and not node.is_in_group(my_team) and node is CharacterBody3D:
+						var d = global_position.distance_to(node.global_position)
+						if d <= 4.8:
+							var hc = node.get_node_or_null("HealthComponent")
+							if hc and not hc.is_dead:
+								hc.take_damage(attack_damage, global_position)
+							var push_dir = (node.global_position - global_position).normalized()
+							push_dir.y = 0.3
+							node.velocity += push_dir * 10.0
+			queue_free()
+			return
 		
 	if has_meta("stealth_revealed_timer"):
 		var __s_timer = get_meta("stealth_revealed_timer", 0.0)
@@ -339,7 +408,7 @@ func _physics_process(delta):
 					set_meta("stealth_revealed_timer", 2.0)
 					var target_health = current_target.get_node_or_null("HealthComponent")
 					if target_health:
-						if "SkyJellyfish" in self.name or "StoneOctopus" in self.name or "DemonKnight" in self.name or "BoneGiant" in self.name:
+						if "SkyJellyfish" in self.name or "StoneOctopus" in self.name or "DemonKnight" in self.name or "BoneGiant" in self.name or "ToyGolem" in self.name or "AbominableYeti" in self.name:
 							var m_team = ""
 							for g in get_groups():
 								if g.begins_with("Side"): m_team = g
@@ -351,6 +420,10 @@ func _physics_process(delta):
 											if hp: hp.take_damage(attack_damage, global_position)
 						else:
 							target_health.take_damage(attack_damage, global_position)
+
+						# Frost Queen Freezing Slow on Hit
+						if "FrostQueen" in self.name and current_target is CharacterBody3D:
+							current_target.velocity *= 0.60
 
 						# Vampiric Lifesteal for Grand Vampire and Vampire Duelist
 						if "GrandVampire" in self.name or "VampireDuelist" in self.name:

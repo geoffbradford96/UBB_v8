@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/CardData.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://Scenes/Units/WinterToyGolem.tscn" id="2_scene"]
+
+[resource]
+script = ExtResource("1_script")
+card_name = "WinterToyGolem"
+card_type = "Automaton"
+cost = 5.0
+is_spell = false
+spawn_count = 1
+max_hp = 560.0
+is_melee = true
+description = "Clockwork Toy Golem. Wood and brass automaton with spinning chest gears that delivers cleaving ground slams."
+unit_scene = ExtResource("2_scene")

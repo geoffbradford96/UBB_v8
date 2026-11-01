@@ -33,7 +33,7 @@ func _get_game_state():
 
 func _ready():
 	var gs = _get_game_state()
-	var ai_pool = ["Dominion", "The Reach", "Pirates", "Rimworlders", "Void", "Plague of Harmony", "Gilded Harmony", "Planetary Primitives", "Galactic Wildlife", "The Nightmare Court", "Chaos"]
+	var ai_pool = ["Dominion", "The Reach", "Pirates", "Rimworlders", "Void", "Plague of Harmony", "Gilded Harmony", "Planetary Primitives", "Galactic Wildlife", "The Nightmare Court", "The Winter Court", "Chaos"]
 	if archetype != "":
 		deck = generate_themed_deck(archetype)
 		print(my_team + " BotAI generated deck for archetype: " + archetype + " -> " + str(deck))
@@ -115,6 +115,8 @@ func _get_card_faction(card: CardData) -> String:
 	var cname: String = card.card_name
 	if "Nightmare" in cname or "Halloween" in cname:
 		return "The Nightmare Court"
+	elif "Winter" in cname or "Yuletide" in cname or "Yule" in cname:
+		return "The Winter Court"
 	elif "Wildlife" in cname:
 		return "Galactic Wildlife"
 	elif "Primitive" in cname:
@@ -542,6 +544,35 @@ func evaluate_moves():
 				elif "JackOLantern" in b.card_name: b_prio += 18
 				elif "Vampire" in b.card_name or "BatSwarm" in b.card_name: b_prio += 16
 				elif "SkeletonArcher" in b.card_name or "FireImp" in b.card_name: b_prio += (17 if friendly_screens >= 1 else 10)
+				else: b_prio += 12
+
+				if a_prio != b_prio:
+					return a_prio > b_prio
+				return a.cost < b.cost
+			)
+		elif archetype == "The Winter Court" or archetype == "Winter" or archetype == "Yuletide":
+			# The Winter Court: Toy Automata, Frost Commanders, Reindeer Cavalry, and Ice Magic
+			var winter_bank = 3.8 * bank_scale
+			if threat_info.threat_score < 8.0 and current_requisition < winter_bank:
+				return
+			valid_hand.sort_custom(func(a, b):
+				var a_prio = 0
+				var b_prio = 0
+				# 1. Sturdy frontlines & commanders
+				if "ToyGolem" in a.card_name or "AbominableYeti" in a.card_name or "Nutcracker" in a.card_name: a_prio += 25
+				elif a.card_type == "Commander": a_prio += 22
+				elif "WarReindeer" in a.card_name or "YuleLog" in a.card_name: a_prio += 20
+				elif "FrostWolf" in a.card_name or "GingerbreadBrawler" in a.card_name: a_prio += 18
+				elif "ToySoldier" in a.card_name: a_prio += 15
+				elif "FrostElf" in a.card_name or "BlizzardWitch" in a.card_name or "SnowballCatapult" in a.card_name or "SnowSprite" in a.card_name: a_prio += (17 if friendly_screens >= 1 else 10)
+				else: a_prio += 12
+
+				if "ToyGolem" in b.card_name or "AbominableYeti" in b.card_name or "Nutcracker" in b.card_name: b_prio += 25
+				elif b.card_type == "Commander": b_prio += 22
+				elif "WarReindeer" in b.card_name or "YuleLog" in b.card_name: b_prio += 20
+				elif "FrostWolf" in b.card_name or "GingerbreadBrawler" in b.card_name: b_prio += 18
+				elif "ToySoldier" in b.card_name: b_prio += 15
+				elif "FrostElf" in b.card_name or "BlizzardWitch" in b.card_name or "SnowballCatapult" in b.card_name or "SnowSprite" in b.card_name: b_prio += (17 if friendly_screens >= 1 else 10)
 				else: b_prio += 12
 
 				if a_prio != b_prio:
@@ -1046,9 +1077,10 @@ func play_card(card: CardData, target_position: Vector3):
 
 
 func _detect_faction_from_deck(deck_list: Array) -> String:
-	var v = 0; var r = 0; var d = 0; var pi = 0; var reach = 0; var plague = 0; var gilded = 0; var prim = 0; var wild = 0; var night = 0
+	var v = 0; var r = 0; var d = 0; var pi = 0; var reach = 0; var plague = 0; var gilded = 0; var prim = 0; var wild = 0; var night = 0; var winter = 0
 	for c in deck_list:
 		if "Nightmare" in c or "Halloween" in c: night += 1
+		elif "Winter" in c or "Yuletide" in c or "Yule" in c: winter += 1
 		elif "Wildlife" in c: wild += 1
 		elif "Primitive" in c: prim += 1
 		elif "Plague" in c: plague += 1
@@ -1058,9 +1090,10 @@ func _detect_faction_from_deck(deck_list: Array) -> String:
 		elif "Scrap" in c: pi += 1
 		elif "Reach" in c: reach += 1
 		else: d += 1
-	var mx = max(d, max(v, max(r, max(pi, max(reach, max(plague, max(gilded, max(prim, max(wild, night)))))))))
+	var mx = max(d, max(v, max(r, max(pi, max(reach, max(plague, max(gilded, max(prim, max(wild, max(night, winter))))))))))
 	if mx < 3 and deck_list.size() >= 5: return "Chaos"
 	if mx == night and night > 0: return "The Nightmare Court"
+	if mx == winter and winter > 0: return "The Winter Court"
 	if mx == wild and wild > 0: return "Galactic Wildlife"
 	if mx == prim and prim > 0: return "Planetary Primitives"
 	if mx == plague and plague > 0: return "Plague of Harmony"
@@ -1074,7 +1107,7 @@ func _detect_faction_from_deck(deck_list: Array) -> String:
 func generate_chaos_deck() -> Array:
 	var dir = DirAccess.open("res://Data/Cards/")
 	var all_commanders = []
-	var units_by_faction: Dictionary = {}
+	var all_other_cards = []
 	
 	if dir:
 		dir.list_dir_begin()
@@ -1088,22 +1121,16 @@ func generate_chaos_deck() -> Array:
 					if "card_type" in res and res.card_type == "Commander":
 						all_commanders.append(raw_name)
 					else:
-						var f_bucket = _detect_faction_from_deck([raw_name])
-						if not units_by_faction.has(f_bucket):
-							units_by_faction[f_bucket] = []
-						units_by_faction[f_bucket].append(raw_name)
+						all_other_cards.append(raw_name)
 			file_name = dir.get_next()
 			
 	var chaos_deck = []
 	if all_commanders.size() > 0:
 		chaos_deck.append(all_commanders.pick_random())
 		
-	var f_keys = units_by_faction.keys()
-	f_keys.shuffle()
-	for i in range(min(5, f_keys.size())):
-		var bucket: Array = units_by_faction[f_keys[i]]
-		if bucket.size() > 0:
-			chaos_deck.append(bucket.pick_random())
+	all_other_cards.shuffle()
+	for i in range(min(5, all_other_cards.size())):
+		chaos_deck.append(all_other_cards[i])
 		
 	return chaos_deck
 
@@ -1122,15 +1149,16 @@ func generate_themed_deck(theme: String) -> Array:
 			if not dir.current_is_dir() and (file_name.ends_with(".tres") or file_name.ends_with(".tres.remap")):
 				var clean_name = file_name.trim_suffix(".remap")
 				var is_nightmare = "Nightmare" in clean_name or "Halloween" in clean_name
-				var is_wildlife = not is_nightmare and ("Wildlife" in clean_name)
-				var is_void = not is_nightmare and not is_wildlife and ("Void" in clean_name)
-				var is_rimworlder = not is_nightmare and not is_wildlife and ("Rimworlder" in clean_name or "Sky" in clean_name or "Stone" in clean_name or "Giant" in clean_name or "Great" in clean_name or "Monstrous" in clean_name)
-				var is_pirate = not is_nightmare and not is_wildlife and ("Scrap" in clean_name)
-				var is_reach = not is_nightmare and not is_wildlife and ("Reach" in clean_name)
-				var is_plague = not is_nightmare and not is_wildlife and ("Plague" in clean_name)
-				var is_gilded = not is_nightmare and not is_wildlife and ("Gilded" in clean_name)
-				var is_primitive = not is_nightmare and not is_wildlife and ("Primitive" in clean_name)
-				var is_dominion = not is_nightmare and not is_void and not is_rimworlder and not is_pirate and not is_reach and not is_plague and not is_gilded and not is_primitive and not is_wildlife
+				var is_winter = not is_nightmare and ("Winter" in clean_name or "Yuletide" in clean_name or "Yule" in clean_name)
+				var is_wildlife = not is_nightmare and not is_winter and ("Wildlife" in clean_name)
+				var is_void = not is_nightmare and not is_winter and not is_wildlife and ("Void" in clean_name)
+				var is_rimworlder = not is_nightmare and not is_winter and not is_wildlife and ("Rimworlder" in clean_name or "Sky" in clean_name or "Stone" in clean_name or "Giant" in clean_name or "Great" in clean_name or "Monstrous" in clean_name)
+				var is_pirate = not is_nightmare and not is_winter and not is_wildlife and ("Scrap" in clean_name)
+				var is_reach = not is_nightmare and not is_winter and not is_wildlife and ("Reach" in clean_name)
+				var is_plague = not is_nightmare and not is_winter and not is_wildlife and ("Plague" in clean_name)
+				var is_gilded = not is_nightmare and not is_winter and not is_wildlife and ("Gilded" in clean_name)
+				var is_primitive = not is_nightmare and not is_winter and not is_wildlife and ("Primitive" in clean_name)
+				var is_dominion = not is_nightmare and not is_winter and not is_void and not is_rimworlder and not is_pirate and not is_reach and not is_plague and not is_gilded and not is_primitive and not is_wildlife
 				
 				var valid = false
 				if theme == "Void" and is_void: valid = true
@@ -1143,6 +1171,7 @@ func generate_themed_deck(theme: String) -> Array:
 				elif (theme == "Planetary Primitives" or theme == "Primitives") and is_primitive: valid = true
 				elif (theme == "Galactic Wildlife" or theme == "Wildlife") and is_wildlife: valid = true
 				elif (theme == "The Nightmare Court" or theme == "Nightmare" or theme == "Halloween") and is_nightmare: valid = true
+				elif (theme == "The Winter Court" or theme == "Winter" or theme == "Yuletide") and is_winter: valid = true
 				
 				if valid:
 					var res = load("res://Data/Cards/" + clean_name)

@@ -201,6 +201,15 @@ func _get_card_faction_style(c_name: String) -> Dictionary:
 			"glyph": "* HALLOW *",
 			"text": Color(1.0, 0.84, 0.45, 1.0)
 		}
+	elif "Winter" in c_name or "Yuletide" in c_name or "Yule" in c_name:
+		return {
+			"tag": "WINTER",
+			"bg": Color(0.06, 0.14, 0.25, 1.0),
+			"art": Color(0.12, 0.26, 0.45, 1.0),
+			"border": Color(0.45, 0.90, 1.0, 1.0),
+			"glyph": "* YULE *",
+			"text": Color(0.85, 0.96, 1.0, 1.0)
+		}
 	elif "Wildlife" in c_name:
 		return {
 			"tag": "WILDLIFE",

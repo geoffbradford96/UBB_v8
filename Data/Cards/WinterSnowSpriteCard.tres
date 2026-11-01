@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/CardData.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://Scenes/Units/WinterSnowSprite.tscn" id="2_scene"]
+
+[resource]
+script = ExtResource("1_script")
+card_name = "WinterSnowSprite"
+card_type = "Flyer"
+cost = 2.0
+is_spell = false
+spawn_count = 3
+max_hp = 65.0
+is_melee = false
+description = "Winged Snow Sprites. Tiny floating ice fae that pelt enemies from above with rapid freezing needles."
+unit_scene = ExtResource("2_scene")
