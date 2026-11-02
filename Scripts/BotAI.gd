@@ -15,8 +15,8 @@ var active_commander: Node3D = null
 
 @export var my_team: String = "SideB"
 @export var enemy_team: String = "SideA"
-@export var difficulty: String = "MEDIUM"
-@export var archetype: String = "" # "Dominion", "The Reach", "Pirates", "Rimworlders", "Void", "Plague of Harmony", "Gilded Harmony", "Planetary Primitives", "Chaos"
+@export var difficulty: String = "MEDIUM" # "EASY", "MEDIUM", "HARD", "NIGHTMARE"
+@export var archetype: String = "" # "Dominion", "The Reach", "Pirates", "Rimworlders", "Void", "Plague of Harmony", "Gilded Harmony", "Planetary Primitives", "Galactic Wildlife", "The Nightmare Court", "The Winter Court", "The Magma Born", "Chaos"
 var slot_index: int = 0
 
 var profile: String = ""
@@ -32,6 +32,20 @@ func _get_game_state():
 	return null
 
 func _ready():
+	# Initialize baseline rates and think intervals matching difficulty tiers
+	if difficulty == "EASY":
+		requisition_rate = 0.4
+		think_interval = 1.3
+	elif difficulty == "HARD":
+		requisition_rate = 0.6
+		think_interval = 0.7
+	elif difficulty == "NIGHTMARE":
+		requisition_rate = 0.75
+		think_interval = 0.45
+	else:
+		requisition_rate = 0.5
+		think_interval = 1.0
+
 	var gs = _get_game_state()
 	var ai_pool = ["Dominion", "The Reach", "Pirates", "Rimworlders", "Void", "Plague of Harmony", "Gilded Harmony", "Planetary Primitives", "Galactic Wildlife", "The Nightmare Court", "The Winter Court", "The Magma Born", "Chaos"]
 	if archetype != "":
@@ -88,7 +102,7 @@ func _process(delta):
 	var active_interval = think_interval
 	var am_scene = (get_tree().current_scene if (get_tree() and get_tree().current_scene) else get_parent())
 	if am_scene and am_scene.get("sudden_death_active"):
-		active_interval = min(active_interval, 0.55)
+		active_interval = min(active_interval, 0.40)
 		
 	think_timer += delta
 	if think_timer >= active_interval:
@@ -113,7 +127,9 @@ func _get_card_faction(card: CardData) -> String:
 	if card == null:
 		return "Dominion"
 	var cname: String = card.card_name
-	if "Nightmare" in cname or "Halloween" in cname:
+	if "Magma" in cname:
+		return "The Magma Born"
+	elif "Nightmare" in cname or "Halloween" in cname:
 		return "The Nightmare Court"
 	elif "Winter" in cname or "Yuletide" in cname or "Yule" in cname:
 		return "The Winter Court"
@@ -180,6 +196,12 @@ func assess_threats() -> Dictionary:
 				
 	var all_hostiles = []
 	var high_value_hostiles = []
+	var enemy_flyers = []
+	var enemy_tanks = []
+	var enemy_swarms = []
+	var enemy_commanders = []
+	var enemy_ranged = []
+
 	for node in get_tree().get_nodes_in_group("Targetable"):
 		if node != null and is_instance_valid(node) and not node.is_in_group(my_team):
 			var hc = node.get_node_or_null("HealthComponent")
@@ -209,8 +231,31 @@ func assess_threats() -> Dictionary:
 					continue # Ignore neutral creatures outside of dangerous proximity
 					
 			all_hostiles.append(node)
-			if hc and hc.max_health >= 220.0 and not ("Base" in node.name or "Tower" in node.name) and not node.is_in_group("CommanderUnit"):
+			var nname: String = node.name
+			var is_struct: bool = ("Base" in nname or "Tower" in nname or "CommandBay" in nname)
+			var is_commander: bool = node.is_in_group("CommanderUnit") or "Commander" in nname or "Overlord" in nname or "King" in nname or "Queen" in nname or "Chieftain" in nname or "Lord" in nname
+			
+			if is_commander:
+				enemy_commanders.append(node)
+
+			if hc and hc.max_health >= 220.0 and not is_struct and not is_commander:
 				high_value_hostiles.append(node)
+			
+			# Enemy flyer categorization
+			if node.is_in_group("Flying") or "Plane" in nname or "Flyer" in nname or "Beetle" in nname or "Jellyfish" in nname or "Gargoyle" in nname or "Eagle" in nname or "Condor" in nname or "Raven" in nname or "Owl" in nname or "Hornet" in nname or "Bat" in nname or "Pyrodactyl" in nname or "Dragon" in nname or "Falcon" in nname or "Hawk" in nname or "Goose" in nname:
+				enemy_flyers.append(node)
+				
+			# Enemy heavy tank / titan categorization
+			if not is_struct and (("Tank" in nname or "Mech" in nname or "Leviathan" in nname or "Monstrous" in nname or "Golem" in nname or "Elephant" in nname or "Mammoth" in nname or "Rhino" in nname or "Yeti" in nname or "Croc" in nname or "BoneGiant" in nname or "Nutcracker" in nname or "Octopus" in nname) or (hc and hc.max_health >= 240.0)):
+				enemy_tanks.append(node)
+				
+			# Enemy swarm / light unit categorization
+			if not is_struct and not is_commander and ((hc and hc.max_health <= 115.0) or ("Crawler" in nname or "Spiker" in nname or "Imp" in nname or "Swarm" in nname or "Ant" in nname or "Clubber" in nname or "Grunt" in nname or "Zombie" in nname or "Skeleton" in nname or "ToySoldier" in nname or "MeleeEye" in nname)):
+				enemy_swarms.append(node)
+				
+			# Enemy ranged / sniper categorization
+			if not is_struct and ("Sniper" in nname or "Ranged" in nname or "Gunner" in nname or "Archer" in nname or "Spitter" in nname or "Catapult" in nname or "Crossbow" in nname or "Rocket" in nname or "Archerfish" in nname or "PistolShrimp" in nname or "SpittingCobra" in nname):
+				enemy_ranged.append(node)
 			
 	var endangered_structure: Node3D = null
 	var highest_threat_score: float = 0.0
@@ -267,9 +312,46 @@ func assess_threats() -> Dictionary:
 		"closest_hostile": closest_hostile,
 		"hostiles_near_endangered": hostiles_near_endangered,
 		"high_value_hostiles": high_value_hostiles,
+		"enemy_flyers": enemy_flyers,
+		"enemy_flyers_count": enemy_flyers.size(),
+		"enemy_tanks": enemy_tanks,
+		"enemy_tanks_count": enemy_tanks.size(),
+		"enemy_swarms": enemy_swarms,
+		"enemy_swarms_count": enemy_swarms.size(),
+		"enemy_commanders": enemy_commanders,
+		"enemy_commanders_count": enemy_commanders.size(),
+		"enemy_ranged": enemy_ranged,
+		"enemy_ranged_count": enemy_ranged.size(),
 		"my_base": my_base,
 		"structures": my_structures
 	}
+
+# Computes tactical counter-picking priority bonuses based on observed enemy composition
+func _get_counter_pick_score(card: CardData, threat_info: Dictionary) -> float:
+	var bonus: float = 0.0
+	var cname: String = card.card_name
+
+	# 1. Counter enemy flyers: prioritize anti-air missiles, snipers, spitters, catapults, aerial interceptors
+	if threat_info.get("enemy_flyers_count", 0) > 0:
+		if "Plane" in cname or "Flyer" in cname or "Rocket" in cname or "Sniper" in cname or "Spitter" in cname or "Archer" in cname or "Catapult" in cname or "Crossbow" in cname or "Archerfish" in cname or "PistolShrimp" in cname or "SpittingCobra" in cname or "Eagle" in cname or "Hornet" in cname or "Pyrodactyl" in cname or "TurretSpire" in cname or "BlizzardWitch" in cname:
+			bonus += 28.0
+
+	# 2. Counter enemy heavy armor / tanks: prioritize armor-piercing hunters, conversion beams, acid corruptors, titans
+	if threat_info.get("enemy_tanks_count", 0) > 0:
+		if "Infector" in cname or "Corruptor" in cname or "Hunter" in cname or "CallArtillery" in cname or "Meteor" in cname or "ColossalDragon" in cname or "Golem" in cname or "Leviathan" in cname or "BoneGiant" in cname or "ToyGolem" in cname or "SavedHorde" in cname or "HeavyTank" in cname or "Mech" in cname:
+			bonus += 26.0
+
+	# 3. Counter enemy swarms: prioritize AoE spells, splash artillery, poison gas, defensive spires, cleavers
+	if threat_info.get("enemy_swarms_count", 0) >= 3:
+		if card.is_spell or "JackOLantern" in cname or "Catapult" in cname or "TurretSpire" in cname or "WoodTower" in cname or "Bombardier" in cname or "BlizzardWitch" in cname or "ShieldTank" in cname or "ArmoredTank" in cname or "BatSwarm" in cname or "FireImp" in cname:
+			bonus += 25.0
+
+	# 4. Counter enemy commanders: prioritize dedicated assassins and high burst damage hunters
+	if threat_info.get("enemy_commanders_count", 0) > 0:
+		if "HeroHunter" in cname or "ReachHunter" in cname or "ScrapHunter" in cname or "Assassin" in cname or "VoidStalker" in cname or "VampireDuelist" in cname:
+			bonus += 22.0
+
+	return bonus
 
 var push_lane_toggle: bool = false
 
@@ -293,7 +375,7 @@ func evaluate_moves():
 			mobile_unit_count += 1
 			var uhc = u.get_node_or_null("HealthComponent")
 			if uhc and not uhc.is_dead:
-				if uhc.max_health >= 180.0 or "Melee" in u.name or "Tank" in u.name or "Mech" in u.name or "Leviathan" in u.name:
+				if uhc.max_health >= 180.0 or "Melee" in u.name or "Tank" in u.name or "Mech" in u.name or "Leviathan" in u.name or "Golem" in u.name or "Grunt" in u.name:
 					friendly_screens += 1
 				if ("Tank" in u.name or "Mech" in u.name or "Walker" in u.name) and uhc.current_health < uhc.max_health * 0.85:
 					friendly_damaged_vehicles += 1
@@ -314,20 +396,32 @@ func evaluate_moves():
 	if valid_hand.is_empty():
 		return
 
-	# Calculate banking modifier based on team size, FFA caution, and asymmetric energy multiplier
+	# Calculate banking modifier based on difficulty, team size, FFA caution, and asymmetric energy multiplier
 	var bank_scale: float = 1.0
+	var counter_pick_chance: float = 0.40
+	if difficulty == "EASY":
+		bank_scale = 0.65 # Spends quickly, rarely banks
+		counter_pick_chance = 0.0 # Naive/random picking
+	elif difficulty == "MEDIUM":
+		bank_scale = 1.0 # Standard balanced banking
+		counter_pick_chance = 0.40
+	elif difficulty == "HARD":
+		bank_scale = 1.25 # Disciplined combo banking
+		counter_pick_chance = 0.75
+	elif difficulty == "NIGHTMARE":
+		bank_scale = 1.45 # Master banking, executes deadly combined pushes
+		counter_pick_chance = 1.00 # Perfect tactical counter-picking
+
 	if team_ctx.get("is_coalition_swarm", false):
-		# Energy-penalized larger team: don't sit waiting for huge banks, deploy cost-efficient waves sooner
-		bank_scale = 0.78
+		bank_scale *= 0.82
 	elif team_ctx.get("is_outnumbered_boss", false):
-		# High-energy boss side: deploy assertive multi-unit waves
-		bank_scale = 0.90
+		bank_scale *= 0.92
 	if team_ctx.get("is_ffa", false):
-		# In 3P-25P Free-For-All, keep a slight defensive reserve unless threatened
 		bank_scale *= 1.12
 	if gs and gs.is_koth_mode():
-		# Contest the Hill early!
 		bank_scale *= 0.85
+
+	var apply_counter_pick: bool = (randf() < counter_pick_chance)
 
 	# If Commander died, prioritize deploying Commander from hand to lead the army
 	if not has_commander:
@@ -345,7 +439,7 @@ func evaluate_moves():
 				return a.cost > b.cost
 			)
 
-	# In emergency defense mode, prioritize spells, infectors (against heavy targets), and immediate affordable units!
+	# In emergency defense mode, prioritize spells, hard counters, and immediate affordable units!
 	if threat_info.threat_score > 20.0:
 		valid_hand.sort_custom(func(a, b):
 			if a.is_spell and not b.is_spell: return true
@@ -354,252 +448,300 @@ func evaluate_moves():
 			var b_afford = current_requisition >= b.cost
 			if a_afford and not b_afford: return true
 			if not a_afford and b_afford: return false
+			var a_cp = _get_counter_pick_score(a, threat_info) if apply_counter_pick else 0.0
+			var b_cp = _get_counter_pick_score(b, threat_info) if apply_counter_pick else 0.0
+			if abs(a_cp - b_cp) > 5.0:
+				return a_cp > b_cp
 			return a.cost > b.cost
 		)
 	else:
 		# Faction & Mixed ("Chaos") strategic tempo and card ordering:
 		if archetype == "Void":
 			# Void Swarm attacks relentlessly at low energy (2.5+)
-			if current_requisition < (2.5 * bank_scale) and threat_info.threat_score < 8.0:
+			var void_bank = 2.4 * bank_scale
+			if difficulty == "EASY": void_bank = minf(void_bank, 2.5)
+			if current_requisition < void_bank and threat_info.threat_score < 8.0:
 				return
 			valid_hand.sort_custom(func(a, b):
-				# In KotH or multi-lane maps, prioritize Crawlers/Spikers/Gargoyles to flood lanes
-				if a.is_spell != b.is_spell:
-					return not a.is_spell
+				var a_prio = (_get_counter_pick_score(a, threat_info) if apply_counter_pick else 0.0)
+				var b_prio = (_get_counter_pick_score(b, threat_info) if apply_counter_pick else 0.0)
+				if "Crawler" in a.card_name or "Spiker" in a.card_name: a_prio += 15.0
+				elif "Corruptor" in a.card_name and threat_info.enemy_tanks_count > 0: a_prio += 25.0
+				if "Crawler" in b.card_name or "Spiker" in b.card_name: b_prio += 15.0
+				elif "Corruptor" in b.card_name and threat_info.enemy_tanks_count > 0: b_prio += 25.0
+				if abs(a_prio - b_prio) > 3.0:
+					return a_prio > b_prio
+				if a.is_spell != b.is_spell: return not a.is_spell
 				return a.cost < b.cost
 			)
 		elif archetype == "The Reach":
 			# The Reach banks to deploy 2+ cybernetic units together for the +15% to +75% network synergy
-			var reach_bank = 5.5 * bank_scale if (difficulty == "HARD" or difficulty == "NIGHTMARE") else 4.2 * bank_scale
+			var reach_bank = 5.5 * bank_scale if (difficulty == "HARD" or difficulty == "NIGHTMARE") else 4.0 * bank_scale
+			if difficulty == "EASY": reach_bank = 3.0
 			if threat_info.threat_score < 10.0 and current_requisition < reach_bank:
 				return
 			valid_hand.sort_custom(func(a, b):
-				# Deploy ReachTank / ReachMech / ReachShieldInfantry / Commander anchor first, then Trooper/Ranged/Support cluster
-				var a_anchor = "Tank" in a.card_name or "Mech" in a.card_name or "Shield" in a.card_name or a.card_type == "Commander"
-				var b_anchor = "Tank" in b.card_name or "Mech" in b.card_name or "Shield" in b.card_name or b.card_type == "Commander"
-				if a_anchor != b_anchor:
-					return a_anchor
+				var a_prio = (_get_counter_pick_score(a, threat_info) if apply_counter_pick else 0.0)
+				var b_prio = (_get_counter_pick_score(b, threat_info) if apply_counter_pick else 0.0)
+				if "Tank" in a.card_name or "Mech" in a.card_name or "Shield" in a.card_name: a_prio += 20.0
+				if friendly_damaged_vehicles > 0 and "Repair" in a.card_name: a_prio += 22.0
+				if "Tank" in b.card_name or "Mech" in b.card_name or "Shield" in b.card_name: b_prio += 20.0
+				if friendly_damaged_vehicles > 0 and "Repair" in b.card_name: b_prio += 22.0
+				if abs(a_prio - b_prio) > 4.0:
+					return a_prio > b_prio
 				return a.cost > b.cost
 			)
 		elif archetype == "Pirates":
-			# Pirates love sudden 2-card salvage pushes (ScrapTank / ScrapMech / ScrapArmoredInfantry vanguard + ScrapRepair)
-			var pirate_bank = 5.5 * bank_scale if (difficulty == "HARD" or difficulty == "NIGHTMARE") else 4.0 * bank_scale
+			# Pirates love sudden 2-card salvage pushes (ScrapTank / ScrapMech vanguard + ScrapRepair)
+			var pirate_bank = 5.5 * bank_scale if (difficulty == "HARD" or difficulty == "NIGHTMARE") else 3.8 * bank_scale
+			if difficulty == "EASY": pirate_bank = 3.0
 			if threat_info.threat_score < 10.0 and current_requisition < pirate_bank:
 				return
 			valid_hand.sort_custom(func(a, b):
-				if friendly_damaged_vehicles > 0:
-					if "Repair" in a.card_name and not "Repair" in b.card_name: return true
-					if not "Repair" in a.card_name and "Repair" in b.card_name: return false
-				var a_vanguard = "ScrapTank" in a.card_name or "ScrapMech" in a.card_name or "ScrapArmored" in a.card_name
-				var b_vanguard = "ScrapTank" in b.card_name or "ScrapMech" in b.card_name or "ScrapArmored" in b.card_name
-				if a_vanguard != b_vanguard:
-					return a_vanguard
+				var a_prio = (_get_counter_pick_score(a, threat_info) if apply_counter_pick else 0.0)
+				var b_prio = (_get_counter_pick_score(b, threat_info) if apply_counter_pick else 0.0)
+				if friendly_damaged_vehicles > 0 and "Repair" in a.card_name: a_prio += 25.0
+				elif "ScrapTank" in a.card_name or "ScrapMech" in a.card_name or "ScrapArmored" in a.card_name: a_prio += 18.0
+				if friendly_damaged_vehicles > 0 and "Repair" in b.card_name: b_prio += 25.0
+				elif "ScrapTank" in b.card_name or "ScrapMech" in b.card_name or "ScrapArmored" in b.card_name: b_prio += 18.0
+				if abs(a_prio - b_prio) > 4.0:
+					return a_prio > b_prio
 				return a.cost > b.cost
 			)
 		elif archetype == "Rimworlders":
 			# Rimworlders lead with Leviathan/Monstrous/Octopus sponges, then GreatBeastSpeaker for +20% Beast Aura
-			var rim_bank = 5.0 * bank_scale if (difficulty == "HARD" or difficulty == "NIGHTMARE") else 3.8 * bank_scale
+			var rim_bank = 5.2 * bank_scale if (difficulty == "HARD" or difficulty == "NIGHTMARE") else 3.8 * bank_scale
+			if difficulty == "EASY": rim_bank = 3.2
 			if threat_info.threat_score < 10.0 and current_requisition < rim_bank:
 				return
 			valid_hand.sort_custom(func(a, b):
-				if friendly_screens >= 2:
-					if "GreatBeastSpeaker" in a.card_name and not "GreatBeastSpeaker" in b.card_name: return true
-					if not "GreatBeastSpeaker" in a.card_name and "GreatBeastSpeaker" in b.card_name: return false
-				var a_is_beast = "Leviathan" in a.card_name or "Monstrous" in a.card_name or "Octopus" in a.card_name or "Squid" in a.card_name or "Mutant" in a.card_name or "Beetle" in a.card_name
-				var b_is_beast = "Leviathan" in b.card_name or "Monstrous" in b.card_name or "Octopus" in b.card_name or "Squid" in b.card_name or "Mutant" in b.card_name or "Beetle" in b.card_name
-				if a_is_beast and not b_is_beast: return true
-				if not a_is_beast and b_is_beast: return false
+				var a_prio = (_get_counter_pick_score(a, threat_info) if apply_counter_pick else 0.0)
+				var b_prio = (_get_counter_pick_score(b, threat_info) if apply_counter_pick else 0.0)
+				if friendly_screens >= 2 and "GreatBeastSpeaker" in a.card_name: a_prio += 28.0
+				elif "Leviathan" in a.card_name or "Monstrous" in a.card_name or "Octopus" in a.card_name or "Squid" in a.card_name: a_prio += 22.0
+				if friendly_screens >= 2 and "GreatBeastSpeaker" in b.card_name: b_prio += 28.0
+				elif "Leviathan" in b.card_name or "Monstrous" in b.card_name or "Octopus" in b.card_name or "Squid" in b.card_name: b_prio += 22.0
+				if abs(a_prio - b_prio) > 4.0:
+					return a_prio > b_prio
 				return a.cost > b.cost
 			)
 		elif archetype == "Dominion":
 			# Dominion establishes forward CommandBay, then HeavyTank/DominionShieldTank/DominionMech + RepairMan/Medic/Sniper
 			var dom_bank = 5.8 * bank_scale if (difficulty == "HARD" or difficulty == "NIGHTMARE") else 4.2 * bank_scale
+			if difficulty == "EASY": dom_bank = 3.2
 			if threat_info.threat_score < 10.0 and current_requisition < dom_bank:
 				return
 			valid_hand.sort_custom(func(a, b):
-				if "CommandBay" in a.card_name and not "CommandBay" in b.card_name: return true
-				if not "CommandBay" in a.card_name and "CommandBay" in b.card_name: return false
-				if friendly_damaged_vehicles > 0:
-					if "Repair" in a.card_name and not "Repair" in b.card_name: return true
-					if not "Repair" in a.card_name and "Repair" in b.card_name: return false
+				var a_prio = (_get_counter_pick_score(a, threat_info) if apply_counter_pick else 0.0)
+				var b_prio = (_get_counter_pick_score(b, threat_info) if apply_counter_pick else 0.0)
+				if "CommandBay" in a.card_name: a_prio += 24.0
+				elif friendly_damaged_vehicles > 0 and "Repair" in a.card_name: a_prio += 26.0
+				elif "HeavyTank" in a.card_name or "ShieldTank" in a.card_name or "DominionMech" in a.card_name: a_prio += 20.0
+				if "CommandBay" in b.card_name: b_prio += 24.0
+				elif friendly_damaged_vehicles > 0 and "Repair" in b.card_name: b_prio += 26.0
+				elif "HeavyTank" in b.card_name or "ShieldTank" in b.card_name or "DominionMech" in b.card_name: b_prio += 20.0
+				if abs(a_prio - b_prio) > 4.0:
+					return a_prio > b_prio
 				return a.cost > b.cost
 			)
 		elif archetype == "Plague of Harmony":
 			# Plague of Harmony deploys Eye Creatures, Armored Tanks & Husks first as a screen, and uses Infector when screens or high-value enemy targets exist
 			var plague_bank = 5.0 * bank_scale if (difficulty == "HARD" or difficulty == "NIGHTMARE") else 3.8 * bank_scale
+			if difficulty == "EASY": plague_bank = 3.0
 			if threat_info.threat_score < 10.0 and current_requisition < plague_bank:
 				return
-			var has_hv_target: bool = threat_info["high_value_hostiles"].size() > 0
 			valid_hand.sort_custom(func(a, b):
-				if (has_hv_target or friendly_screens >= 1):
-					if "Infector" in a.card_name and not "Infector" in b.card_name: return true
-					if not "Infector" in a.card_name and "Infector" in b.card_name: return false
-				var a_screen = "MeleeEye" in a.card_name or "EnlightenedMelee" in a.card_name or "PlagueArmored" in a.card_name or "PlagueCommander" in a.card_name or "EyeOfHarmony" in a.card_name
-				var b_screen = "MeleeEye" in b.card_name or "EnlightenedMelee" in b.card_name or "PlagueArmored" in b.card_name or "PlagueCommander" in b.card_name or "EyeOfHarmony" in b.card_name
-				if a_screen != b_screen:
-					return a_screen
+				var a_prio = (_get_counter_pick_score(a, threat_info) if apply_counter_pick else 0.0)
+				var b_prio = (_get_counter_pick_score(b, threat_info) if apply_counter_pick else 0.0)
+				if (threat_info.enemy_tanks_count > 0 or friendly_screens >= 1) and "Infector" in a.card_name: a_prio += 28.0
+				elif "Armored" in a.card_name or "EnlightenedTank" in a.card_name or "MeleeEye" in a.card_name: a_prio += 18.0
+				if (threat_info.enemy_tanks_count > 0 or friendly_screens >= 1) and "Infector" in b.card_name: b_prio += 28.0
+				elif "Armored" in b.card_name or "EnlightenedTank" in b.card_name or "MeleeEye" in b.card_name: b_prio += 18.0
+				if abs(a_prio - b_prio) > 4.0:
+					return a_prio > b_prio
 				return a.cost > b.cost
 			)
 		elif archetype == "Gilded Harmony":
-			# Gilded Harmony banks for The Saved Horde (11 cost) when safe, or deploys dividing Genetic Monsters + GildedShieldTank + GildedInfector
+			# Gilded Harmony banks for The Saved Horde (11 cost) when safe on Hard/Nightmare, or deploys dividing Genetic Monsters + GildedShieldTank + GildedInfector
 			var has_saved_horde = false
 			for hc_card in valid_hand:
 				if "SavedHorde" in hc_card.card_name:
 					has_saved_horde = true
 					break
-			if has_saved_horde and threat_info.threat_score < 14.0 and current_requisition < 11.0 and current_requisition >= (6.0 * bank_scale):
+			if has_saved_horde and (difficulty == "HARD" or difficulty == "NIGHTMARE") and threat_info.threat_score < 14.0 and current_requisition < 11.0 and current_requisition >= (6.0 * bank_scale):
 				return # Save up for the 6-unit Saved Horde!
 			var gilded_bank = 5.0 * bank_scale if (difficulty == "HARD" or difficulty == "NIGHTMARE") else 3.8 * bank_scale
+			if difficulty == "EASY": gilded_bank = 3.0
 			if threat_info.threat_score < 10.0 and current_requisition < gilded_bank:
 				return
 			valid_hand.sort_custom(func(a, b):
-				if "SavedHorde" in a.card_name and current_requisition >= 11.0: return true
-				if "SavedHorde" in b.card_name and current_requisition >= 11.0: return false
-				var a_mitosis = "Genetic" in a.card_name or "GildedShield" in a.card_name
-				var b_mitosis = "Genetic" in b.card_name or "GildedShield" in b.card_name
-				if a_mitosis != b_mitosis:
-					return a_mitosis
+				var a_prio = (_get_counter_pick_score(a, threat_info) if apply_counter_pick else 0.0)
+				var b_prio = (_get_counter_pick_score(b, threat_info) if apply_counter_pick else 0.0)
+				if "SavedHorde" in a.card_name and current_requisition >= 11.0: a_prio += 35.0
+				elif "Genetic" in a.card_name or "GildedShield" in a.card_name: a_prio += 18.0
+				if "SavedHorde" in b.card_name and current_requisition >= 11.0: b_prio += 35.0
+				elif "Genetic" in b.card_name or "GildedShield" in b.card_name: b_prio += 18.0
+				if abs(a_prio - b_prio) > 4.0:
+					return a_prio > b_prio
 				return a.cost > b.cost
 			)
 		elif archetype == "Planetary Primitives":
 			# Planetary Primitives: aggressive low-cost tempo, deploys PrimitiveWoodTower & Builders early, then infantry swarms backed by Knights & Crossbowmen
-			var prim_bank = 2.5 * bank_scale
+			var prim_bank = 2.6 * bank_scale
+			if difficulty == "EASY": prim_bank = minf(prim_bank, 2.5)
 			if threat_info.threat_score < 8.0 and current_requisition < prim_bank:
 				return
 			valid_hand.sort_custom(func(a, b):
-				var a_prio = 0
-				var b_prio = 0
-				if "WoodTower" in a.card_name or "Builder" in a.card_name: a_prio += 25
-				elif a.card_type == "Commander": a_prio += 20
-				elif "Knight" in a.card_name: a_prio += 18
-				elif "Crossbowman" in a.card_name or "ShortBow" in a.card_name: a_prio += 15
-				elif "Clubber" in a.card_name or "Spearman" in a.card_name or "Squire" in a.card_name: a_prio += 12
+				var a_prio = (_get_counter_pick_score(a, threat_info) if apply_counter_pick else 0.0)
+				var b_prio = (_get_counter_pick_score(b, threat_info) if apply_counter_pick else 0.0)
+				if "WoodTower" in a.card_name or "Builder" in a.card_name: a_prio += 25.0
+				elif a.card_type == "Commander": a_prio += 22.0
+				elif "Knight" in a.card_name: a_prio += 18.0
+				elif "Crossbowman" in a.card_name or "ShortBow" in a.card_name: a_prio += 15.0
+				elif "Clubber" in a.card_name or "Spearman" in a.card_name or "Squire" in a.card_name: a_prio += 12.0
 				
-				if "WoodTower" in b.card_name or "Builder" in b.card_name: b_prio += 25
-				elif b.card_type == "Commander": b_prio += 20
-				elif "Knight" in b.card_name: b_prio += 18
-				elif "Crossbowman" in b.card_name or "ShortBow" in b.card_name: b_prio += 15
-				elif "Clubber" in b.card_name or "Spearman" in b.card_name or "Squire" in b.card_name: b_prio += 12
+				if "WoodTower" in b.card_name or "Builder" in b.card_name: b_prio += 25.0
+				elif b.card_type == "Commander": b_prio += 22.0
+				elif "Knight" in b.card_name: b_prio += 18.0
+				elif "Crossbowman" in b.card_name or "ShortBow" in b.card_name: b_prio += 15.0
+				elif "Clubber" in b.card_name or "Spearman" in b.card_name or "Squire" in b.card_name: b_prio += 12.0
 				
-				if a_prio != b_prio:
+				if abs(a_prio - b_prio) > 3.0:
 					return a_prio > b_prio
 				return a.cost < b.cost # Prefer quick cheap deployments
 			)
 		elif archetype == "Galactic Wildlife":
 			# Galactic Wildlife: nature's primal swarm, apex predators, and aerial harassment
 			var wild_bank = 3.2 * bank_scale
+			if difficulty == "EASY": wild_bank = minf(wild_bank, 2.8)
 			if threat_info.threat_score < 8.0 and current_requisition < wild_bank:
 				return
 			valid_hand.sort_custom(func(a, b):
-				var a_prio = 0
-				var b_prio = 0
-				if a.card_type == "Commander": a_prio += 30
+				var a_prio = (_get_counter_pick_score(a, threat_info) if apply_counter_pick else 0.0)
+				var b_prio = (_get_counter_pick_score(b, threat_info) if apply_counter_pick else 0.0)
+				if a.card_type == "Commander": a_prio += 30.0
 				elif "Mammoth" in a.card_name or "Megalodon" in a.card_name or "Croc" in a.card_name or "Grizzly" in a.card_name or "Gorilla" in a.card_name or "Elephant" in a.card_name or "Hippo" in a.card_name or "Rhino" in a.card_name:
-					a_prio += 24 # Apex frontline vanguard
+					a_prio += 24.0 # Apex frontline vanguard
 				elif "Eagle" in a.card_name or "Condor" in a.card_name or "Raven" in a.card_name or "Owl" in a.card_name or "Hornet" in a.card_name or "Bat" in a.card_name:
-					a_prio += 20 # Aerial harassment along flanks
+					a_prio += 20.0 # Aerial harassment along flanks
 				elif "Archerfish" in a.card_name or "PistolShrimp" in a.card_name or "Bombardier" in a.card_name or "SpittingCobra" in a.card_name or "Monkey" in a.card_name:
-					a_prio += (18 if friendly_screens >= 1 else 10) # Ranged artillery/spitters behind screens
+					a_prio += (18.0 if friendly_screens >= 1 else 10.0) # Ranged artillery/spitters behind screens
 				elif "Snake" in a.card_name or "Scorpion" in a.card_name or "Spider" in a.card_name or "Centipede" in a.card_name:
-					a_prio += 15 # Venomous skirmishers
+					a_prio += 15.0 # Venomous skirmishers
 				else:
-					a_prio += 12 # Swarm pack
+					a_prio += 12.0 # Swarm pack
 
-				if b.card_type == "Commander": b_prio += 30
+				if b.card_type == "Commander": b_prio += 30.0
 				elif "Mammoth" in b.card_name or "Megalodon" in b.card_name or "Croc" in b.card_name or "Grizzly" in b.card_name or "Gorilla" in b.card_name or "Elephant" in b.card_name or "Hippo" in b.card_name or "Rhino" in b.card_name:
-					b_prio += 24
+					b_prio += 24.0
 				elif "Eagle" in b.card_name or "Condor" in b.card_name or "Raven" in b.card_name or "Owl" in b.card_name or "Hornet" in b.card_name or "Bat" in b.card_name:
-					b_prio += 20
+					b_prio += 20.0
 				elif "Archerfish" in b.card_name or "PistolShrimp" in b.card_name or "Bombardier" in b.card_name or "SpittingCobra" in b.card_name or "Monkey" in b.card_name:
-					b_prio += (18 if friendly_screens >= 1 else 10)
+					b_prio += (18.0 if friendly_screens >= 1 else 10.0)
 				elif "Snake" in b.card_name or "Scorpion" in b.card_name or "Spider" in b.card_name or "Centipede" in b.card_name:
-					b_prio += 15
+					b_prio += 15.0
 				else:
-					b_prio += 12
+					b_prio += 12.0
 
-				if a_prio != b_prio:
+				if abs(a_prio - b_prio) > 3.0:
 					return a_prio > b_prio
 				return a.cost < b.cost
 			)
-		elif archetype == "The Nightmare Court" or archetype == "Nightmare":
+		elif archetype == "The Nightmare Court" or archetype == "Nightmare" or archetype == "Halloween":
 			# Nightmare Court: Undead swarms, Vampiric lifestealers, Hellfire Demon Knights, and Jack-o'-Lantern gas-bombers
 			var night_bank = 3.6 * bank_scale
+			if difficulty == "EASY": night_bank = minf(night_bank, 3.0)
 			if threat_info.threat_score < 8.0 and current_requisition < night_bank:
 				return
 			valid_hand.sort_custom(func(a, b):
-				var a_prio = 0
-				var b_prio = 0
+				var a_prio = (_get_counter_pick_score(a, threat_info) if apply_counter_pick else 0.0)
+				var b_prio = (_get_counter_pick_score(b, threat_info) if apply_counter_pick else 0.0)
 				# 1. Frontline meat sponges / bone giants
-				if "Zombie" in a.card_name or "BoneGiant" in a.card_name or "DemonKnight" in a.card_name: a_prio += 25
-				elif a.card_type == "Commander": a_prio += 22
-				elif "Werewolf" in a.card_name or "HornedDemon" in a.card_name: a_prio += 20
-				elif "JackOLantern" in a.card_name: a_prio += 18 # Gas bomber into the fray
-				elif "Vampire" in a.card_name or "BatSwarm" in a.card_name: a_prio += 16
-				elif "SkeletonArcher" in a.card_name or "FireImp" in a.card_name: a_prio += (17 if friendly_screens >= 1 else 10)
-				else: a_prio += 12
+				if "Zombie" in a.card_name or "BoneGiant" in a.card_name or "DemonKnight" in a.card_name: a_prio += 25.0
+				elif a.card_type == "Commander": a_prio += 22.0
+				elif "Werewolf" in a.card_name or "HornedDemon" in a.card_name: a_prio += 20.0
+				elif "JackOLantern" in a.card_name: a_prio += (26.0 if threat_info.enemy_swarms_count >= 2 else 18.0) # Gas bomber
+				elif "Vampire" in a.card_name or "BatSwarm" in a.card_name: a_prio += 16.0
+				elif "SkeletonArcher" in a.card_name or "FireImp" in a.card_name: a_prio += (18.0 if friendly_screens >= 1 else 10.0)
+				else: a_prio += 12.0
 
-				if "Zombie" in b.card_name or "BoneGiant" in b.card_name or "DemonKnight" in b.card_name: b_prio += 25
-				elif b.card_type == "Commander": b_prio += 22
-				elif "Werewolf" in b.card_name or "HornedDemon" in b.card_name: b_prio += 20
-				elif "JackOLantern" in b.card_name: b_prio += 18
-				elif "Vampire" in b.card_name or "BatSwarm" in b.card_name: b_prio += 16
-				elif "SkeletonArcher" in b.card_name or "FireImp" in b.card_name: b_prio += (17 if friendly_screens >= 1 else 10)
-				else: b_prio += 12
+				if "Zombie" in b.card_name or "BoneGiant" in b.card_name or "DemonKnight" in b.card_name: b_prio += 25.0
+				elif b.card_type == "Commander": b_prio += 22.0
+				elif "Werewolf" in b.card_name or "HornedDemon" in b.card_name: b_prio += 20.0
+				elif "JackOLantern" in b.card_name: b_prio += (26.0 if threat_info.enemy_swarms_count >= 2 else 18.0)
+				elif "Vampire" in b.card_name or "BatSwarm" in b.card_name: b_prio += 16.0
+				elif "SkeletonArcher" in b.card_name or "FireImp" in b.card_name: b_prio += (18.0 if friendly_screens >= 1 else 10.0)
+				else: b_prio += 12.0
 
-				if a_prio != b_prio:
+				if abs(a_prio - b_prio) > 3.0:
 					return a_prio > b_prio
 				return a.cost < b.cost
 			)
 		elif archetype == "The Magma Born" or archetype == "Magma Born" or archetype == "Magma":
+			# The Magma Born: Super-Titan Colossal Dragon (9.5 cost), Basalt Golems, Spire Turrets, and Molten Spitters
 			var has_dragon = false
 			for mc in valid_hand:
 				if "Dragon" in mc.card_name:
 					has_dragon = true
 					break
-			if has_dragon and threat_info.threat_score < 14.0 and current_requisition < 9.5 and current_requisition >= (5.0 * bank_scale):
-				return
+			if has_dragon and (difficulty == "HARD" or difficulty == "NIGHTMARE") and threat_info.threat_score < 14.0 and current_requisition < 9.5 and current_requisition >= (5.0 * bank_scale):
+				return # Save up for the Colossal Dragon!
 			var magma_bank = 3.6 * bank_scale
+			if difficulty == "EASY": magma_bank = minf(magma_bank, 2.8)
 			if threat_info.threat_score < 8.0 and current_requisition < magma_bank:
 				return
 			valid_hand.sort_custom(func(a, b):
-				var a_prio = 0
-				var b_prio = 0
-				if a.card_type == "Commander": a_prio += 30
-				if "Grunt" in a.card_name or "Dog" in a.card_name: a_prio += 20
-				if "Dragon" in a.card_name: a_prio += 25
-				if b.card_type == "Commander": b_prio += 30
-				if "Grunt" in b.card_name or "Dog" in b.card_name: b_prio += 20
-				if "Dragon" in b.card_name: b_prio += 25
-				if a_prio != b_prio:
+				var a_prio = (_get_counter_pick_score(a, threat_info) if apply_counter_pick else 0.0)
+				var b_prio = (_get_counter_pick_score(b, threat_info) if apply_counter_pick else 0.0)
+				if a.card_type == "Commander": a_prio += 30.0
+				elif "Dragon" in a.card_name and current_requisition >= 9.5: a_prio += 32.0
+				elif "Golem" in a.card_name: a_prio += 24.0 # Primary basalt frontline sponge
+				elif "TurretSpire" in a.card_name: a_prio += (26.0 if threat_info.threat_score > 12.0 else 16.0) # Defensive turret
+				elif "Spitter" in a.card_name: a_prio += (20.0 if friendly_screens >= 1 else 12.0)
+				elif "Dog" in a.card_name or "Pyrodactyl" in a.card_name: a_prio += 18.0 # Flankers
+				elif "Grunt" in a.card_name: a_prio += 14.0
+				else: a_prio += 10.0
+
+				if b.card_type == "Commander": b_prio += 30.0
+				elif "Dragon" in b.card_name and current_requisition >= 9.5: b_prio += 32.0
+				elif "Golem" in b.card_name: b_prio += 24.0
+				elif "TurretSpire" in b.card_name: b_prio += (26.0 if threat_info.threat_score > 12.0 else 16.0)
+				elif "Spitter" in b.card_name: b_prio += (20.0 if friendly_screens >= 1 else 12.0)
+				elif "Dog" in b.card_name or "Pyrodactyl" in b.card_name: b_prio += 18.0
+				elif "Grunt" in b.card_name: b_prio += 14.0
+				else: b_prio += 10.0
+
+				if abs(a_prio - b_prio) > 3.0:
 					return a_prio > b_prio
 				return a.cost < b.cost
 			)
 		elif archetype == "The Winter Court" or archetype == "Winter" or archetype == "Yuletide":
 			# The Winter Court: Toy Automata, Frost Commanders, Reindeer Cavalry, and Ice Magic
 			var winter_bank = 3.8 * bank_scale
+			if difficulty == "EASY": winter_bank = minf(winter_bank, 3.0)
 			if threat_info.threat_score < 8.0 and current_requisition < winter_bank:
 				return
 			valid_hand.sort_custom(func(a, b):
-				var a_prio = 0
-				var b_prio = 0
+				var a_prio = (_get_counter_pick_score(a, threat_info) if apply_counter_pick else 0.0)
+				var b_prio = (_get_counter_pick_score(b, threat_info) if apply_counter_pick else 0.0)
 				# 1. Sturdy frontlines & commanders
-				if "ToyGolem" in a.card_name or "AbominableYeti" in a.card_name or "Nutcracker" in a.card_name: a_prio += 25
-				elif a.card_type == "Commander": a_prio += 22
-				elif "WarReindeer" in a.card_name or "YuleLog" in a.card_name: a_prio += 20
-				elif "FrostWolf" in a.card_name or "GingerbreadBrawler" in a.card_name: a_prio += 18
-				elif "ToySoldier" in a.card_name: a_prio += 15
-				elif "FrostElf" in a.card_name or "BlizzardWitch" in a.card_name or "SnowballCatapult" in a.card_name or "SnowSprite" in a.card_name: a_prio += (17 if friendly_screens >= 1 else 10)
-				else: a_prio += 12
+				if "ToyGolem" in a.card_name or "AbominableYeti" in a.card_name or "Nutcracker" in a.card_name: a_prio += 25.0
+				elif a.card_type == "Commander": a_prio += 22.0
+				elif "WarReindeer" in a.card_name or "YuleLog" in a.card_name: a_prio += 20.0
+				elif "FrostWolf" in a.card_name or "GingerbreadBrawler" in a.card_name: a_prio += 18.0
+				elif "ToySoldier" in a.card_name: a_prio += 15.0
+				elif "FrostElf" in a.card_name or "BlizzardWitch" in a.card_name or "SnowballCatapult" in a.card_name or "SnowSprite" in a.card_name: a_prio += (18.0 if friendly_screens >= 1 else 10.0)
+				else: a_prio += 12.0
 
-				if "ToyGolem" in b.card_name or "AbominableYeti" in b.card_name or "Nutcracker" in b.card_name: b_prio += 25
-				elif b.card_type == "Commander": b_prio += 22
-				elif "WarReindeer" in b.card_name or "YuleLog" in b.card_name: b_prio += 20
-				elif "FrostWolf" in b.card_name or "GingerbreadBrawler" in b.card_name: b_prio += 18
-				elif "ToySoldier" in b.card_name: b_prio += 15
-				elif "FrostElf" in b.card_name or "BlizzardWitch" in b.card_name or "SnowballCatapult" in b.card_name or "SnowSprite" in b.card_name: b_prio += (17 if friendly_screens >= 1 else 10)
-				else: b_prio += 12
+				if "ToyGolem" in b.card_name or "AbominableYeti" in b.card_name or "Nutcracker" in b.card_name: b_prio += 25.0
+				elif b.card_type == "Commander": b_prio += 22.0
+				elif "WarReindeer" in b.card_name or "YuleLog" in b.card_name: b_prio += 20.0
+				elif "FrostWolf" in b.card_name or "GingerbreadBrawler" in b.card_name: b_prio += 18.0
+				elif "ToySoldier" in b.card_name: b_prio += 15.0
+				elif "FrostElf" in b.card_name or "BlizzardWitch" in b.card_name or "SnowballCatapult" in b.card_name or "SnowSprite" in b.card_name: b_prio += (18.0 if friendly_screens >= 1 else 10.0)
+				else: b_prio += 12.0
 
-				if a_prio != b_prio:
+				if abs(a_prio - b_prio) > 3.0:
 					return a_prio > b_prio
 				return a.cost < b.cost
 			)
@@ -613,30 +755,32 @@ func evaluate_moves():
 					has_saved_horde_chaos = true
 				if hc_card.cost < min_cost:
 					min_cost = hc_card.cost
-			if has_saved_horde_chaos and threat_info.threat_score < 13.0 and current_requisition < 11.0 and current_requisition >= 6.8:
+			if has_saved_horde_chaos and (difficulty == "HARD" or difficulty == "NIGHTMARE") and threat_info.threat_score < 13.0 and current_requisition < 11.0 and current_requisition >= 6.8:
 				return
-			var chaos_bank: float = clampf((min_cost + 1.5) * bank_scale, 3.0, 6.0)
+			var chaos_bank: float = clampf((min_cost + 1.5) * bank_scale, 2.8, 6.0)
 			if difficulty == "EASY":
-				chaos_bank = minf(chaos_bank, 3.5)
+				chaos_bank = minf(chaos_bank, 3.2)
 			if threat_info.threat_score < 9.0 and current_requisition < chaos_bank:
 				return
 			valid_hand.sort_custom(func(a, b):
+				var a_prio = (_get_counter_pick_score(a, threat_info) if apply_counter_pick else 0.0)
+				var b_prio = (_get_counter_pick_score(b, threat_info) if apply_counter_pick else 0.0)
 				# Cross-faction synergy ordering:
-				# 1. If we already have frontline screens or a high-value enemy is near, deploy Infector/Support/Repair/Aura
-				if friendly_damaged_vehicles > 0:
-					if "Repair" in a.card_name and not "Repair" in b.card_name: return true
-					if not "Repair" in a.card_name and "Repair" in b.card_name: return false
+				# 1. If damaged vehicles exist, repair them
+				if friendly_damaged_vehicles > 0 and "Repair" in a.card_name: a_prio += 26.0
+				if friendly_damaged_vehicles > 0 and "Repair" in b.card_name: b_prio += 26.0
+				
+				# 2. If we already have frontline screens or high-value enemy is near, deploy Infector/Support/Medic/Aura
 				if friendly_screens >= 1:
-					var a_syn = "Infector" in a.card_name or "Medic" in a.card_name or "Support" in a.card_name or "GreatBeastSpeaker" in a.card_name
-					var b_syn = "Infector" in b.card_name or "Medic" in b.card_name or "Support" in b.card_name or "GreatBeastSpeaker" in b.card_name
-					if a_syn != b_syn:
-						return a_syn
+					if "Infector" in a.card_name or "Medic" in a.card_name or "Support" in a.card_name or "GreatBeastSpeaker" in a.card_name: a_prio += 22.0
+					if "Infector" in b.card_name or "Medic" in b.card_name or "Support" in b.card_name or "GreatBeastSpeaker" in b.card_name: b_prio += 22.0
 				else:
-					# No frontline screen yet -> deploy Tank/Mech/Leviathan/Genetic/Eye frontline first!
-					var a_front = a.is_melee or a.card_type == "Vehicle" or "Tank" in a.card_name or "Mech" in a.card_name or "Leviathan" in a.card_name or "Genetic" in a.card_name
-					var b_front = b.is_melee or b.card_type == "Vehicle" or "Tank" in b.card_name or "Mech" in b.card_name or "Leviathan" in b.card_name or "Genetic" in b.card_name
-					if a_front != b_front:
-						return a_front
+					# No frontline screen yet -> deploy Tank/Mech/Leviathan/Golem/Genetic frontline first!
+					if a.is_melee or a.card_type == "Vehicle" or "Tank" in a.card_name or "Mech" in a.card_name or "Leviathan" in a.card_name or "Golem" in a.card_name or "Genetic" in a.card_name: a_prio += 20.0
+					if b.is_melee or b.card_type == "Vehicle" or "Tank" in b.card_name or "Mech" in b.card_name or "Leviathan" in b.card_name or "Golem" in b.card_name or "Genetic" in b.card_name: b_prio += 20.0
+					
+				if abs(a_prio - b_prio) > 3.0:
+					return a_prio > b_prio
 				return a.cost > b.cost
 			)
 	
@@ -646,7 +790,7 @@ func evaluate_moves():
 			if spawn_pos != null:
 				play_card(c, spawn_pos)
 				# If under heavy attack or executing a 2-card synergy push, allow immediate follow-up card!
-				if (threat_info.threat_score > 22.0 or archetype in ["The Reach", "Pirates", "Void", "Chaos"]) and current_requisition >= 3.0:
+				if (threat_info.threat_score > 22.0 or archetype in ["The Reach", "Pirates", "Void", "The Magma Born", "Chaos"]) and current_requisition >= 3.0:
 					continue
 				if current_requisition < 15.0:
 					break
@@ -832,112 +976,80 @@ func calculate_optimal_spawn(card: CardData, threat_info: Dictionary, team_ctx: 
 			var threat_dir = to_threat.normalized() if threat_dist > 0.1 else Vector3(0, 0, 1)
 			var side_dir = threat_dir.cross(Vector3.UP).normalized()
 			
-			# Ranged / Artillery / Sniper / Acid spitters / Infectors / Animal spitters deploy slightly offset / behind anchor
-			if card.card_name in ["Sniper", "VoidSpitter", "VoidCorruptor", "SpiderTank", "ReachRanged", "RimworlderGunner", "BeastDigestiveCell", "PlagueRangedEye", "PlagueEnlightenedRanged", "PlagueInfector", "GildedInfector", "GildedGeneticRanged", "GildedHuskRanged", "SupportingFire", "ScrapRanged", "RocketInfantry", "WildlifeArcherfish", "WildlifePistolShrimp", "WildlifeBombardierBeetle", "WildlifeSpittingCobra", "WildlifeMonkey", "WildlifeChameleon", "PrimitiveShortBow", "PrimitiveCrossbowman", "PrimitiveRockThrower"]:
+			# Turrets & Fortifications: position between anchor and hostile to shield the base
+			if "TurretSpire" in card.card_name or "WoodTower" in card.card_name or "CommandBay" in card.card_name:
+				var bastion_dist = clamp(threat_dist * 0.40, 5.0, 12.0)
+				target_pos = anchor.global_position + (threat_dir * bastion_dist) + (side_dir * randf_range(-2.0, 2.0))
+			# Jack-o'-Lantern gas bomber: deploy right into the face of attackers to poison/slow them!
+			elif "JackOLantern" in card.card_name:
+				var gas_dist = clamp(threat_dist * 0.70, 6.0, 15.0)
+				target_pos = anchor.global_position + (threat_dir * gas_dist)
+			# Ranged / Artillery / Sniper / Spitters deploy slightly offset / behind anchor
+			elif card.card_name in ["Sniper", "VoidSpitter", "VoidCorruptor", "SpiderTank", "ReachRanged", "RimworlderGunner", "BeastDigestiveCell", "PlagueRangedEye", "PlagueEnlightenedRanged", "PlagueInfector", "GildedInfector", "GildedGeneticRanged", "GildedHuskRanged", "SupportingFire", "ScrapRanged", "RocketInfantry", "WildlifeArcherfish", "WildlifePistolShrimp", "WildlifeBombardierBeetle", "WildlifeSpittingCobra", "WildlifeMonkey", "WildlifeChameleon", "PrimitiveShortBow", "PrimitiveCrossbowman", "PrimitiveRockThrower", "NightmareSkeletonArcher", "NightmareFireImp", "WinterSnowballCatapult", "WinterBlizzardWitch", "WinterFrostElf", "WinterSnowSprite", "MagmaSpitter"]:
 				var offset_dist = clamp(threat_dist * 0.35, 4.0, 14.0)
 				target_pos = anchor.global_position + (side_dir * (8.0 if randf() > 0.5 else -8.0)) + (threat_dir * offset_dist)
 			else:
 				# Melee / Tanks / Mechs / Interceptors deploy directly in front of the attacker to intercept!
-				var intercept_dist = clamp(threat_dist * 0.65, 5.0, 22.0)
-				target_pos = anchor.global_position + (threat_dir * intercept_dist) + (side_dir * randf_range(-3.0, 3.0))
-		else:
-			target_pos += Vector3(randf_range(-6.0, 6.0), 0, randf_range(-6.0, 6.0))
-		
+				var intercept_dist = clamp(threat_dist * 0.55, 3.5, 16.0)
+				target_pos = anchor.global_position + (threat_dir * intercept_dist) + (side_dir * randf_range(-2.0, 2.0))
 	else:
-		# 3. Offense / Pushing Deployment (Map-aware, Team-aware, Faction/Chaos-aware)
-		push_lane_toggle = not push_lane_toggle
-		var slot_towers: Array = []
-		var forward_bays: Array = []
-		var slot_base: Node3D = null
-		var slot_prefix_t = "Tower_" + str(slot_index) + "_"
-		var slot_base_name = "Base_" + str(slot_index)
-		for s in my_structures:
-			if "CommandBay" in s.name:
-				forward_bays.append(s)
-			elif s.name.begins_with(slot_prefix_t) or (slot_index == 0 and s.name.begins_with("TowerA")) or (slot_index == 1 and s.name.begins_with("TowerB")):
-				slot_towers.append(s)
-			elif s.name == slot_base_name or (slot_index == 0 and s.name == "BaseA") or (slot_index == 1 and s.name == "BaseB"):
-				slot_base = s
-				
-		var spawn_anchor = my_structures[0]
-		if forward_bays.size() > 0 and randf() < 0.75:
-			spawn_anchor = forward_bays.pick_random()
-		elif slot_towers.size() > 0:
-			var preferred_suffix = "_Left" if push_lane_toggle else "_Right"
-			spawn_anchor = slot_towers[0]
-			for st in slot_towers:
-				if st.name.ends_with(preferred_suffix):
-					spawn_anchor = st
-					break
-		elif slot_base != null and is_instance_valid(slot_base):
-			spawn_anchor = slot_base
-		else:
-			spawn_anchor = my_structures.pick_random()
-		anchor = spawn_anchor
-
-		var nav_info: Dictionary = _compute_strategic_objective_and_lane(spawn_anchor, team_ctx)
+		# 3. Strategic Offensive Push / Lane Advance Deployment
+		# Find the forward-most active tower or base on our side to spawn from
+		var forward_anchor: Node3D = null
+		var max_proj: float = -999999.0
+		
+		# Compute general push orientation
+		var nav_info = _compute_strategic_objective_and_lane(threat_info.my_base if threat_info.my_base else my_structures[0], team_ctx)
 		var push_dir: Vector3 = nav_info["push_dir"]
-		var right_dir: Vector3 = push_dir.cross(Vector3.UP).normalized()
-		if right_dir.length() < 0.1:
-			right_dir = Vector3(1, 0, 0)
+		
+		for s in my_structures:
+			var proj = s.global_position.dot(push_dir)
+			if proj > max_proj:
+				max_proj = proj
+				forward_anchor = s
+				
+		var spawn_anchor = forward_anchor if forward_anchor else my_structures[0]
+		anchor = spawn_anchor
 		target_pos = spawn_anchor.global_position
-
-		# Team Coordination: check if an allied wave (friendly Tank, Mech, Commander, or Beast sponge) is already advancing near spawn_anchor
-		var allied_vanguard: Node3D = null
-		if team_ctx.get("my_team_players", 1) > 1 or archetype in ["Chaos", "Dominion", "The Reach", "Plague of Harmony", "Gilded Harmony"]:
+		
+		var right_dir = push_dir.cross(Vector3.UP).normalized()
+		
+		# Strategic Stealth Brush Ambush:
+		# Difficulty-scaled ambush chance: EASY=0%, MEDIUM=30%, HARD=65%, NIGHTMARE=85%
+		var ambush_chance = 0.85 if difficulty == "NIGHTMARE" else (0.65 if difficulty == "HARD" else (0.30 if difficulty == "MEDIUM" else 0.0))
+		var is_ambush_candidate = card.card_name in ["Assassin", "HeroHunter", "VoidStalker", "VoidShieldStalker", "ReachHunter", "ScrapHunter", "WildlifeBlackPanther", "WildlifeBengalTiger", "WildlifeBlackMamba", "WildlifeChameleon", "MagmaTentacleLavaDog", "NightmareHellhound", "NightmareDireWolf", "NightmareVampireDuelist", "WinterFrostWolf"]
+		var placed_in_brush = false
+		if is_ambush_candidate and randf() < ambush_chance:
+			for patch in get_tree().get_nodes_in_group("TallGrassPatches"):
+				if is_instance_valid(patch) and patch is Node3D:
+					var p_pos = patch.global_position
+					# Is the brush patch located along our forward push within reasonable distance (<= 25m)?
+					if spawn_anchor.global_position.distance_to(p_pos) <= 25.0:
+						var to_patch = (p_pos - spawn_anchor.global_position).normalized()
+						if to_patch.dot(push_dir) > 0.2:
+							target_pos = p_pos + Vector3(randf_range(-1.2, 1.2), 0, randf_range(-1.2, 1.2))
+							placed_in_brush = true
+							break
+							
+		if not placed_in_brush:
+			# Find allied vanguard along this push vector
+			var allied_vanguard: Node3D = null
+			var max_vanguard_proj = -999999.0
 			for ally in get_tree().get_nodes_in_group(my_team):
 				if is_instance_valid(ally) and ally is Node3D and not ("Base" in ally.name or "Tower" in ally.name or "CommandBay" in ally.name):
-					var ahc = ally.get_node_or_null("HealthComponent")
-					if ahc and not ahc.is_dead and ahc.max_health >= 160.0:
-						var d_anchor = ally.global_position.distance_to(spawn_anchor.global_position)
-						if d_anchor >= 4.0 and d_anchor <= 24.0:
-							allied_vanguard = ally
-							break
-
-		# Tactical Stealth Ambush for long-range and flanking units
-		var is_ambusher = card.card_name in ["Sniper", "VoidSpitter", "SpiderTank", "ReachRanged", "RimworlderGunner", "Assassin", "VoidStalker", "VoidShieldStalker", "ReachHunter", "SupportingFire"]
-		var ambush_chance = 0.85 if difficulty == "NIGHTMARE" else (0.65 if difficulty == "HARD" else (0.30 if difficulty == "MEDIUM" else 0.0))
-		var ambushed = false
-		if is_ambusher and randf() < ambush_chance and am and "placed_feature_records" in am:
-			var candidate_brushes = []
-			for feat in am.placed_feature_records:
-				if feat.get("type", "") == "brush":
-					var b_pos = feat.get("pos", Vector3.ZERO)
-					if b_pos.distance_to(spawn_anchor.global_position) <= 24.0:
-						candidate_brushes.append(b_pos)
-			if candidate_brushes.size() > 0:
-				var b_chosen = candidate_brushes.pick_random()
-				target_pos = b_chosen + Vector3(randf_range(-1.2, 1.2), 0, randf_range(-1.2, 1.2))
-				ambushed = true
-				
-		if not ambushed:
-			# Per-Card & Per-Faction / Chaos Hybrid Placement Intelligence:
-			if card_faction == "The Reach" or "Reach" in card.card_name:
-				# Reach Cybernetic Network Synergy: deploy within 2.0-4.2m of friendly Reach units (up to +75% buff)
-				var friendly_reach = []
+					var proj = ally.global_position.dot(push_dir)
+					if proj > max_vanguard_proj and ally.global_position.distance_to(spawn_anchor.global_position) <= 26.0:
+						max_vanguard_proj = proj
+						allied_vanguard = ally
+						
+			if "Repair" in card.card_name:
+				# Attach repair engineer/drone directly behind the most damaged friendly tank/mech
+				var damaged_veh: Node3D = null
+				var min_hp = 1.0
 				for ally in get_tree().get_nodes_in_group(my_team):
-					if is_instance_valid(ally) and ally is Node3D and "Reach" in ally.name:
+					if is_instance_valid(ally) and ally is Node3D and ("Tank" in ally.name or "Mech" in ally.name or "Walker" in ally.name or "Golem" in ally.name):
 						var ahc = ally.get_node_or_null("HealthComponent")
-						if ahc and ahc.is_dead: continue
-						if ally.global_position.distance_to(spawn_anchor.global_position) <= 24.0:
-							friendly_reach.append(ally)
-				if friendly_reach.size() > 0:
-					var cluster_ally = friendly_reach.pick_random()
-					var cluster_offset = (push_dir * randf_range(1.8, 3.8)) + (right_dir * randf_range(-2.2, 2.2))
-					target_pos = cluster_ally.global_position + cluster_offset
-				else:
-					target_pos += (push_dir * randf_range(8.0, 15.0)) + (right_dir * randf_range(-3.5, 3.5))
-			elif "ScrapTank" in card.card_name or "LandMine" in card.card_name:
-				# Pirate Volatile Vanguard / LandMine Sappers: deep frontline deployment
-				target_pos += (push_dir * randf_range(17.0, 25.0)) + (right_dir * randf_range(-3.0, 3.0))
-			elif "Repair" in card.card_name:
-				# Dominion RepairMan / Pirate ScrapRepair: attach behind any friendly Vehicle across any faction!
-				var damaged_veh = null
-				var min_hp = 1.05
-				for ally in get_tree().get_nodes_in_group(my_team):
-					if is_instance_valid(ally) and ally is Node3D and ("Tank" in ally.name or "Mech" in ally.name or "Walker" in ally.name):
-						var ahc = ally.get_node_or_null("HealthComponent")
-						if ahc and not ahc.is_dead and (ahc.current_health / max(1.0, ahc.max_health)) < min_hp:
+						if ahc and not ahc.is_dead and ahc.current_health < ahc.max_health * 0.90:
 							if ally.global_position.distance_to(spawn_anchor.global_position) <= 23.0:
 								min_hp = ahc.current_health / max(1.0, ahc.max_health)
 								damaged_veh = ally
@@ -946,7 +1058,7 @@ func calculate_optimal_spawn(card: CardData, threat_info: Dictionary, team_ctx: 
 				else:
 					target_pos += (push_dir * randf_range(6.0, 11.0))
 			elif "Medic" in card.card_name or "ReachSupport" in card.card_name or "VoidCorruptor" in card.card_name:
-				# Attach behind friendly vanguard or Commander (or damaged Void ally for VoidCorruptor)
+				# Attach behind friendly vanguard or Commander
 				if allied_vanguard != null and is_instance_valid(allied_vanguard):
 					target_pos = allied_vanguard.global_position - (push_dir * 4.0) + (right_dir * randf_range(-2.0, 2.0))
 				else:
@@ -972,17 +1084,20 @@ func calculate_optimal_spawn(card: CardData, threat_info: Dictionary, team_ctx: 
 			elif "Genetic" in card.card_name or "SavedHorde" in card.card_name:
 				# Gilded Harmony Mitosis Spacing: stagger deployments so wounded monsters regenerate to full HP and divide!
 				target_pos += (push_dir * randf_range(11.0, 19.0)) + (right_dir * randf_range(-6.5, 6.5))
-			elif "Beetle" in card.card_name or "Jellyfish" in card.card_name or "Plane" in card.card_name or "Flyer" in card.card_name or "Gargoyle" in card.card_name or "Eagle" in card.card_name or "Condor" in card.card_name or "Raven" in card.card_name or "Owl" in card.card_name or "Bird" in card.card_name or "Goose" in card.card_name or "Hawk" in card.card_name or "Falcon" in card.card_name or "Bat" in card.card_name or "Vulture" in card.card_name or "Pelican" in card.card_name or "Hornet" in card.card_name or "Wasp" in card.card_name or "Mosquito" in card.card_name or "Dragonfly" in card.card_name or "Bee" in card.card_name:
-				# Flying Beasts & Aircraft: bypass ground obstacles along wide aerial flanks
+			elif "Beetle" in card.card_name or "Jellyfish" in card.card_name or "Plane" in card.card_name or "Flyer" in card.card_name or "Gargoyle" in card.card_name or "Eagle" in card.card_name or "Condor" in card.card_name or "Raven" in card.card_name or "Owl" in card.card_name or "Bird" in card.card_name or "Goose" in card.card_name or "Hawk" in card.card_name or "Falcon" in card.card_name or "Bat" in card.card_name or "Vulture" in card.card_name or "Pelican" in card.card_name or "Hornet" in card.card_name or "Wasp" in card.card_name or "Mosquito" in card.card_name or "Dragonfly" in card.card_name or "Bee" in card.card_name or "Pyrodactyl" in card.card_name or "Dragon" in card.card_name or "WarReindeer" in card.card_name or "FrostWolf" in card.card_name or "Dog" in card.card_name or "Cheetah" in card.card_name or "Hellhound" in card.card_name:
+				# Flying Beasts, Aircraft & Fast Cavalry: bypass ground obstacles along wide aerial/cavalry flanks
 				var flank_offset = right_dir * (16.0 if randf() > 0.5 else -16.0)
 				target_pos += (push_dir * randf_range(13.0, 22.0)) + flank_offset
-			elif "Leviathan" in card.card_name or "Monstrous" in card.card_name or "Mutant" in card.card_name or "Octopus" in card.card_name or "Squid" in card.card_name or "MeleeEye" in card.card_name or "Tank" in card.card_name or "Mech" in card.card_name or "EnlightenedBig" in card.card_name or "ShieldInfantry" in card.card_name or "ArmoredInfantry" in card.card_name or "Mammoth" in card.card_name or "Megalodon" in card.card_name or "Whale" in card.card_name or "Shark" in card.card_name or "Elephant" in card.card_name or "Hippo" in card.card_name or "Rhino" in card.card_name or "Bear" in card.card_name or "Croc" in card.card_name or "Alligator" in card.card_name or "Gorilla" in card.card_name or "Tiger" in card.card_name or "Lion" in card.card_name or "Bison" in card.card_name or "Buffalo" in card.card_name or "Walrus" in card.card_name or "Knight" in card.card_name or "Clubber" in card.card_name:
-				# Frontline Armor / Shielded Vanguards / Bio-Titan / Apex Beasts march down the primary push vector
+			elif "JackOLantern" in card.card_name:
+				# Deploy Jack-o'-Lantern right into forward center so it detonates toxic slow gas on enemy waves
+				target_pos += (push_dir * randf_range(11.0, 17.0)) + (right_dir * randf_range(-2.5, 2.5))
+			elif "CommandBay" in card.card_name or "WoodTower" in card.card_name or "TurretSpire" in card.card_name or "Builder" in card.card_name:
+				# Defensive structures & builders: deploy near perimeter edge toward objective to create fortified strongpoints
+				target_pos += (push_dir * 18.0) + (right_dir * (6.5 if randf() > 0.5 else -6.5))
+			elif "Leviathan" in card.card_name or "Monstrous" in card.card_name or "Mutant" in card.card_name or "Octopus" in card.card_name or "Squid" in card.card_name or "MeleeEye" in card.card_name or "Tank" in card.card_name or "Mech" in card.card_name or "EnlightenedBig" in card.card_name or "ShieldInfantry" in card.card_name or "ArmoredInfantry" in card.card_name or "Mammoth" in card.card_name or "Megalodon" in card.card_name or "Elephant" in card.card_name or "Hippo" in card.card_name or "Rhino" in card.card_name or "Bear" in card.card_name or "Croc" in card.card_name or "Gorilla" in card.card_name or "Knight" in card.card_name or "Clubber" in card.card_name or "Golem" in card.card_name or "Grunt" in card.card_name or "BoneGiant" in card.card_name or "Zombie" in card.card_name or "ToyGolem" in card.card_name or "AbominableYeti" in card.card_name or "Nutcracker" in card.card_name or "GingerbreadBrawler" in card.card_name:
+				# Frontline Armor / Shielded Vanguards / Bio-Titans / Basalt Golems march down the primary push vector
 				target_pos += (push_dir * randf_range(13.0, 21.0)) + (right_dir * randf_range(-3.0, 3.0))
-			elif "CommandBay" in card.card_name:
-				# Deploy near perimeter edge toward objective/hill to expand forward deployment zone
-				target_pos += (push_dir * 20.0) + (right_dir * (7.0 if randf() > 0.5 else -7.0))
-			elif card.card_name in ["Sniper", "VoidSpitter", "SpiderTank", "ReachRanged", "RimworlderGunner", "PlagueRangedEye", "PlagueEnlightenedRanged", "GildedGeneticRanged", "GildedHuskRanged", "SupportingFire", "ScrapRanged", "RocketInfantry", "WildlifeArcherfish", "WildlifePistolShrimp", "WildlifeBombardierBeetle", "WildlifeSpittingCobra", "WildlifeMonkey", "WildlifeChameleon", "PrimitiveShortBow", "PrimitiveCrossbowman", "PrimitiveRockThrower"]:
+			elif card.card_name in ["Sniper", "VoidSpitter", "SpiderTank", "ReachRanged", "RimworlderGunner", "PlagueRangedEye", "PlagueEnlightenedRanged", "GildedGeneticRanged", "GildedHuskRanged", "SupportingFire", "ScrapRanged", "RocketInfantry", "WildlifeArcherfish", "WildlifePistolShrimp", "WildlifeBombardierBeetle", "WildlifeSpittingCobra", "WildlifeMonkey", "WildlifeChameleon", "PrimitiveShortBow", "PrimitiveCrossbowman", "PrimitiveRockThrower", "NightmareSkeletonArcher", "NightmareFireImp", "WinterSnowballCatapult", "WinterBlizzardWitch", "WinterFrostElf", "WinterSnowSprite", "MagmaSpitter"]:
 				if allied_vanguard != null and is_instance_valid(allied_vanguard):
 					target_pos = allied_vanguard.global_position - (push_dir * 5.5) + (right_dir * randf_range(-4.5, 4.5))
 				else:
@@ -1017,6 +1132,9 @@ func calculate_optimal_spawn(card: CardData, threat_info: Dictionary, team_ctx: 
 				target_pos = beam_pos + (away_dir * 8.5)
 
 	# 5. Biome Hazard & Obstacle Avoidance (Dunes, Quicksand Sinkholes, Volcanic Fire, and Broken Ice)
+	var is_flying_unit: bool = "Plane" in card.card_name or "Flyer" in card.card_name or "Beetle" in card.card_name or "Jellyfish" in card.card_name or "Gargoyle" in card.card_name or "Eagle" in card.card_name or "Condor" in card.card_name or "Raven" in card.card_name or "Owl" in card.card_name or "Hornet" in card.card_name or "Bat" in card.card_name or "Bird" in card.card_name or "Goose" in card.card_name or "Hawk" in card.card_name or "Falcon" in card.card_name or "Pyrodactyl" in card.card_name or "Dragon" in card.card_name
+	var is_magma_born_unit: bool = "Magma" in card_faction or "Magma" in card.card_name
+
 	if am and "placed_feature_records" in am:
 		for feat in am.placed_feature_records:
 			var f_type = feat.get("type", "")
@@ -1028,8 +1146,7 @@ func calculate_optimal_spawn(card: CardData, threat_info: Dictionary, team_ctx: 
 					if shift_dir.length() < 0.1: shift_dir = Vector3(0, 0, 1)
 					target_pos = d_pos + (shift_dir * (d_rad + 2.0))
 			elif f_type == "sinkhole":
-				var is_flying_c = "Plane" in card.card_name or "Flyer" in card.card_name or "Beetle" in card.card_name or "Jellyfish" in card.card_name or "Gargoyle" in card.card_name or "Eagle" in card.card_name or "Condor" in card.card_name or "Raven" in card.card_name or "Owl" in card.card_name or "Hornet" in card.card_name or "Bat" in card.card_name or "Bird" in card.card_name or "Goose" in card.card_name or "Hawk" in card.card_name or "Falcon" in card.card_name
-				if not is_flying_c:
+				if not is_flying_unit:
 					var sh_pos = feat.get("pos", Vector3.ZERO)
 					var sh_rad = feat.get("radius", 4.8)
 					if target_pos.distance_to(sh_pos) < (sh_rad + 1.2):
@@ -1037,19 +1154,24 @@ func calculate_optimal_spawn(card: CardData, threat_info: Dictionary, team_ctx: 
 						if shift_dir.length() < 0.1: shift_dir = Vector3(1, 0, 0)
 						target_pos = sh_pos + (shift_dir * (sh_rad + 2.0))
 			elif f_type == "fire_hazard":
-				var fh_pos = feat.get("pos", Vector3.ZERO)
-				var fh_rad = feat.get("radius", 4.5)
-				if target_pos.distance_to(fh_pos) < (fh_rad + 1.0):
-					var shift_dir = (target_pos - fh_pos).normalized()
-					if shift_dir.length() < 0.1: shift_dir = Vector3(0, 0, 1)
-					target_pos = fh_pos + (shift_dir * (fh_rad + 2.0))
+				# Magma Born units are immune to fire hazards / lava pools!
+				if not is_magma_born_unit:
+					var fh_pos = feat.get("pos", Vector3.ZERO)
+					var fh_rad = feat.get("radius", 4.5)
+					if target_pos.distance_to(fh_pos) < (fh_rad + 1.0):
+						var avoid_prob = 1.0 if (difficulty == "HARD" or difficulty == "NIGHTMARE") else (0.70 if difficulty == "MEDIUM" else 0.20)
+						if randf() < avoid_prob:
+							var shift_dir = (target_pos - fh_pos).normalized()
+							if shift_dir.length() < 0.1: shift_dir = Vector3(0, 0, 1)
+							target_pos = fh_pos + (shift_dir * (fh_rad + 2.0))
 			elif f_type == "ice_patch":
-				var ip_pos = feat.get("pos", Vector3.ZERO)
-				var ip_rad = feat.get("radius", 6.5)
-				if target_pos.distance_to(ip_pos) < (ip_rad + 1.0):
-					var shift_dir = (target_pos - ip_pos).normalized()
-					if shift_dir.length() < 0.1: shift_dir = Vector3(0, 0, 1)
-					target_pos = ip_pos + (shift_dir * (ip_rad + 2.0))
+				if not is_flying_unit:
+					var ip_pos = feat.get("pos", Vector3.ZERO)
+					var ip_rad = feat.get("radius", 6.5)
+					if target_pos.distance_to(ip_pos) < (ip_rad + 1.0):
+						var shift_dir = (target_pos - ip_pos).normalized()
+						if shift_dir.length() < 0.1: shift_dir = Vector3(0, 0, 1)
+						target_pos = ip_pos + (shift_dir * (ip_rad + 2.0))
 
 	# 6. Clamp to valid deployment range (max 28.0m from anchor, identical to player)
 	target_pos.y = 0.0
@@ -1101,9 +1223,10 @@ func play_card(card: CardData, target_position: Vector3):
 
 
 func _detect_faction_from_deck(deck_list: Array) -> String:
-	var v = 0; var r = 0; var d = 0; var pi = 0; var reach = 0; var plague = 0; var gilded = 0; var prim = 0; var wild = 0; var night = 0; var winter = 0
+	var v = 0; var r = 0; var d = 0; var pi = 0; var reach = 0; var plague = 0; var gilded = 0; var prim = 0; var wild = 0; var night = 0; var winter = 0; var magma = 0
 	for c in deck_list:
-		if "Nightmare" in c or "Halloween" in c: night += 1
+		if "Magma" in c: magma += 1
+		elif "Nightmare" in c or "Halloween" in c: night += 1
 		elif "Winter" in c or "Yuletide" in c or "Yule" in c: winter += 1
 		elif "Wildlife" in c: wild += 1
 		elif "Primitive" in c: prim += 1
@@ -1114,8 +1237,9 @@ func _detect_faction_from_deck(deck_list: Array) -> String:
 		elif "Scrap" in c: pi += 1
 		elif "Reach" in c: reach += 1
 		else: d += 1
-	var mx = max(d, max(v, max(r, max(pi, max(reach, max(plague, max(gilded, max(prim, max(wild, max(night, winter))))))))))
+	var mx = max(d, max(v, max(r, max(pi, max(reach, max(plague, max(gilded, max(prim, max(wild, max(night, max(winter, magma)))))))))))
 	if mx < 3 and deck_list.size() >= 5: return "Chaos"
+	if mx == magma and magma > 0: return "The Magma Born"
 	if mx == night and night > 0: return "The Nightmare Court"
 	if mx == winter and winter > 0: return "The Winter Court"
 	if mx == wild and wild > 0: return "Galactic Wildlife"
@@ -1174,16 +1298,16 @@ func generate_themed_deck(theme: String) -> Array:
 				var clean_name = file_name.trim_suffix(".remap")
 				var is_magma = "Magma" in clean_name
 				var is_nightmare = not is_magma and ("Nightmare" in clean_name or "Halloween" in clean_name)
-				var is_winter = not is_nightmare and ("Winter" in clean_name or "Yuletide" in clean_name or "Yule" in clean_name)
-				var is_wildlife = not is_nightmare and not is_winter and ("Wildlife" in clean_name)
-				var is_void = not is_nightmare and not is_winter and not is_wildlife and ("Void" in clean_name)
-				var is_rimworlder = not is_nightmare and not is_winter and not is_wildlife and ("Rimworlder" in clean_name or "Sky" in clean_name or "Stone" in clean_name or "Giant" in clean_name or "Great" in clean_name or "Monstrous" in clean_name)
-				var is_pirate = not is_nightmare and not is_winter and not is_wildlife and ("Scrap" in clean_name)
-				var is_reach = not is_nightmare and not is_winter and not is_wildlife and ("Reach" in clean_name)
-				var is_plague = not is_nightmare and not is_winter and not is_wildlife and ("Plague" in clean_name)
-				var is_gilded = not is_nightmare and not is_winter and not is_wildlife and ("Gilded" in clean_name)
-				var is_primitive = not is_nightmare and not is_winter and not is_wildlife and ("Primitive" in clean_name)
-				var is_dominion = not is_nightmare and not is_winter and not is_void and not is_rimworlder and not is_pirate and not is_reach and not is_plague and not is_gilded and not is_primitive and not is_wildlife
+				var is_winter = not is_nightmare and not is_magma and ("Winter" in clean_name or "Yuletide" in clean_name or "Yule" in clean_name)
+				var is_wildlife = not is_nightmare and not is_winter and not is_magma and ("Wildlife" in clean_name)
+				var is_void = not is_nightmare and not is_winter and not is_wildlife and not is_magma and ("Void" in clean_name)
+				var is_rimworlder = not is_nightmare and not is_winter and not is_wildlife and not is_magma and ("Rimworlder" in clean_name or "Sky" in clean_name or "Stone" in clean_name or "Giant" in clean_name or "Great" in clean_name or "Monstrous" in clean_name)
+				var is_pirate = not is_nightmare and not is_winter and not is_wildlife and not is_magma and ("Scrap" in clean_name)
+				var is_reach = not is_nightmare and not is_winter and not is_wildlife and not is_magma and ("Reach" in clean_name)
+				var is_plague = not is_nightmare and not is_winter and not is_wildlife and not is_magma and ("Plague" in clean_name)
+				var is_gilded = not is_nightmare and not is_winter and not is_wildlife and not is_magma and ("Gilded" in clean_name)
+				var is_primitive = not is_nightmare and not is_winter and not is_wildlife and not is_magma and ("Primitive" in clean_name)
+				var is_dominion = not is_nightmare and not is_winter and not is_void and not is_rimworlder and not is_pirate and not is_reach and not is_plague and not is_gilded and not is_primitive and not is_wildlife and not is_magma
 				
 				var valid = false
 				if theme == "Void" and is_void: valid = true

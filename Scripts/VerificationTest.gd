@@ -812,15 +812,63 @@ func test_bot_ai() -> bool:
 		printerr("Bot AI _compute_strategic_objective_and_lane failed: ", obj)
 		bot.queue_free()
 		return false
-		
-	var themed_deck = bot.generate_themed_deck("The Reach")
-	if themed_deck.is_empty():
-		printerr("Bot AI themed deck is empty!")
+
+	# 1. Verify deck generation and faction detection across all 13 archetypes
+	var all_factions = [
+		"Dominion", "The Reach", "Pirates", "Rimworlders", "Void",
+		"Plague of Harmony", "Gilded Harmony", "Planetary Primitives",
+		"Galactic Wildlife", "The Nightmare Court", "The Winter Court",
+		"The Magma Born", "Chaos"
+	]
+	for f_name in all_factions:
+		var f_deck = bot.generate_themed_deck(f_name)
+		if f_deck.size() != 6:
+			printerr("Bot AI generated deck size is not 6 for faction: ", f_name, " -> got: ", f_deck.size())
+			bot.queue_free()
+			return false
+		if f_name != "Chaos":
+			var detected = bot._detect_faction_from_deck(f_deck)
+			if detected != f_name:
+				printerr("Bot AI failed to detect faction from deck for: ", f_name, " -> got: ", detected)
+				bot.queue_free()
+				return false
+
+	# 2. Verify all 4 difficulty levels configure properly
+	var diff_expectations = {
+		"EASY": [0.4, 1.3],
+		"MEDIUM": [0.5, 1.0],
+		"HARD": [0.6, 0.7],
+		"NIGHTMARE": [0.75, 0.45]
+	}
+	for diff_key in diff_expectations.keys():
+		var d_bot = BotAI.new()
+		d_bot.difficulty = diff_key
+		add_child(d_bot)
+		var expected_rate = diff_expectations[diff_key][0]
+		var expected_interval = diff_expectations[diff_key][1]
+		if abs(d_bot.requisition_rate - expected_rate) > 0.01 or abs(d_bot.think_interval - expected_interval) > 0.01:
+			printerr("Bot AI difficulty scaling incorrect for ", diff_key, ": rate=", d_bot.requisition_rate, " interval=", d_bot.think_interval)
+			d_bot.queue_free()
+			bot.queue_free()
+			return false
+		d_bot.queue_free()
+
+	# 3. Verify counter-picking calculations
+	var test_card_missile = load("res://Data/Cards/RocketInfantryCard.tres")
+	var dummy_threats = {
+		"enemy_flyers_count": 2,
+		"enemy_tanks_count": 0,
+		"enemy_swarms_count": 0,
+		"enemy_commanders_count": 0
+	}
+	var cp_score = bot._get_counter_pick_score(test_card_missile, dummy_threats)
+	if cp_score <= 0.0:
+		printerr("Bot AI counter-picking failed to assign bonus against enemy flyers!")
 		bot.queue_free()
 		return false
 
 	bot.queue_free()
-	print("  Bot AI strategic objective, deck building, and personality verified.")
+	print("  Bot AI strategic objective, all 13 faction decks, difficulty scaling (Easy/Med/Hard/Nightmare), and counter-picking verified.")
 	return true
 
 func test_live_match_simulation() -> bool:
