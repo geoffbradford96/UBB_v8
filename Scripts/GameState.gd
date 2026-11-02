@@ -515,6 +515,42 @@ func get_distance_to_nearest_lane(pos: Vector3) -> float:
 	else: # Default 1v1 Arena
 		return abs(pos.x)
 
+## Forward march direction for support units that have no combat target:
+## toward the nearest living enemy Base/Tower, blended with the pull back onto the lane.
+## Returns Vector3.ZERO when no enemy structure exists (callers must tolerate that).
+func get_lane_forward_vector(pos: Vector3, team: String) -> Vector3:
+	var tree := get_tree()
+	if tree == null:
+		return Vector3.ZERO
+	var best: Node3D = null
+	var best_d: float = INF
+	for node in tree.get_nodes_in_group("Targetable"):
+		if not is_instance_valid(node) or not (node is Node3D):
+			continue
+		if team != "" and node.is_in_group(team):
+			continue
+		var nm: String = node.name
+		if not ("Base" in nm or "Tower" in nm):
+			continue
+		var hc = node.get_node_or_null("HealthComponent")
+		if hc and hc.is_dead:
+			continue
+		var d: float = pos.distance_squared_to(node.global_position)
+		if d < best_d:
+			best_d = d
+			best = node
+	if best == null:
+		return Vector3.ZERO
+	var to_obj: Vector3 = best.global_position - pos
+	to_obj.y = 0.0
+	if to_obj.length_squared() < 0.0001:
+		return Vector3.ZERO
+	var fwd: Vector3 = to_obj.normalized()
+	var to_lane: Vector3 = get_vector_towards_nearest_lane(pos)
+	if to_lane != Vector3.ZERO:
+		fwd = (fwd * 0.75 + to_lane * 0.25).normalized()
+	return fwd
+
 func get_vector_towards_nearest_lane(pos: Vector3) -> Vector3:
 	if lane_segments.size() > 0:
 		var closest: Vector2 = _get_cached_nearest_lane_point(pos.x, pos.z)

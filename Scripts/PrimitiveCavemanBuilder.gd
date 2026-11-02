@@ -152,7 +152,7 @@ func _physics_process(delta: float):
 			var lane_fwd = gs.get_lane_forward_vector(global_position, my_team)
 			velocity.x = lane_fwd.x * speed
 			velocity.z = lane_fwd.z * speed
-			is_moving = true
+			is_moving = lane_fwd.length_squared() > 0.0001
 
 			var look_pos = global_position + Vector3(lane_fwd.x, 0, lane_fwd.z)
 			if global_position.distance_to(look_pos) > 0.1:

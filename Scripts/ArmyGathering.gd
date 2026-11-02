@@ -354,7 +354,7 @@ func _on_tab_changed(tab_idx: int):
 		var is_plague = not is_nightmare and not is_winter and not is_wildlife and ("Plague" in card_data.card_name)
 		var is_gilded = not is_nightmare and not is_winter and not is_wildlife and ("Gilded" in card_data.card_name)
 		var is_primitive = not is_nightmare and not is_winter and not is_wildlife and ("Primitive" in card_data.card_name)
-		var is_dominion = not is_nightmare and not is_winter and not is_void and not is_rimworlder and not is_pirate and not is_reach and not is_plague and not is_gilded and not is_primitive and not is_wildlife
+		var is_dominion = not is_nightmare and not is_winter and not is_void and not is_rimworlder and not is_pirate and not is_reach and not is_plague and not is_gilded and not is_primitive and not is_wildlife and not is_magma
 		
 		var is_valid = (tab_idx == 12) or (tab_idx == 0 and is_dominion) or (tab_idx == 1 and is_void) or (tab_idx == 2 and is_rimworlder) or (tab_idx == 3 and is_pirate) or (tab_idx == 4 and is_reach) or (tab_idx == 5 and is_plague) or (tab_idx == 6 and is_gilded) or (tab_idx == 7 and is_primitive) or (tab_idx == 8 and is_wildlife) or (tab_idx == 9 and is_nightmare) or (tab_idx == 10 and is_winter) or (tab_idx == 11 and is_magma)
 		if is_valid:
