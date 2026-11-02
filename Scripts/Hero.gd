@@ -238,8 +238,20 @@ func _physics_process(delta):
 					scale = Vector3.ONE * float(get_meta("gilded_gen_scale")) if has_meta("gilded_gen_scale") else s_before
 		else:
 			current_target = null
-			velocity.x = move_toward(velocity.x, 0, speed)
-			velocity.z = move_toward(velocity.z, 0, speed)
+			var gs = _get_game_state()
+			var march_dir = Vector3.ZERO
+			var my_team = ""
+			for g in get_groups():
+				if g.begins_with("Side"): my_team = g; break
+			if my_team == "" and "team" in self and str(self.team) != "": my_team = str(self.team)
+			if gs and gs.has_method("get_lane_forward_vector"):
+				march_dir = gs.get_lane_forward_vector(global_position, my_team)
+			if march_dir.length_squared() < 0.01:
+				var fwd_z = -1.0 if (my_team == "SideA" or my_team == "Player") else 1.0
+				march_dir = Vector3(0, 0, fwd_z)
+			velocity.x = march_dir.normalized().x * speed * 0.85
+			velocity.z = march_dir.normalized().z * speed * 0.85
+			is_moving = true
 				
 	# Anti-stuck wall sliding
 	if is_on_wall():
@@ -350,6 +362,21 @@ func _physics_process(delta):
 						mesh.position.z -= 0.5
 
 
+func notify_attacked(source_pos: Variant = Vector3.INF) -> void:
+	if not is_inside_tree() or not get_tree(): return
+	var retarget = false
+	if not is_instance_valid(current_target):
+		retarget = true
+	else:
+		var c_hc = current_target.get_node_or_null("HealthComponent")
+		if (c_hc and c_hc.is_dead) or not current_target.is_in_group("Targetable"):
+			retarget = true
+		elif ("Base" in current_target.name or "Tower" in current_target.name) and global_position.distance_to(current_target.global_position) > 10.0:
+			retarget = true
+	if retarget:
+		set_meta("target_recheck", 0.0)
+		find_new_target()
+
 func find_new_target():
 	current_target = null
 	if not is_inside_tree() or not get_tree():
@@ -359,31 +386,43 @@ func find_new_target():
 		if g.begins_with("Side"):
 			my_team = g
 			break
-	if my_team == "":
-		return
+	if my_team == "" and "team" in self and str(self.team) != "":
+		my_team = str(self.team)
+
 	var gs = _get_game_state()
-	var closest_dist = 99999.0
+	var closest_score = 99999.0
 	var wander = can_wander_off_path()
 	var my_pos = global_position
+	var best_target: Node3D = null
 
 	for node in get_tree().get_nodes_in_group("Targetable"):
-		if node == self or not is_instance_valid(node) or node.is_in_group(my_team):
-			continue
+		if node == self or not is_instance_valid(node): continue
+		var is_ally = false
+		if my_team != "":
+			if node.is_in_group(my_team): is_ally = true
+			elif node.get("team") != null and str(node.get("team")) == my_team: is_ally = true
+		if is_ally: continue
 		var d = my_pos.distance_to(node.global_position)
-		if d >= closest_dist:
+		var is_structure = "Base" in node.name or "Tower" in node.name or "CommandBay" in node.name
+		var is_neutral = node.is_in_group("NeutralCreature") or node.is_in_group("NeutralStructure")
+		if is_neutral and not wander and d > 8.5:
 			continue
-		if (node.is_in_group("NeutralCreature") or node.is_in_group("NeutralStructure")) and d > 7.5:
-			continue
-		if not wander and gs and gs.get_distance_to_nearest_lane(node.global_position) > 14.5 and d > 7.5:
-			continue
+		if not is_structure and gs and not wander:
+			var lane_d = gs.get_distance_to_nearest_lane(node.global_position)
+			if lane_d > 24.0 and d > 14.0:
+				continue
 		var target_hc = node.get_node_or_null("HealthComponent")
 		if target_hc and target_hc.is_dead:
 			continue
 		if gs and gs.is_unit_stealthed_from(node, self):
 			continue
-
-		closest_dist = d
-		current_target = node
+		var score = d
+		if is_structure: score += 12.0
+		elif is_neutral: score += 6.0
+		if score < closest_score:
+			closest_score = score
+			best_target = node
+	current_target = best_target
 
 # --- Reach faction synergy: faster move/attack + bigger model when clustered with other Reach units ---
 var _reach_base_speed: float = -1.0

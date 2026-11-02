@@ -2,7 +2,7 @@ extends Node
 
 const MapLayoutBuilder = preload("res://Scripts/MapLayoutBuilder.gd")
 const BotAI = preload("res://Scripts/BotAI.gd")
-const WildlifeModelBuilder = preload("res://Scripts/WildlifeModelBuilder.gd")
+const WildlifeModelBuilderScript = preload("res://Scripts/WildlifeModelBuilder.gd")
 const WildlifeCreatureScript = preload("res://Scripts/WildlifeCreature.gd")
 
 func _ready():
@@ -1177,7 +1177,7 @@ func test_ai_systems() -> bool:
 		ms_inst.queue_free()
 
 	# 7b. Test Galactic Wildlife Faction (>100 Animals, Poison Snake, Rock-Dropping Crow, Pecking Bird, Bug Swarms)
-	var wildlife_count = WildlifeModelBuilder.SPECIES_CATALOG.size()
+	var wildlife_count = WildlifeModelBuilderScript.SPECIES_CATALOG.size()
 	if wildlife_count < 100:
 		printerr("Galactic Wildlife species count is less than 100! Got: ", wildlife_count)
 		success = false
@@ -1269,7 +1269,7 @@ func test_ai_systems() -> bool:
 		success = false
 
 	# Audit all 108 wildlife 3D models and namesake locomotion/attack animations across every species
-	for sp_key in WildlifeModelBuilder.SPECIES_CATALOG.keys():
+	for sp_key in WildlifeModelBuilderScript.SPECIES_CATALOG.keys():
 		var test_creature = WildlifeCreatureScript.new()
 		test_creature.species_id = sp_key
 		var vp = Node3D.new()

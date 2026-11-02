@@ -261,9 +261,15 @@ func _physics_process(delta):
 		if "Base" in current_target.name:
 			effective_range += 5.5
 		elif "Tower" in current_target.name or "CommandBay" in current_target.name:
-			effective_range += 2.5
+			effective_range += 2.8
 		elif "Den" in current_target.name or "Burrow" in current_target.name or "Hill" in current_target.name or "Pit" in current_target.name:
 			effective_range += 4.5
+		elif "Mech" in current_target.name or "Leviathan" in current_target.name or "Dragon" in current_target.name or "Golem" in current_target.name or "Giant" in current_target.name or "Tank" in current_target.name or "Octopus" in current_target.name or "Beast" in current_target.name or "Monster" in current_target.name:
+			effective_range += 2.0
+		else:
+			effective_range += 0.6
+		if attack_range <= 2.5:
+			effective_range = maxf(effective_range, 2.6)
 			
 		if dist > effective_range:
 			# Move towards target
@@ -445,8 +451,33 @@ func _physics_process(delta):
 						if ap_attack and ap_attack.has_animation("attack"):
 							ap_attack.play("attack", -1, attack_speed)
 	else:
-		velocity.x = move_toward(velocity.x, 0, speed)
-		velocity.z = move_toward(velocity.z, 0, speed)
+		# No immediate combat target: march forward down the lane towards the enemy objective
+		var gs = _get_game_state()
+		var march_dir = Vector3.ZERO
+		var my_team = ""
+		for g in get_groups():
+			if g.begins_with("Side"):
+				my_team = g
+				break
+		if my_team == "" and "team" in self and str(self.team) != "":
+			my_team = str(self.team)
+		if gs and gs.has_method("get_lane_forward_vector"):
+			march_dir = gs.get_lane_forward_vector(global_position, my_team)
+		if march_dir.length_squared() < 0.01:
+			var fwd_z = -1.0 if (my_team == "SideA" or my_team == "Player") else 1.0
+			march_dir = Vector3(0, 0, fwd_z)
+		
+		var new_velocity = march_dir.normalized() * speed * 0.85
+		new_velocity.y = velocity.y
+		velocity = new_velocity
+		is_moving = true
+		
+		var look_target = global_position + march_dir * 3.0
+		look_target.y = global_position.y
+		if global_position.distance_to(look_target) > 0.1:
+			var s_before = scale
+			look_at(look_target, Vector3.UP)
+			scale = Vector3.ONE * float(get_meta("gilded_gen_scale")) if has_meta("gilded_gen_scale") else s_before
 
 	# Anti-stuck wall sliding around obstacles (dunes, trees, rocks, structures)
 	if is_on_wall():
@@ -1239,6 +1270,21 @@ func can_wander_off_path() -> bool:
 		return true
 	return false
 
+func notify_attacked(source_pos: Variant = Vector3.INF) -> void:
+	if not is_inside_tree() or not get_tree(): return
+	var retarget = false
+	if not is_instance_valid(current_target):
+		retarget = true
+	else:
+		var c_hc = current_target.get_node_or_null("HealthComponent")
+		if (c_hc and c_hc.is_dead) or not current_target.is_in_group("Targetable"):
+			retarget = true
+		elif ("Base" in current_target.name or "Tower" in current_target.name) and global_position.distance_to(current_target.global_position) > 10.0:
+			retarget = true
+	if retarget:
+		set_meta("target_recheck", 0.0)
+		find_new_target()
+
 func find_new_target():
 	current_target = null
 	if not is_inside_tree() or not get_tree():
@@ -1248,31 +1294,60 @@ func find_new_target():
 		if g.begins_with("Side"):
 			my_team = g
 			break
+	if my_team == "" and "team" in self and str(self.team) != "":
+		my_team = str(self.team)
+
 	var gs = _get_game_state()
-	var closest_dist = 99999.0
+	var closest_score = 99999.0
 	var wander = can_wander_off_path()
 	var my_pos = global_position
+	var best_target: Node3D = null
 
 	for node in get_tree().get_nodes_in_group("Targetable"):
 		if node == self or not is_instance_valid(node): continue
-		if my_team != "" and node.is_in_group(my_team): continue
-		if my_team == "" and node.is_in_group("Beast"): continue
-
-		var d = my_pos.distance_to(node.global_position)
-		if d >= closest_dist: continue
-
-		var is_structure = "Base" in node.name or "Tower" in node.name or "CommandBay" in node.name
-		if not wander and (node.is_in_group("NeutralCreature") or node.is_in_group("NeutralStructure")):
-			if d > 7.5: continue
-		if not is_structure and gs and not wander and gs.get_distance_to_nearest_lane(node.global_position) > 14.5:
-			if d > 7.5: continue
+		
+		# Team & alliance check
+		var is_ally = false
+		if my_team != "":
+			if node.is_in_group(my_team):
+				is_ally = true
+			elif node.get("team") != null and str(node.get("team")) == my_team:
+				is_ally = true
+		elif node.is_in_group("Beast"):
+			is_ally = true
+		if is_ally:
+			continue
 
 		var hc = node.get_node_or_null("HealthComponent")
 		if hc and hc.is_dead: continue
 		if gs and gs.is_unit_stealthed_from(node, self): continue
 
-		closest_dist = d
-		current_target = node
+		var d = my_pos.distance_to(node.global_position)
+		var is_structure = "Base" in node.name or "Tower" in node.name or "CommandBay" in node.name or "Den" in node.name or "Burrow" in node.name or "Hill" in node.name or "Pit" in node.name
+		var is_neutral = node.is_in_group("NeutralCreature") or node.is_in_group("NeutralStructure")
+
+		# Neutral filtering: don't wander across the map chasing neutral wildlife unless within 8.5m
+		if is_neutral and not wander:
+			if d > 8.5: continue
+
+		# Deep off-lane filtering for non-flankers: only ignore enemy units if they are far off-lane (> 24m) and not nearby
+		if not is_structure and gs and not wander:
+			var lane_d = gs.get_distance_to_nearest_lane(node.global_position)
+			if lane_d > 24.0 and d > 14.0:
+				continue
+
+		# Priority weighting: units prioritize engaging combat troops within 25m over distant buildings
+		var score = d
+		if is_structure:
+			score += 12.0
+		elif is_neutral:
+			score += 6.0
+
+		if score < closest_score:
+			closest_score = score
+			best_target = node
+
+	current_target = best_target
 
 
 
@@ -1365,6 +1440,7 @@ func _animate_magma_born(root: Node3D, u_name: String, phase: float, atk_swing: 
 		if leg_l: leg_l.rotation.x = stride
 		if leg_r: leg_r.rotation.x = -stride
 		if arm_l: arm_l.rotation.x = -stride * 0.75
+		if arm_r: arm_r.rotation.x = stride * 0.75 - atk_swing * 0.7
 		if weap:
 			weap.rotation_degrees.x = 65.0 - atk_swing * 110.0
 		var vent = root.get_node_or_null("Torso/MoltenCore")
@@ -1375,6 +1451,7 @@ func _animate_magma_born(root: Node3D, u_name: String, phase: float, atk_swing: 
 		if leg_l: leg_l.rotation.x = squat_stride
 		if leg_r: leg_r.rotation.x = -squat_stride
 		if arm_l: arm_l.rotation.x = -squat_stride * 0.65
+		if arm_r: arm_r.rotation.x = squat_stride * 0.65 - atk_swing * 0.8
 		if weap:
 			weap.rotation_degrees.x = 45.0 - atk_swing * 95.0
 		if head:

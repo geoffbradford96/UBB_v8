@@ -1,6 +1,6 @@
 extends Control
 
-const WildlifeModelBuilder = preload("res://Scripts/WildlifeModelBuilder.gd")
+const WildlifeModelBuilderScript = preload("res://Scripts/WildlifeModelBuilder.gd")
 
 signal card_clicked(card_ui_node)
 
@@ -401,7 +401,7 @@ func _get_unit_stats(data: Resource) -> Dictionary:
 
 	var c_name = str(data.card_name)
 	if "Wildlife" in c_name:
-		var w_info = WildlifeModelBuilder.get_species_info(c_name)
+		var w_info = WildlifeModelBuilderScript.get_species_info(c_name)
 		if not w_info.is_empty():
 			if w_info.has("hp"): stats["hp"] = float(w_info["hp"])
 			if w_info.has("dmg"): stats["atk"] = float(w_info["dmg"])
@@ -524,7 +524,7 @@ func set_card_data(data: Resource):
 	cost_label.text = str(data.cost) if data.cost > 0 else "0"
 	var display_title: String = data.card_name
 	if "Wildlife" in str(data.card_name):
-		var w_info = WildlifeModelBuilder.get_species_info(str(data.card_name))
+		var w_info = WildlifeModelBuilderScript.get_species_info(str(data.card_name))
 		display_title = str(w_info.get("title", data.card_name))
 	name_label.text = display_title
 

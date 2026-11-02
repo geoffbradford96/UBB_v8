@@ -395,7 +395,7 @@ func _on_host_pressed():
 	if port_val <= 0: port_val = 8910
 	var max_p: int = max_players_option.get_selected_id() if max_players_option else 25
 	var code_val: String = code_input.text.strip_edges() if code_input else "UBB25"
-	var is_priv: bool = privacy_option.selected == 1 if privacy_option else false
+	var is_priv: bool = (privacy_option.selected == 1) if privacy_option else false
 
 	if status_label:
 		status_label.text = "Starting host server on port " + str(port_val) + " (Max " + str(max_p) + "P)..."

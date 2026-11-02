@@ -1287,17 +1287,17 @@ static func _build_yule_log(root: Node3D):
 	var holiday_fire = _get_mat("w_yule_fire", Color(1.0, 0.5, 0.1), 0.2, 0.0, Color(1.0, 0.45, 0.0), 4.0)
 
 	# Gnarled Wooden Log (horizontal cylinder)
-	var log = MeshInstance3D.new()
-	log.name = "Log"
+	var yule_log = MeshInstance3D.new()
+	yule_log.name = "Log"
 	var lg_mesh = CylinderMesh.new()
 	lg_mesh.top_radius = 0.32
 	lg_mesh.bottom_radius = 0.32
 	lg_mesh.height = 1.5
-	log.mesh = lg_mesh
-	log.material_override = bark_mat
-	log.rotation_degrees.z = 90
-	log.position.y = 0.35
-	root.add_child(log)
+	yule_log.mesh = lg_mesh
+	yule_log.material_override = bark_mat
+	yule_log.rotation_degrees.z = 90
+	yule_log.position.y = 0.35
+	root.add_child(yule_log)
 
 	# Holly Leaves & Red Berries
 	var holly = MeshInstance3D.new()

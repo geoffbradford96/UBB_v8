@@ -1315,7 +1315,7 @@ static func _build_avian_flyer(root: Node3D, key: String, info: Dictionary, m1: 
 static func _build_avian_walker(root: Node3D, key: String, m1: Material, m2: Material, m3: Material, m_dark: Material, _m_white: Material, m_eye: Material) -> void:
 	var tall = ("Ostrich" in key or "Cassowary" in key or "Emu" in key or "Secretary" in key or "Shoebill" in key or "Swan" in key or "Goose" in key)
 	var body_y = 0.78 if tall else 0.48
-	var body = _add_sphere(root, 0.32 if tall else 0.24, 0.72 if tall else 0.52, Vector3(0, body_y, 0.06), m1, Vector3(0.95, 0.90, 1.28), "Torso")
+	_add_sphere(root, 0.32 if tall else 0.24, 0.72 if tall else 0.52, Vector3(0, body_y, 0.06), m1, Vector3(0.95, 0.90, 1.28), "Torso")
 	for s_idx in range(2):
 		var s = -1.0 if s_idx == 0 else 1.0
 		var side_tag = "L" if s < 0 else "R"

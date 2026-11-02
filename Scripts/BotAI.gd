@@ -1056,8 +1056,9 @@ func calculate_optimal_spawn(card: CardData, threat_info: Dictionary, team_ctx: 
 					if is_instance_valid(ally) and ally is Node3D and ("Tank" in ally.name or "Mech" in ally.name or "Walker" in ally.name or "Golem" in ally.name):
 						var ahc = ally.get_node_or_null("HealthComponent")
 						if ahc and not ahc.is_dead and ahc.current_health < ahc.max_health * 0.90:
-							if ally.global_position.distance_to(spawn_anchor.global_position) <= 23.0:
-								min_hp = ahc.current_health / max(1.0, ahc.max_health)
+							var hp_ratio = ahc.current_health / max(1.0, ahc.max_health)
+							if hp_ratio < min_hp and ally.global_position.distance_to(spawn_anchor.global_position) <= 23.0:
+								min_hp = hp_ratio
 								damaged_veh = ally
 				if damaged_veh:
 					target_pos = damaged_veh.global_position - (push_dir * 3.5) + (right_dir * randf_range(-1.5, 1.5))

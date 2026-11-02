@@ -101,7 +101,7 @@ func _process(delta):
 			targets_in_range.pop_front()
 			
 	if is_instance_valid(current_target):
-		var f_mesh = get_meta("faction_mesh") if has_meta("faction_mesh") else null
+		var f_mesh = get_meta("faction_mesh", null)
 		if f_mesh and is_instance_valid(f_mesh):
 			if f_mesh.has_meta("dominion_turret"):
 				var turret = f_mesh.get_meta("dominion_turret")
@@ -132,7 +132,7 @@ func shoot_at_target():
 			proj.set("speed", 25.0)
 		
 		# Turret firing recoil kick
-		var f_mesh = get_meta("faction_mesh") if has_meta("faction_mesh") else null
+		var f_mesh = get_meta("faction_mesh", null)
 		if f_mesh and is_instance_valid(f_mesh):
 			if f_mesh.has_meta("ballista_turret"):
 				var b_turret = f_mesh.get_meta("ballista_turret")

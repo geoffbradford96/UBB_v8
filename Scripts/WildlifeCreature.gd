@@ -1,7 +1,7 @@
 extends CharacterBody3D
 class_name WildlifeCreature
 
-const WildlifeModelBuilder = preload("res://Scripts/WildlifeModelBuilder.gd")
+const WildlifeModelBuilderScript = preload("res://Scripts/WildlifeModelBuilder.gd")
 const GpuAcceleratorScript = preload("res://Scripts/GpuAccelerator.gd")
 
 @export var species_id: String = "WildlifeMonkey"
@@ -118,8 +118,8 @@ func _ready():
 	_retarget_timer = randf() * 0.25
 
 	var raw_key = species_id if (species_id != "" and species_id != "WildlifeMonkey") else name
-	species_id = WildlifeModelBuilder.get_species_key(raw_key)
-	var info: Dictionary = WildlifeModelBuilder.get_species_info(species_id)
+	species_id = WildlifeModelBuilderScript.get_species_key(raw_key)
+	var info: Dictionary = WildlifeModelBuilderScript.get_species_info(species_id)
 	_archetype = info.get("archetype", "QUADRUPED")
 	speed = float(info.get("spd", speed))
 	attack_damage = float(info.get("dmg", attack_damage))
@@ -156,7 +156,7 @@ func _ready():
 		if health_comp.has_method("_refresh_hp_visuals"):
 			health_comp._refresh_hp_visuals()
 
-	_model_root = WildlifeModelBuilder.build_animal_model(self, species_id)
+	_model_root = WildlifeModelBuilderScript.build_animal_model(self, species_id)
 	if _model_root:
 		_base_model_scale = _model_root.scale
 		_head_pivot = _model_root.get_node_or_null("HeadPivot")

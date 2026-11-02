@@ -473,6 +473,11 @@ func sync_take_damage(amount: float, source_pos: Variant = Vector3.INF):
 		
 	if hp_viewport:
 		hp_viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
+
+	# Notify parent unit of attack for retaliation and aggro
+	var parent_node = get_parent()
+	if parent_node and is_instance_valid(parent_node) and parent_node.has_method("notify_attacked"):
+		parent_node.notify_attacked(s_pos)
 		
 	if current_health <= 0:
 		die()

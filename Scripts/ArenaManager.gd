@@ -2126,9 +2126,11 @@ func sync_end_match(message: String, winning_team: String = ""):
 func _animate_faction_structures(delta):
     var t = Time.get_ticks_msec() * 0.001
     for s in get_tree().get_nodes_in_group("FactionStructures"):
-        if not is_instance_valid(s) or not s.has_meta("faction_mesh"):
+        if not is_instance_valid(s) or s.is_queued_for_deletion() or not s.has_meta("faction_mesh"):
             continue
-        var f_mesh = s.get_meta("faction_mesh")
+        var f_mesh = s.get_meta("faction_mesh", null)
+        if not f_mesh or not is_instance_valid(f_mesh):
+            continue
         if f_mesh and is_instance_valid(f_mesh):
             if f_mesh.has_meta("reach_hover"):
                 var node = f_mesh.get_meta("reach_hover")
