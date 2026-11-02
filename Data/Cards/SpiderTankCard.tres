@@ -6,6 +6,7 @@
 [resource]
 script = ExtResource("1_x1nee")
 card_name = "SpiderTank"
+card_type = "Vehicle"
 is_melee = false
 cost = 6.5
 max_hp = 200.0

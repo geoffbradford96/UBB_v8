@@ -113,7 +113,7 @@ func _ready():
 		arena.add_child(foe)
 		if u is Node3D:
 			foe.global_position = u.global_position + Vector3(0, 0, -6.0)
-		for i in range(30):
+		for i in range(3):
 			await get_tree().physics_frame
 			if not is_instance_valid(u):
 				break
@@ -138,6 +138,8 @@ func _ready():
 	for l in findings:
 		print(l)
 	print("================ %d cards audited, %d ERROR(S), %d total findings ================" % [names.size(), errors, findings.size()])
+	await get_tree().process_frame
+	await get_tree().physics_frame
 	get_tree().quit(1 if errors > 0 else 0)
 
 const FLYER_HINTS := ["Plane", "Flyer", "Pyrodactyl", "Dragon", "Bat", "Beetle", "Jelly", "Eagle", "Condor", "Raven", "Owl", "Hornet", "Wasp", "Bee", "Mosquito", "Dragonfly", "Locust", "Falcon", "Crow", "Jay", "Magpie", "Rook", "Jackdaw", "Goose", "Pelican", "Shoebill", "Woodpecker", "Sprite", "Gargoyle", "Reindeer", "Spire", "Tower", "Bay", "Overlord", "Meteor", "Drone", "Harpy", "Secretary", "Pecking", "Hawk", "Vulture", "Stork"]

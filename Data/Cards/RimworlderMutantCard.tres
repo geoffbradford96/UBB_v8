@@ -6,6 +6,8 @@
 [resource]
 script = ExtResource("1_43fw7")
 card_name = "RimworlderMutant"
+is_melee = true
+cost = 3.0
 card_type = "Rimworlder"
 max_hp = 180.0
 description = "Mutated rimworlder wielding a massive tentacle."

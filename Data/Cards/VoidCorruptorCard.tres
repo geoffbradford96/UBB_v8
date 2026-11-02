@@ -6,5 +6,9 @@
 [resource]
 script = ExtResource("1_script")
 card_name = "VoidCorruptor"
+card_type = "Support"
+is_melee = false
+max_hp = 130.0
+cost = 4.0
 description = "A spectral entity that mends other Void units."
 unit_scene = ExtResource("2_scene")

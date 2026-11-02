@@ -6,6 +6,7 @@
 [resource]
 script = ExtResource("1_rmpb0")
 card_name = "LandMineInfantry"
+card_type = "Infantry"
 cost = 2.5
 max_hp = 120.0
 description = "Drops explosive mines as he marches."

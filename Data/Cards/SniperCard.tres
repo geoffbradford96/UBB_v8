@@ -6,6 +6,8 @@
 [resource]
 script = ExtResource("1_script")
 card_name = "Sniper"
+card_type = "Ranged"
+max_hp = 90.0
 is_melee = false
 cost = 5.0
 description = "Long-range marksman armed with an anti-materiel rail sniper rifle. Eliminates distant targets from extreme range before they react."

@@ -18,6 +18,7 @@ image = SubResource("Image_bv3pw")
 [resource]
 script = ExtResource("1_wmgrc")
 card_name = "ReachMelee"
+card_type = "Infantry"
 max_hp = 140.0
 cost = 2.5
 spawn_count = 5

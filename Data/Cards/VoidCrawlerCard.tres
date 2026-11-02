@@ -6,6 +6,8 @@
 [resource]
 script = ExtResource("1_script")
 card_name = "VoidCrawler"
+card_type = "Swarm Melee"
+max_hp = 80.0
 cost = 2.0
 spawn_count = 4
 description = "A swarm of 3 fast-moving Void aberrations."

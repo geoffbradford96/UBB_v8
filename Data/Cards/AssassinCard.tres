@@ -6,6 +6,8 @@
 [resource]
 script = ExtResource("1_script")
 card_name = "Assassin"
+card_type = "Infantry"
+max_hp = 120.0
 cost = 6.0
 spawn_count = 2
 description = "Stealth cloaked infiltrator armed with twin vibrato blades. Dashes past tanks to assassinate squishy backline priority targets."

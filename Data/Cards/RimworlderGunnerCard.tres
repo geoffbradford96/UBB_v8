@@ -6,6 +6,7 @@
 [resource]
 script = ExtResource("1_ihy3t")
 card_name = "RimworlderGunner"
+max_hp = 100.0
 card_type = "Rimworlder"
 cost = 2.0
 is_melee = false

@@ -6,6 +6,9 @@
 [resource]
 script = ExtResource("1_script")
 card_name = "SupportingFire"
+card_type = "Support"
+max_hp = 150.0
+cost = 4.5
 is_melee = false
 description = "Heavy weapon support team with a tripod-mounted rotary kinetic cannon. Lays down continuous suppressing fire across lanes."
 unit_scene = ExtResource("2_scene")

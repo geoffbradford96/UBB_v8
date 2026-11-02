@@ -18,6 +18,7 @@ image = SubResource("Image_pko5y")
 [resource]
 script = ExtResource("1_pko5y")
 card_name = "ScrapHunter"
+card_type = "Infantry"
 is_melee = false
 max_hp = 100.0
 cost = 4.0

@@ -6,6 +6,7 @@
 [resource]
 script = ExtResource("1_script")
 card_name = "VoidShieldStalker"
+card_type = "Heavy Melee"
 cost = 5.5
 spawn_count = 1
 max_hp = 220.0

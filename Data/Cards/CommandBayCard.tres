@@ -6,6 +6,7 @@
 [resource]
 script = ExtResource("1_script")
 card_name = "CommandBay"
+card_type = "Structure"
 cost = 5.0
 max_hp = 400.0
 description = "Forward Tactical Outpost: Expands player forward deployment perimeter and periodically deploys free reinforcements."

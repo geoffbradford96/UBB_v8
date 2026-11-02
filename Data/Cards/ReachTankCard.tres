@@ -18,6 +18,7 @@ image = SubResource("Image_qr5cj")
 [resource]
 script = ExtResource("1_ha4lw")
 card_name = "ReachTank"
+card_type = "Vehicle"
 is_melee = false
 max_hp = 650.0
 cost = 6.5

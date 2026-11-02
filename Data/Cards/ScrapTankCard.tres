@@ -18,6 +18,7 @@ image = SubResource("Image_11jlr")
 [resource]
 script = ExtResource("1_11jlr")
 card_name = "ScrapTank"
+card_type = "Vehicle"
 is_melee = false
 max_hp = 550.0
 cost = 6.0
