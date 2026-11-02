@@ -401,6 +401,7 @@ func _refresh_hp_visuals():
 		hp_viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
 
 func take_damage(amount: float, source_pos: Variant = Vector3.INF):
+	if is_nan(amount) or is_inf(amount) or amount <= 0.0: return
 	var s_pos: Vector3 = source_pos if (source_pos is Vector3) else Vector3.INF
 	if multiplayer and multiplayer.has_multiplayer_peer() and multiplayer.multiplayer_peer.get_connection_status() == MultiplayerPeer.CONNECTION_CONNECTED:
 		if not multiplayer.is_server():

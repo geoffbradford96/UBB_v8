@@ -320,7 +320,7 @@ func _physics_process(delta):
 		current_target = null
 			
 	if current_target == null or target_is_dead or __target_timer <= 0.0:
-		if __target_timer <= 0.0 or target_is_dead: set_meta("target_recheck", randf_range(0.8, 1.2))
+		set_meta("target_recheck", randf_range(0.35, 0.65))
 		find_new_target()
 		
 	if is_instance_valid(current_target):

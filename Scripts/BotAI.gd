@@ -20,6 +20,8 @@ var active_commander: Node3D = null
 var slot_index: int = 0
 
 var profile: String = ""
+var _tower_check_timer: float = 0.0
+var _cached_bot_towers: int = 2
 
 func _get_game_state():
 	if Engine.has_singleton("GameState"):
@@ -73,21 +75,25 @@ func _process(delta):
 		if not multiplayer.is_server():
 			return # Let the server authority handle AI thinking in online matches!
 
-	# Unified Requisition (Energy) generation: base rate + tower catchup bonus
-	var bot_towers = 0
-	for z in get_tree().get_nodes_in_group(my_team):
-		if "Tower" in z.name:
-			var zhc = z.get_node_or_null("HealthComponent")
-			if zhc and zhc.is_dead:
-				continue
-			bot_towers += 1
+	# Unified Requisition (Energy) generation: base rate + tower catchup bonus (cached 0.5s)
+	_tower_check_timer -= delta
+	if _tower_check_timer <= 0.0:
+		_tower_check_timer = 0.5
+		var bot_towers = 0
+		for z in get_tree().get_nodes_in_group(my_team):
+			if is_instance_valid(z) and "Tower" in z.name:
+				var zhc = z.get_node_or_null("HealthComponent")
+				if zhc and zhc.is_dead:
+					continue
+				bot_towers += 1
+		_cached_bot_towers = bot_towers
 	var am = (get_tree().current_scene if (get_tree() and get_tree().current_scene) else get_parent())
 	var initial = 2
 	if am and am.get("initial_towers_per_team"):
 		initial = am.initial_towers_per_team.get(my_team, 2)
 		
 	var gs = _get_game_state()
-	var dynamic_rate = requisition_rate + ((initial - bot_towers) * (1.0 / max(1.0, float(initial))))
+	var dynamic_rate = requisition_rate + ((initial - _cached_bot_towers) * (1.0 / max(1.0, float(initial))))
 	if gs:
 		dynamic_rate *= gs.get_team_energy_multiplier(my_team)
 	if am and am.get("sudden_death_active"):

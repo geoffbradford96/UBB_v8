@@ -5,6 +5,7 @@ extends CharacterBody3D
 @export var attack_rate: float = 1.2
 
 var current_target: Node3D = null
+var _target_recheck_cd: float = 0.0
 var attack_timer: float = 0.0
 var unit_attribute: String = "Organic"
 
@@ -117,7 +118,9 @@ func _physics_process(delta):
 	else:
 		current_target = null
 			
-	if current_target == null or target_is_dead:
+	_target_recheck_cd -= delta
+	if (current_target == null or target_is_dead) and _target_recheck_cd <= 0.0:
+		_target_recheck_cd = 0.35
 		find_new_target()
 		
 	if is_instance_valid(current_target):

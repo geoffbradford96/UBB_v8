@@ -483,10 +483,11 @@ func _reset_slam_pose():
 		torso_node.position.y = 2.2
 		torso_node.rotation_degrees.x = 0.0
 
-func take_damage(amount: float, source_pos: Vector3 = Vector3.ZERO):
+func take_damage(amount: float, source_pos: Variant = Vector3.ZERO):
+	var s_pos: Vector3 = source_pos if (source_pos is Vector3) else Vector3.ZERO
 	var hc = get_node_or_null("HealthComponent")
 	if hc and hc.has_method("take_damage"):
-		hc.take_damage(amount, source_pos)
+		hc.take_damage(amount, s_pos)
 		current_health = hc.current_health
 	else:
 		current_health -= amount

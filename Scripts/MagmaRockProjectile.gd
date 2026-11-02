@@ -133,6 +133,9 @@ func _spawn_impact_fx(pos: Vector3) -> void:
 func _spawn_magma_entity(pos: Vector3) -> void:
 	var scene_root = get_tree().current_scene if (is_inside_tree() and get_tree() and get_tree().current_scene) else get_parent()
 	if not scene_root: return
+	# Cap active neutral volcanic monsters to prevent runaway lag in long matches
+	if get_tree().get_nodes_in_group("FireMonster").size() >= 24:
+		return
 
 	var roll = randf()
 	var entity_scene = null

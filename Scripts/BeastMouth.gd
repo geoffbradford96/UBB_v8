@@ -116,9 +116,10 @@ func _physics_process(delta):
 		var s = sin(t) * 0.08
 		mn.scale = Vector3(1.0 + s, 1.0 - s * 0.5, 1.0 + s)
 		
-	# Self-defense Melee Chomp on close intruders
+	# Self-defense Melee Chomp on close intruders (throttled 0.35s when idle)
 	melee_timer -= delta
 	if melee_timer <= 0.0 and is_inside_tree() and get_tree():
+		melee_timer = 0.35
 		for node in get_tree().get_nodes_in_group("Targetable"):
 			if not node.is_in_group("Beast") and is_instance_valid(node) and node != self:
 				var hp = node.get_node_or_null("HealthComponent")

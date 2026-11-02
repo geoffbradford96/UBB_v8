@@ -656,10 +656,11 @@ func attempt_to_play_card(p: LocalPlayerState, data: Resource, target_position: 
 
 @rpc("any_peer", "call_local", "reliable")
 func sync_spawn_card(card_path: String, pos: Vector3, team: String, unique_id: String):
-    # Security: Strict validation of card path
-    if not card_path.begins_with("res://Data/Cards/") or not (card_path.ends_with(".tres") or card_path.ends_with(".tres.remap")):
-        push_warning("Security: Rejected unauthorized card path in RPC: " + str(card_path))
+    # Security: Strict validation of card path and directory traversal prevention
+    if not card_path.begins_with("res://Data/Cards/") or not (card_path.ends_with(".tres") or card_path.ends_with(".tres.remap")) or ".." in card_path:
+        push_warning("Security: Rejected unauthorized card path or traversal in RPC: " + str(card_path))
         return
+    unique_id = unique_id.replace("/", "_").replace("@", "_").replace(":", "_").replace("\\", "_")
         
     # Security: Validate position coordinates (finite, non-NaN, within arena bounds)
     if is_nan(pos.x) or is_nan(pos.y) or is_nan(pos.z) or is_inf(pos.x) or is_inf(pos.y) or is_inf(pos.z):
